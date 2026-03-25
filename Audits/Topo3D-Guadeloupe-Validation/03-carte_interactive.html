@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topo3D Guadeloupe — Carte des extraits</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+#map { height: 70vh; width: 100%; }
+.controls { padding: 15px; background: #1a1a2e; color: white; }
+.controls h1 { font-size: 1.3em; margin-bottom: 8px; }
+.controls .stats { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; }
+.controls .stat { background: #16213e; padding: 8px 14px; border-radius: 6px; }
+.controls .stat .val { font-size: 1.4em; font-weight: bold; color: #0ea5e9; }
+.controls .stat .label { font-size: 0.8em; color: #94a3b8; }
+.filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.filter-bar label { font-size: 0.85em; color: #94a3b8; }
+.filter-bar select, .filter-bar input { padding: 6px 10px; border-radius: 4px; border: 1px solid #334155; background: #0f172a; color: white; font-size: 0.85em; }
+.filter-bar button { padding: 6px 16px; border-radius: 4px; border: none; background: #0ea5e9; color: white; cursor: pointer; font-weight: 600; }
+.filter-bar button:hover { background: #0284c7; }
+.filter-bar button.danger { background: #ef4444; }
+.filter-bar button.danger:hover { background: #dc2626; }
+#panel { height: 30vh; overflow-y: auto; padding: 10px; background: #0f172a; color: #e2e8f0; }
+#panel table { width: 100%; border-collapse: collapse; font-size: 0.8em; }
+#panel th { background: #1e293b; padding: 8px; text-align: left; position: sticky; top: 0; }
+#panel td { padding: 6px 8px; border-bottom: 1px solid #1e293b; }
+#panel tr:hover { background: #1e293b; cursor: pointer; }
+.status-ok { color: #22c55e; font-weight: bold; }
+.status-error { color: #ef4444; font-weight: bold; }
+.zone-draw-active { cursor: crosshair !important; }
+.draw-info { background: #fbbf24; color: #1a1a2e; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: 600; }
+.leaflet-popup-content { font-size: 0.85em; }
+.leaflet-popup-content b { color: #0ea5e9; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+    <h1>Topo3D Guadeloupe — 50 extraits topographiques</h1>
+    <div class="stats">
+        <div class="stat"><div class="val" id="stat-total">0</div><div class="label">Total</div></div>
+        <div class="stat"><div class="val" id="stat-ok">0</div><div class="label">Réussis</div></div>
+        <div class="stat"><div class="val" id="stat-err">0</div><div class="label">Erreurs</div></div>
+        <div class="stat"><div class="val" id="stat-trees">0</div><div class="label">Arbres détectés</div></div>
+        <div class="stat"><div class="val" id="stat-selected">-</div><div class="label">Sélectionnés</div></div>
+    </div>
+    <div class="filter-bar">
+        <label>Commune:</label>
+        <select id="filter-commune"><option value="">Toutes</option></select>
+        <label>Statut:</label>
+        <select id="filter-status">
+            <option value="">Tous</option>
+            <option value="ok">OK</option>
+            <option value="error">Erreur</option>
+        </select>
+        <label>Dénivelé min:</label>
+        <input type="number" id="filter-deniv" placeholder="0" min="0" style="width:60px">
+        <button onclick="applyFilters()">Filtrer</button>
+        <button onclick="startZoneDraw()" id="btn-zone">Dessiner une zone</button>
+        <button class="danger" onclick="clearZone()" id="btn-clear-zone" style="display:none">Effacer zone</button>
+        <span id="draw-info" class="draw-info" style="display:none">Cliquez 2 coins sur la carte pour définir la zone</span>
+    </div>
+</div>
+
+<div id="map"></div>
+<div id="panel">
+    <table>
+        <thead>
+            <tr>
+                <th>#</th><th>Commune</th><th>Parcelle</th><th>Surface</th>
+                <th>Alt. min</th><th>Alt. max</th><th>Dénivelé</th>
+                <th>Vertices</th><th>Arbres</th><th>Vég. %</th><th>Statut</th>
+            </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+    </table>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ─── DONNÉES ───
+// Ce fichier charge index.json généré par le script batch
+let allData = [];
+let filteredData = [];
+let markers = [];
+let map, zoneRect = null;
+let drawMode = false, drawCorner1 = null;
+
+// Initialisation carte
+map = L.map('map').setView([16.15, -61.55], 10);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap | Topo3D KCI'
+}).addTo(map);
+
+// Chargement des données
+async function loadData() {
+    try {
+        const resp = await fetch('extraits/index.json');
+        allData = await resp.json();
+    } catch(e) {
+        // Données de démo si pas de fichier
+        console.warn("index.json non trouvé, utilisation des données intégrées");
+        allData = generateDemoData();
+    }
+    populateCommunes();
+    applyFilters();
+}
+
+function generateDemoData() {
+    // Points de démo correspondant aux SAMPLE_POINTS du script Python
+    const points = [
+        {id:1, name:"Les Abymes - centre", lat:16.27, lng:-61.505, code_insee:"97101", status:"pending"},
+        {id:2, name:"Pointe-à-Pitre - centre", lat:16.241, lng:-61.534, code_insee:"97120", status:"pending"},
+        {id:3, name:"Le Gosier - plage", lat:16.21, lng:-61.49, code_insee:"97114", status:"pending"},
+        {id:4, name:"Sainte-Anne - bourg", lat:16.227, lng:-61.381, code_insee:"97126", status:"pending"},
+        {id:5, name:"Saint-François - marina", lat:16.253, lng:-61.272, code_insee:"97124", status:"pending"},
+        {id:6, name:"Le Moule - bourg", lat:16.333, lng:-61.344, code_insee:"97115", status:"pending"},
+        {id:7, name:"Baie-Mahault - Jarry", lat:16.27, lng:-61.59, code_insee:"97103", status:"pending"},
+        {id:8, name:"Petit-Bourg - bourg", lat:16.22, lng:-61.59, code_insee:"97117", status:"pending"},
+        {id:9, name:"Capesterre-BE - bourg", lat:16.044, lng:-61.567, code_insee:"97107", status:"pending"},
+        {id:10, name:"Basse-Terre - centre", lat:15.997, lng:-61.726, code_insee:"97105", status:"pending"},
+        {id:11, name:"Deshaies - bourg", lat:16.305, lng:-61.79, code_insee:"97109", status:"pending"},
+        {id:12, name:"Bouillante - bourg", lat:16.138, lng:-61.764, code_insee:"97106", status:"pending"},
+        {id:13, name:"Terre-de-Haut", lat:15.861, lng:-61.585, code_insee:"97129", status:"pending"},
+        {id:14, name:"Grand-Bourg (MG)", lat:15.883, lng:-61.314, code_insee:"97112", status:"pending"},
+        {id:15, name:"Port-Louis - bourg", lat:16.418, lng:-61.531, code_insee:"97122", status:"pending"},
+    ];
+    return points;
+}
+
+function populateCommunes() {
+    const sel = document.getElementById('filter-commune');
+    const communes = [...new Set(allData.map(d => d.name.split(' - ')[0]))].sort();
+    communes.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c; opt.textContent = c;
+        sel.appendChild(opt);
+    });
+}
+
+function applyFilters() {
+    const commune = document.getElementById('filter-commune').value;
+    const status = document.getElementById('filter-status').value;
+    const denivMin = parseFloat(document.getElementById('filter-deniv').value) || 0;
+
+    filteredData = allData.filter(d => {
+        if (commune && !d.name.startsWith(commune)) return false;
+        if (status && d.status !== status) return false;
+        if (denivMin > 0 && d.z_max && d.z_min && (d.z_max - d.z_min) < denivMin) return false;
+        // Filtre zone si dessinée
+        if (zoneRect) {
+            const bounds = zoneRect.getBounds();
+            if (!bounds.contains([d.lat, d.lng])) return false;
+        }
+        return true;
+    });
+
+    updateMarkers();
+    updateTable();
+    updateStats();
+}
+
+function updateMarkers() {
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
+
+    filteredData.forEach(d => {
+        const color = d.status === 'ok' ? '#22c55e' : d.status === 'error' ? '#ef4444' : '#fbbf24';
+        const marker = L.circleMarker([d.lat, d.lng], {
+            radius: 8, fillColor: color, color: '#fff', weight: 2, fillOpacity: 0.8
+        }).addTo(map);
+
+        let popup = `<b>${d.name}</b><br>`;
+        if (d.parcelle_ref) popup += `Parcelle: ${d.parcelle_ref}<br>`;
+        if (d.surface_m2) popup += `Surface: ${d.surface_m2} m²<br>`;
+        if (d.z_min != null) popup += `Alt: ${d.z_min?.toFixed(1)}m → ${d.z_max?.toFixed(1)}m<br>`;
+        if (d.trees) popup += `Arbres: ${d.trees}<br>`;
+        if (d.vegetation_pct) popup += `Vég: ${d.vegetation_pct}%<br>`;
+        popup += `<span style="color:${color}">${d.status?.toUpperCase()}</span>`;
+        if (d.error) popup += `<br><small style="color:#ef4444">${d.error}</small>`;
+        marker.bindPopup(popup);
+        markers.push(marker);
+    });
+}
+
+function updateTable() {
+    const tbody = document.getElementById('table-body');
+    tbody.innerHTML = '';
+    filteredData.forEach(d => {
+        const deniv = (d.z_max && d.z_min) ? (d.z_max - d.z_min).toFixed(1) : '-';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${d.id || '-'}</td>
+            <td>${d.name}</td>
+            <td>${d.parcelle_ref || '-'}</td>
+            <td>${d.surface_m2 || '-'}</td>
+            <td>${d.z_min?.toFixed(1) || '-'}</td>
+            <td>${d.z_max?.toFixed(1) || '-'}</td>
+            <td>${deniv}</td>
+            <td>${d.vertices || '-'}</td>
+            <td>${d.trees || '-'}</td>
+            <td>${d.vegetation_pct || '-'}</td>
+            <td class="status-${d.status}">${d.status?.toUpperCase() || 'EN ATTENTE'}</td>
+        `;
+        tr.onclick = () => map.flyTo([d.lat, d.lng], 15);
+        tbody.appendChild(tr);
+    });
+}
+
+function updateStats() {
+    document.getElementById('stat-total').textContent = filteredData.length;
+    document.getElementById('stat-ok').textContent = filteredData.filter(d => d.status === 'ok').length;
+    document.getElementById('stat-err').textContent = filteredData.filter(d => d.status === 'error').length;
+    document.getElementById('stat-trees').textContent = filteredData.reduce((s, d) => s + (d.trees || 0), 0);
+    document.getElementById('stat-selected').textContent = zoneRect ? filteredData.length : '-';
+}
+
+// ─── DESSIN DE ZONE ───
+function startZoneDraw() {
+    drawMode = true;
+    drawCorner1 = null;
+    document.getElementById('draw-info').style.display = 'inline';
+    document.getElementById('btn-zone').style.display = 'none';
+    document.getElementById('btn-clear-zone').style.display = 'none';
+    map.getContainer().classList.add('zone-draw-active');
+}
+
+map.on('click', function(e) {
+    if (!drawMode) return;
+    if (!drawCorner1) {
+        drawCorner1 = e.latlng;
+        document.getElementById('draw-info').textContent = 'Cliquez le 2e coin...';
+    } else {
+        const bounds = L.latLngBounds(drawCorner1, e.latlng);
+        if (zoneRect) map.removeLayer(zoneRect);
+        zoneRect = L.rectangle(bounds, {
+            color: '#0ea5e9', weight: 2, fillOpacity: 0.1
+        }).addTo(map);
+
+        drawMode = false;
+        map.getContainer().classList.remove('zone-draw-active');
+        document.getElementById('draw-info').style.display = 'none';
+        document.getElementById('btn-zone').style.display = 'inline';
+        document.getElementById('btn-clear-zone').style.display = 'inline';
+        applyFilters();
+    }
+});
+
+function clearZone() {
+    if (zoneRect) { map.removeLayer(zoneRect); zoneRect = null; }
+    document.getElementById('btn-clear-zone').style.display = 'none';
+    applyFilters();
+}
+
+// Init
+loadData();
+</script>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comment ça marche — Topo3D-Antilles</title>
+    <meta name="description" content="Guide complet : comment obtenir vos fichiers topographiques 3D en quelques clics. Sélection de parcelle, export OBJ/DXF, ouverture dans SketchUp, AutoCAD, Revit.">
+    <link rel="canonical" href="https://topo3d-antilles.com/comment-ca-marche.html">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #fafafa;
+            color: #111;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* === Animations === */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in { opacity: 0; animation: fadeInUp 0.8s ease-out forwards; }
+        .fade-in:nth-child(2) { animation-delay: 0.1s; }
+        .fade-in:nth-child(3) { animation-delay: 0.2s; }
+        .fade-in:nth-child(4) { animation-delay: 0.3s; }
+
+        /* === Header === */
+        header {
+            position: sticky; top: 0;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px; margin: 0 auto;
+            padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; color: #111; text-decoration: none; }
+        .logo-accent { color: #00c896; }
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { text-decoration: none; color: #666; font-size: 14px; font-weight: 500; transition: color .2s; }
+        .nav-links a:hover { color: #00c896; }
+        .nav-cta {
+            background: #00c896; color: white !important; padding: 8px 20px;
+            border-radius: 8px; font-weight: 700; font-size: 13px !important;
+        }
+        .nav-cta:hover { background: #00b385; }
+
+        /* === Hero === */
+        .hero {
+            background: linear-gradient(135deg, #fafafa 0%, #f0faf6 100%);
+            padding: 100px 20px 80px; text-align: center;
+        }
+        .hero-content { max-width: 800px; margin: 0 auto; }
+        .badge {
+            display: inline-block; background: #00c896; color: white;
+            font-size: 12px; font-weight: 700; padding: 6px 18px;
+            border-radius: 50px; margin-bottom: 24px; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 700; line-height: 1.15; margin-bottom: 20px; color: #111; }
+        .hero h1 span { color: #00c896; }
+        .hero p { font-size: 18px; color: #666; max-width: 600px; margin: 0 auto 32px; }
+
+        /* === Section commune === */
+        section { padding: 80px 20px; }
+        .section-inner { max-width: 1100px; margin: 0 auto; }
+        .section-title {
+            font-size: clamp(24px, 4vw, 36px); font-weight: 700;
+            text-align: center; margin-bottom: 16px; color: #111;
+        }
+        .section-subtitle { text-align: center; color: #666; font-size: 17px; max-width: 650px; margin: 0 auto 60px; }
+
+        /* === 4 Étapes === */
+        .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; }
+        .step {
+            background: white; border: 1px solid #f0f0f0; border-radius: 16px;
+            padding: 36px 28px; text-align: center;
+            transition: all .25s; position: relative;
+        }
+        .step:hover { border-color: #00c896; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0, 200, 150, 0.08); }
+        .step-number {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: linear-gradient(135deg, #00c896, #00a67a);
+            color: white; font-size: 24px; font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px;
+        }
+        .step-icon { font-size: 36px; margin-bottom: 12px; }
+        .step h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #111; }
+        .step p { font-size: 15px; color: #666; line-height: 1.55; }
+        .step-tag {
+            display: inline-block; background: rgba(0, 200, 150, 0.08); color: #00a67a;
+            font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+            margin-top: 14px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* === Mode d'emploi export === */
+        .export-section { background: white; }
+        .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .export-card {
+            background: #fafafa; border: 1px solid #f0f0f0; border-radius: 16px;
+            padding: 32px; transition: all .25s;
+        }
+        .export-card:hover { border-color: #ddd; transform: translateY(-2px); }
+        .export-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .export-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; font-weight: 700; color: white;
+        }
+        .export-icon.obj { background: linear-gradient(135deg, #00c896, #00a67a); }
+        .export-icon.dxf { background: linear-gradient(135deg, #0088ff, #0066cc); }
+        .export-icon.pdf { background: linear-gradient(135deg, #ff3b5c, #cc2244); }
+        .export-icon.geojson { background: linear-gradient(135deg, #ffaa00, #cc8800); }
+        .export-icon.ifc { background: linear-gradient(135deg, #7b61ff, #5a40cc); }
+        .export-icon.stl { background: linear-gradient(135deg, #ff6b00, #cc5500); }
+        .export-card h3 { font-size: 17px; font-weight: 700; color: #111; }
+        .export-card .tier { font-size: 12px; color: #999; font-weight: 500; }
+        .export-card p { font-size: 14px; color: #555; margin-bottom: 14px; line-height: 1.55; }
+        .export-card .logiciels { font-size: 13px; color: #888; }
+        .export-card .logiciels strong { color: #555; font-weight: 600; }
+        .export-steps { margin-top: 16px; padding: 16px; background: rgba(0,200,150,0.04); border-radius: 10px; }
+        .export-steps h4 { font-size: 13px; font-weight: 700; color: #00a67a; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .export-steps ol { padding-left: 20px; font-size: 13px; color: #555; }
+        .export-steps ol li { margin-bottom: 6px; line-height: 1.5; }
+
+        /* === Tableau comparatif === */
+        .comparison { background: #fafafa; }
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        thead { background: #111; color: white; }
+        th { padding: 14px 18px; text-align: left; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 14px 18px; border-bottom: 1px solid #f5f5f5; font-size: 14px; color: #444; }
+        tbody tr:hover { background: #fafffe; }
+        .check { color: #00c896; font-weight: 700; }
+        .lock { color: #ccc; }
+        .highlight-row { background: rgba(0, 200, 150, 0.03); }
+        .tier-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+        }
+        .tier-badge.essentiel { background: #e8f5e9; color: #2e7d32; }
+        .tier-badge.complet { background: #e3f2fd; color: #1565c0; }
+        .tier-badge.premium { background: #f3e5f5; color: #7b1fa2; }
+        .tier-badge.pro { background: #fff3e0; color: #e65100; }
+
+        /* === FAQ === */
+        .faq-list { max-width: 800px; margin: 0 auto; }
+        .faq-item {
+            background: white; border: 1px solid #f0f0f0; border-radius: 12px;
+            margin-bottom: 12px; overflow: hidden; transition: all .2s;
+        }
+        .faq-item:hover { border-color: #ddd; }
+        .faq-q {
+            padding: 20px 24px; cursor: pointer; font-weight: 700; font-size: 16px;
+            display: flex; justify-content: space-between; align-items: center;
+            user-select: none;
+        }
+        .faq-q::after { content: '+'; font-size: 22px; color: #00c896; font-weight: 700; transition: transform .2s; }
+        .faq-item.open .faq-q::after { transform: rotate(45deg); }
+        .faq-a { padding: 0 24px 20px; font-size: 15px; color: #555; line-height: 1.6; display: none; }
+        .faq-item.open .faq-a { display: block; }
+
+        /* === CTA final === */
+        .cta-section {
+            background: linear-gradient(135deg, #00c896, #00a67a);
+            padding: 80px 20px; text-align: center; color: white;
+        }
+        .cta-section h2 { font-size: clamp(24px, 4vw, 36px); font-weight: 700; margin-bottom: 16px; }
+        .cta-section p { font-size: 17px; opacity: 0.9; max-width: 550px; margin: 0 auto 32px; }
+        .cta-btn {
+            display: inline-block; background: white; color: #00a67a;
+            padding: 16px 40px; border-radius: 12px; font-weight: 700; font-size: 16px;
+            text-decoration: none; transition: all .2s;
+        }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+        /* === Footer === */
+        footer {
+            padding: 40px 20px; text-align: center;
+            border-top: 1px solid #f0f0f0; background: white;
+        }
+        .footer-content { max-width: 1200px; margin: 0 auto; }
+        .footer-brand { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .footer-brand span { color: #00c896; }
+        .footer-text { font-size: 13px; color: #999; margin-bottom: 12px; }
+        .footer-email { color: #00c896; text-decoration: none; font-weight: 600; font-size: 14px; }
+        .footer-email:hover { text-decoration: underline; }
+        .footer-copy { font-size: 11px; color: #ccc; margin-top: 16px; }
+
+        /* Hamburger */
+        .hamburger { display: none; background: none; border: none; cursor: pointer; padding: 10px 12px; }
+        .hamburger span { display: block; width: 22px; height: 2px; background: #333; margin: 5px 0; transition: 0.3s; }
+
+        /* === Mobile === */
+        @media (max-width: 768px) {
+            .hamburger { display: block; }
+            .nav-links { display: none; position: absolute; top: 60px; left: 0; right: 0; background: #fff; flex-direction: column; padding: 20px; gap: 12px; border-bottom: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 200; }
+            .nav-links.open { display: flex; }
+            .hero { padding: 80px 16px 60px; }
+            section { padding: 60px 16px; }
+            .steps { grid-template-columns: 1fr; gap: 20px; }
+            .export-grid { grid-template-columns: 1fr; }
+            th, td { padding: 10px 12px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+    <div class="header-content">
+        <a href="/" class="logo">Topo3D<span class="logo-accent">-Antilles</span></a>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+        <nav>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="/">Accueil</a></li>
+                <li><a href="/carte.html">Carte interactive</a></li>
+                <li><a href="/comment-ca-marche.html" style="color:#00c896;">Comment ça marche</a></li>
+                <li><a href="/#pricing">Tarifs</a></li>
+                <li><a href="/carte.html" class="nav-cta">Sélectionner une parcelle</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="hero-content fade-in">
+        <div class="badge">Guide complet</div>
+        <h1>De la parcelle au fichier 3D<br><span>en 4 étapes</span></h1>
+        <p>Obtenez vos fichiers topographiques exploitables en quelques minutes. Voici comment ça fonctionne, de A à Z.</p>
+    </div>
+</section>
+
+<!-- 4 Étapes -->
+<section>
+    <div class="section-inner">
+        <h2 class="section-title">Les 4 étapes</h2>
+        <p class="section-subtitle">De la sélection de votre parcelle cadastrale à l'import dans votre logiciel de conception.</p>
+        <div class="steps">
+            <div class="step fade-in">
+                <div class="step-number">1</div>
+                <div class="step-icon">🗺️</div>
+                <h3>Sélectionnez votre parcelle</h3>
+                <p>Ouvrez la carte interactive, naviguez vers votre terrain en Guadeloupe ou Martinique et cliquez sur la parcelle cadastrale. Les infos s'affichent instantanément : surface, commune, section, altitude.</p>
+                <span class="step-tag">Gratuit</span>
+            </div>
+            <div class="step fade-in">
+                <div class="step-number">2</div>
+                <div class="step-icon">📊</div>
+                <h3>Consultez les données</h3>
+                <p>Activez les couches réglementaires : zonage PLU, Natura 2000, ZNIEFF, périmètres Monuments Historiques, PPR, Conservatoire du Littoral. Visualisez les bâtiments 3D existants.</p>
+                <span class="step-tag">7 couches PRO</span>
+            </div>
+            <div class="step fade-in">
+                <div class="step-number">3</div>
+                <div class="step-icon">💳</div>
+                <h3>Choisissez votre export</h3>
+                <p>Sélectionnez le format et le niveau de détail adaptés à votre besoin : fiche parcelle 19€, fichier OBJ 59€, pack complet OBJ+DXF+courbes 129€, ou tous formats à 249€.</p>
+                <span class="step-tag">À partir de 19€</span>
+            </div>
+            <div class="step fade-in">
+                <div class="step-number">4</div>
+                <div class="step-icon">📥</div>
+                <h3>Téléchargez et importez</h3>
+                <p>Recevez vos fichiers par email en 24h. Importez directement dans SketchUp, AutoCAD, Revit, Blender, ArchiCAD, Rhino — prêts à l'emploi, géoréférencés.</p>
+                <span class="step-tag">8 logiciels compatibles</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mode d'emploi export -->
+<section class="export-section">
+    <div class="section-inner">
+        <h2 class="section-title">Mode d'emploi des exports</h2>
+        <p class="section-subtitle">Chaque format a son usage. Voici ce que vous recevez et comment l'utiliser dans votre logiciel.</p>
+        <div class="export-grid">
+
+            <!-- Fiche Parcelle PDF -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon pdf">PDF</div>
+                    <div>
+                        <h3>Fiche Parcelle Réglementaire</h3>
+                        <span class="tier">19€ — Tous niveaux</span>
+                    </div>
+                </div>
+                <p>Fiche A4 synthétique avec toutes les données réglementaires de la parcelle : zonage PLU, risques naturels, Natura 2000, altitude, pente, bâtiments existants.</p>
+                <p class="logiciels"><strong>Ouvrir avec :</strong> tout lecteur PDF (Adobe, Preview, Chrome)</p>
+                <div class="export-steps">
+                    <h4>Comment l'utiliser</h4>
+                    <ol>
+                        <li>Ouvrez le PDF reçu par email</li>
+                        <li>Vérifiez les contraintes réglementaires avant tout projet</li>
+                        <li>Joignez la fiche à votre dossier de faisabilité ou permis de construire</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- OBJ -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon obj">OBJ</div>
+                    <div>
+                        <h3>Mesh terrain 3D (.OBJ)</h3>
+                        <span class="tier">Dès 59€ — Essentiel</span>
+                    </div>
+                </div>
+                <p>Maillage 3D triangulé du terrain réel, basé sur les données LiDAR IGN (résolution 2-5m selon l'offre). Coordonnées locales, axe Y = altitude.</p>
+                <p class="logiciels"><strong>Compatible :</strong> SketchUp, Blender, Rhino, 3ds Max, Cinema 4D, Unity, Unreal</p>
+                <div class="export-steps">
+                    <h4>Import dans SketchUp</h4>
+                    <ol>
+                        <li>Fichier → Importer → sélectionner <code>.obj</code></li>
+                        <li>Cocher "Conserver l'unité de dessin" (mètres)</li>
+                        <li>Le terrain apparaît en tant que groupe — clic droit → Éclater si besoin</li>
+                        <li>Posez vos volumes de projet directement sur le mesh</li>
+                    </ol>
+                </div>
+                <div class="export-steps" style="margin-top:10px;">
+                    <h4>Import dans Blender</h4>
+                    <ol>
+                        <li>File → Import → Wavefront (.obj)</li>
+                        <li>Vérifier l'échelle (Forward: -Z, Up: Y)</li>
+                        <li>Le mesh est directement exploitable pour modélisation ou rendu</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- DXF -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon dxf">DXF</div>
+                    <div>
+                        <h3>Courbes de niveau (.DXF)</h3>
+                        <span class="tier">Dès 129€ — Complet</span>
+                    </div>
+                </div>
+                <p>Fichier AutoCAD R12 avec les courbes de niveau mineures et majeures, le contour parcelle et les points cotés. 4 calques séparés pour un contrôle total.</p>
+                <p class="logiciels"><strong>Compatible :</strong> AutoCAD, ArchiCAD, Revit, QGIS, Vectorworks, BricsCAD</p>
+                <div class="export-steps">
+                    <h4>Import dans AutoCAD</h4>
+                    <ol>
+                        <li>Ouvrir directement le fichier <code>.dxf</code></li>
+                        <li>Les 4 calques sont déjà séparés : <code>CONTOURS_MINEURES</code>, <code>CONTOURS_MAJEURES</code>, <code>PARCELLE</code>, <code>POINTS_COTES</code></li>
+                        <li>Vérifier l'unité (mètres) dans Propriétés du dessin</li>
+                        <li>Superposer avec votre plan de masse pour caler le projet</li>
+                    </ol>
+                </div>
+                <div class="export-steps" style="margin-top:10px;">
+                    <h4>Import dans Revit</h4>
+                    <ol>
+                        <li>Insérer → Lier CAO → sélectionner le <code>.dxf</code></li>
+                        <li>Unités : Mètre, Positionnement : Automatique — Centre à Centre</li>
+                        <li>Les courbes apparaissent dans une vue en plan — utiliser "Surface topographique" pour créer le terrain Revit</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- GeoJSON -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon geojson">GEO</div>
+                    <div>
+                        <h3>Contour parcelle (.GeoJSON)</h3>
+                        <span class="tier">Dès 59€ — Essentiel</span>
+                    </div>
+                </div>
+                <p>Contour géoréférencé de la parcelle cadastrale au format GeoJSON standard (WGS84 / EPSG:4326). Utilisable dans tout SIG ou outil cartographique.</p>
+                <p class="logiciels"><strong>Compatible :</strong> QGIS, ArcGIS, Google Earth Pro, Mapbox, geojson.io</p>
+                <div class="export-steps">
+                    <h4>Visualiser rapidement</h4>
+                    <ol>
+                        <li>Rendez-vous sur <a href="https://geojson.io" target="_blank" style="color:#00c896;">geojson.io</a></li>
+                        <li>Glissez-déposez le fichier <code>.geojson</code> dans la fenêtre</li>
+                        <li>Le contour apparaît sur la carte — vous pouvez l'éditer ou l'exporter en KML/Shapefile</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- IFC -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon ifc">IFC</div>
+                    <div>
+                        <h3>Format BIM (.IFC)</h3>
+                        <span class="tier">249€ — Premium</span>
+                    </div>
+                </div>
+                <p>Fichier IFC 2x3 pour intégration directe dans les workflows BIM. Le terrain est modélisé comme un IfcSite avec la géométrie 3D. Interopérable entre tous les logiciels BIM.</p>
+                <p class="logiciels"><strong>Compatible :</strong> Revit, ArchiCAD, Allplan, Tekla, BIMcollab</p>
+                <div class="export-steps">
+                    <h4>Import BIM</h4>
+                    <ol>
+                        <li>Dans Revit : Ouvrir → IFC → le terrain se crée automatiquement</li>
+                        <li>Dans ArchiCAD : Fichier → Ouvrir fichier → IFC</li>
+                        <li>Le site contient les métadonnées : commune, altitude, surface, coordonnées GPS</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- STL -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon stl">STL</div>
+                    <div>
+                        <h3>Impression 3D (.STL)</h3>
+                        <span class="tier">249€ — Premium</span>
+                    </div>
+                </div>
+                <p>Mesh fermé et optimisé pour l'impression 3D. Maquette physique de votre terrain avec exagération verticale ajustée pour une bonne lisibilité du relief.</p>
+                <p class="logiciels"><strong>Compatible :</strong> Cura, PrusaSlicer, Bambu Studio, Meshmixer, tout slicer FDM/SLA</p>
+                <div class="export-steps">
+                    <h4>Impression 3D</h4>
+                    <ol>
+                        <li>Ouvrir le <code>.stl</code> dans votre slicer (Cura, PrusaSlicer...)</li>
+                        <li>Positionner le modèle à plat, vérifier les dimensions</li>
+                        <li>Recommandé : 0.2mm layer height, 15% infill, PLA</li>
+                        <li>La maquette fait ~15×15 cm par défaut — redimensionner selon votre plateau</li>
+                    </ol>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<!-- Tableau comparatif offres -->
+<section class="comparison">
+    <div class="section-inner">
+        <h2 class="section-title">Quel export pour quel besoin ?</h2>
+        <p class="section-subtitle">Tous les formats inclus par offre, avec les logiciels compatibles.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Format</th>
+                        <th>Usage principal</th>
+                        <th><span class="tier-badge essentiel">59€</span></th>
+                        <th><span class="tier-badge complet">129€</span></th>
+                        <th><span class="tier-badge premium">249€</span></th>
+                        <th><span class="tier-badge pro">349€/m</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Fiche PDF</strong></td>
+                        <td>Synthèse réglementaire</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>.OBJ</strong></td>
+                        <td>Modélisation 3D</td>
+                        <td class="check">✓ (5m)</td>
+                        <td class="check">✓ (2m)</td>
+                        <td class="check">✓ (2m)</td>
+                        <td class="check">✓ (2m)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.GeoJSON</strong></td>
+                        <td>Contour parcelle SIG</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.DXF</strong></td>
+                        <td>Courbes de niveau CAO</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Analyse pentes</strong></td>
+                        <td>Étude de faisabilité</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>.IFC</strong></td>
+                        <td>Workflow BIM (Revit)</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.DWG</strong></td>
+                        <td>AutoCAD natif + bâtiments</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.SHP</strong></td>
+                        <td>Shapefile SIG complet</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.STL</strong></td>
+                        <td>Impression 3D / maquette</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.KML</strong></td>
+                        <td>Google Earth</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>API REST</strong></td>
+                        <td>Intégration automatisée</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">✓</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section>
+    <div class="section-inner">
+        <h2 class="section-title">Questions fréquentes</h2>
+        <p class="section-subtitle">Tout ce que vous devez savoir sur les exports Topo3D.</p>
+        <div class="faq-list">
+            <div class="faq-item">
+                <div class="faq-q">Quelle est la précision des données d'altitude ?</div>
+                <div class="faq-a">Nos fichiers utilisent le RGE ALTI de l'IGN, la meilleure source disponible en France. Résolution native de 1 à 5 mètres selon la zone. En offre Essentiel, la grille est échantillonnée à 5m. En Complet et Premium, elle est à 2m — suffisante pour une étude de faisabilité ou un dépôt de permis. Pour un relevé officiel (bornage, implantation), un professionnel agréé reste nécessaire.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">En combien de temps je reçois mes fichiers ?</div>
+                <div class="faq-a">La génération est automatisée. Vous recevez vos fichiers par email sous 24h maximum après confirmation du paiement. En pratique, c'est souvent quelques heures. Les abonnés Pro bénéficient d'un accès instantané via l'API.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">C'est adapté pour quelles phases de projet ?</div>
+                <div class="faq-a">Topo3D est conçu pour les phases amont : esquisse, faisabilité, études préliminaires, présentation client, demande de permis. C'est l'outil idéal pour avancer rapidement sur un projet sans attendre des semaines. Notre service vous fait gagner 3 à 6 semaines en début de projet.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Les fichiers sont-ils géoréférencés ?</div>
+                <div class="faq-a">Le GeoJSON est en WGS84 (EPSG:4326). L'OBJ et le DXF utilisent un système de coordonnées locales (centré sur le coin sud-ouest de la parcelle) pour faciliter l'import dans les logiciels de modélisation. Le rapport inclut les coordonnées GPS de référence pour recaler dans un SIG si nécessaire.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Quelles communes sont couvertes ?</div>
+                <div class="faq-a">Toute la Guadeloupe (32 communes, 100% couvertes) et la Martinique (34 communes, 97% couvertes). L'extension à la Guyane et à La Réunion est prévue pour avril 2026. La France métropolitaine fonctionne aussi via les APIs IGN.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Et si je ne suis pas satisfait ?</div>
+                <div class="faq-a">Nous proposons une garantie satisfait ou remboursé. Si les fichiers ne correspondent pas à la parcelle demandée ou présentent un défaut technique, nous régénérons gratuitement ou vous remboursons intégralement.</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA final -->
+<section class="cta-section">
+    <h2>Prêt à commencer ?</h2>
+    <p>Sélectionnez votre parcelle sur la carte interactive et obtenez vos fichiers topographiques 3D en 24h.</p>
+    <a href="/carte.html" class="cta-btn">Ouvrir la carte interactive →</a>
+</section>
+
+<!-- Footer -->
+<footer>
+    <div class="footer-content">
+        <div class="footer-brand">Topo3D<span>-Antilles</span></div>
+        <div class="footer-text">Topographie 3D de précision — Guadeloupe · Martinique · Antilles</div>
+        <a href="mailto:contact@topo3d-antilles.com" class="footer-email">contact@topo3d-antilles.com</a>
+        <div class="footer-copy">© 2026 Topo3D-Antilles — Données IGN (Licence Etalab 2.0)</div>
+    </div>
+</footer>
+
+<script>
+    // FAQ toggle
+    document.querySelectorAll('.faq-q').forEach(q => {
+        q.addEventListener('click', () => {
+            const item = q.parentElement;
+            const wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+            if (!wasOpen) item.classList.add('open');
+        });
+    });
+
+    // Scroll fade-in with IntersectionObserver
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.animationPlayState = 'running';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => {
+        el.style.animationPlayState = 'paused';
+        observer.observe(el);
+    });
+
+    // Hamburger toggle
+    document.getElementById('hamburgerBtn').addEventListener('click', function() {
+        document.getElementById('navLinks').classList.toggle('open');
+    });
+</script>
+
+</body>
+</html>

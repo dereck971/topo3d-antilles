@@ -1,0 +1,48 @@
+{
+  "type": "Feature",
+  "id": "parcelle.44096289",
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [
+            -61.65078132,
+            16.24627104
+          ],
+          [
+            -61.65071351,
+            16.24608985
+          ],
+          [
+            -61.65091174,
+            16.24603851
+          ],
+          [
+            -61.65097006,
+            16.24621169
+          ],
+          [
+            -61.65078132,
+            16.24627104
+          ]
+        ]
+      ]
+    ]
+  },
+  "geometry_name": "geom",
+  "properties": {
+    "gid": 71220705,
+    "numero": "0575",
+    "feuille": 1,
+    "section": "AN",
+    "code_dep": "97",
+    "nom_com": "Lamentin",
+    "code_com": "115",
+    "com_abs": "000",
+    "code_arr": "000",
+    "idu": "97115000AN0575",
+    "contenance": 435,
+    "code_insee": "97115"
+  }
+}

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carte 3D Guadeloupe — ImmoServices971</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a1628;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;color:#fff}
+canvas{display:block;width:100vw;height:100vh}
+#ui{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none}
+#ui>*{pointer-events:auto}
+#info{position:absolute;top:16px;left:16px}
+#info h1{font-size:1.2rem;font-weight:700}
+#info h1 span{color:#e07a2f}
+#info p{font-size:0.78rem;opacity:0.5;margin-top:2px}
+#tooltip{position:absolute;display:none;background:rgba(20,10,5,0.92);backdrop-filter:blur(12px);color:#fff;padding:14px 18px;border-radius:12px;font-size:0.8rem;z-index:100;pointer-events:none;border:1px solid rgba(224,122,47,0.25);min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,0.4)}
+#tooltip h3{font-size:0.92rem;color:#e07a2f;margin-bottom:6px}
+#tooltip .big{font-size:1.6rem;font-weight:700;color:#d4a017;margin-bottom:6px}
+#tooltip .cats{font-size:0.75rem;line-height:1.6;opacity:0.8}
+#legend{position:absolute;bottom:16px;left:16px;display:flex;flex-wrap:wrap;gap:6px;max-width:60vw}
+.chip{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:4px 10px;font-size:0.68rem;display:flex;align-items:center;gap:4px}
+.chip .d{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+#kci{position:absolute;top:16px;right:16px;background:linear-gradient(135deg,rgba(6,95,70,0.85),rgba(14,124,107,0.8));backdrop-filter:blur(8px);border-radius:12px;padding:12px 16px;font-size:0.78rem;max-width:200px;cursor:pointer;transition:transform 0.3s;border:1px solid rgba(212,160,23,0.2)}
+#kci:hover{transform:translateY(-3px)}
+#kci strong{color:#d4a017}
+#stats{position:absolute;top:80px;right:16px;display:flex;flex-direction:column;gap:4px}
+.pill{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:6px 12px;font-size:0.72rem;text-align:center}
+.pill .v{font-size:1.1rem;font-weight:700;color:#e07a2f;display:block}
+.ctrl{position:absolute;bottom:16px;right:16px;display:flex;gap:4px}
+.ctrl button{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#fff;font-size:1rem;cursor:pointer}
+.ctrl button:hover{background:rgba(224,122,47,0.2)}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="info"><h1>🌴 Immo<span>Services971</span> — Vue 3D</h1><p>158 artisans · 32 communes · Cliquez et faites tourner</p></div>
+  <div id="tooltip"></div>
+  <div id="kci">💡 Un projet immobilier ?<br><strong>Pre-etude des 49€</strong></div>
+  <div id="stats">
+    <div class="pill"><span class="v">158</span>artisans</div>
+    <div class="pill"><span class="v">32</span>communes</div>
+    <div class="pill"><span class="v">10</span>metiers</div>
+  </div>
+  <div id="legend"></div>
+  <div class="ctrl">
+    <button onclick="resetCam()" title="Reset">⟳</button>
+    <button onclick="autoRot=!autoRot" title="Rotation">▶</button>
+  </div>
+</div>
+<script>
+// === DATA ===
+const D=[
+{n:"Baie-Mahault",la:16.265,lo:-61.592,c:60,cats:{BTP:14,SOE:16,IMM:9,ARC:8,FIN:5,DEC:4,GEO:3,NOT:4,ENE:3,PAY:1}},
+{n:"Les Abymes",la:16.270,lo:-61.505,c:16,cats:{SOE:4,BTP:2,ARC:3,DEC:1,GEO:1,FIN:1,NOT:1,PAY:1,ENE:2}},
+{n:"Le Gosier",la:16.210,lo:-61.490,c:14,cats:{BTP:3,SOE:2,IMM:3,DEC:1,GEO:1,NOT:1,PAY:2}},
+{n:"Pointe-a-Pitre",la:16.240,lo:-61.534,c:12,cats:{IMM:2,SOE:3,ARC:1,FIN:3,NOT:1,GEO:1,ENE:1}},
+{n:"Saint-Francois",la:16.253,lo:-61.271,c:6,cats:{IMM:3,BTP:1,SOE:1,NOT:1}},
+{n:"Petit-Bourg",la:16.190,lo:-61.587,c:7,cats:{BTP:3,SOE:1,PAY:2,GEO:1}},
+{n:"Sainte-Anne",la:16.227,lo:-61.383,c:5,cats:{IMM:1,SOE:2,PAY:1,NOT:1}},
+{n:"Capesterre-B-E",la:16.050,lo:-61.567,c:5,cats:{SOE:3,BTP:1,NOT:1}},
+{n:"Basse-Terre",la:15.997,lo:-61.725,c:4,cats:{BTP:1,NOT:1,ENE:2}},
+{n:"Le Moule",la:16.333,lo:-61.350,c:4,cats:{BTP:1,DEC:1,SOE:1,NOT:1}},
+{n:"Morne-a-l'Eau",la:16.332,lo:-61.453,c:3,cats:{BTP:1,SOE:2}},
+{n:"Saint-Claude",la:16.017,lo:-61.707,c:3,cats:{BTP:1,SOE:1,FIN:1}},
+{n:"Gourbeyre",la:16.032,lo:-61.692,c:2,cats:{SOE:2}},
+{n:"Trois-Rivieres",la:15.980,lo:-61.640,c:2,cats:{BTP:1,SOE:1}},
+{n:"Anse-Bertrand",la:16.473,lo:-61.500,c:1,cats:{BTP:1}},
+{n:"Baillif",la:16.020,lo:-61.742,c:1,cats:{BTP:1}},
+{n:"Bouillante",la:16.137,lo:-61.760,c:1,cats:{SOE:1}},
+{n:"Deshaies",la:16.305,lo:-61.787,c:1,cats:{BTP:1}},
+{n:"Goyave",la:16.133,lo:-61.570,c:1,cats:{SOE:1}},
+{n:"Grand-Bourg",la:15.880,lo:-61.320,c:1,cats:{BTP:1}},
+{n:"Lamentin",la:16.269,lo:-61.633,c:1,cats:{SOE:1}},
+{n:"La Desirade",la:16.310,lo:-61.050,c:1,cats:{SOE:1}},
+{n:"Petit-Canal",la:16.383,lo:-61.487,c:1,cats:{BTP:1}},
+{n:"Pointe-Noire",la:16.230,lo:-61.786,c:1,cats:{SOE:1}},
+{n:"Port-Louis",la:16.419,lo:-61.532,c:1,cats:{BTP:1}},
+{n:"Sainte-Rose",la:16.333,lo:-61.697,c:1,cats:{SOE:1}},
+{n:"Saint-Louis",la:15.950,lo:-61.310,c:1,cats:{BTP:1}},
+{n:"Terre-de-Haut",la:15.860,lo:-61.580,c:1,cats:{SOE:1}},
+{n:"Terre-de-Bas",la:15.850,lo:-61.630,c:1,cats:{SOE:1}},
+{n:"Vieux-Fort",la:15.950,lo:-61.700,c:1,cats:{BTP:1}},
+{n:"Vieux-Habitants",la:16.060,lo:-61.760,c:1,cats:{SOE:1}},
+{n:"Cap-M-Galante",la:15.890,lo:-61.280,c:1,cats:{SOE:1}},
+];
+const CC={BTP:"#d97706",SOE:"#e07a2f",IMM:"#7c3aed",ARC:"#2563eb",FIN:"#059669",DEC:"#be185d",GEO:"#16a34a",NOT:"#0891b2",ENE:"#0ea5e9",PAY:"#22c55e"};
+const CL={BTP:"Gros oeuvre",SOE:"Second oeuvre",IMM:"Immobilier",ARC:"Architectes",FIN:"Finance",DEC:"Decoration",GEO:"Geometres",NOT:"Juridique",ENE:"Energie",PAY:"Paysagistes"};
+
+// === WEBGL CANVAS ===
+const canvas=document.getElementById('c');
+const gl=canvas.getContext('webgl',{antialias:true,alpha:false})||canvas.getContext('experimental-webgl');
+if(!gl){document.body.innerHTML='<p style="padding:40px;text-align:center">WebGL non disponible. Utilisez un navigateur moderne.</p>';throw new Error('No WebGL')}
+
+let W=window.innerWidth,H=window.innerHeight;
+canvas.width=W;canvas.height=H;
+gl.viewport(0,0,W,H);
+gl.enable(gl.DEPTH_TEST);
+gl.clearColor(0.04,0.086,0.157,1);
+
+// Shaders
+const vs=`
+attribute vec3 aPos;
+attribute vec3 aCol;
+uniform mat4 uMVP;
+varying vec3 vCol;
+varying float vY;
+void main(){
+  gl_Position=uMVP*vec4(aPos,1.0);
+  vCol=aCol;
+  vY=aPos.y;
+}`;
+const fs=`
+precision mediump float;
+varying vec3 vCol;
+varying float vY;
+void main(){
+  float light=0.5+0.5*clamp(vY*0.5,0.0,1.0);
+  gl_FragColor=vec4(vCol*light,1.0);
+}`;
+
+function compileShader(src,type){
+  const s=gl.createShader(type);
+  gl.shaderSource(s,src);gl.compileShader(s);
+  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){console.error(gl.getShaderInfoLog(s));return null}
+  return s;
+}
+const prog=gl.createProgram();
+gl.attachShader(prog,compileShader(vs,gl.VERTEX_SHADER));
+gl.attachShader(prog,compileShader(fs,gl.FRAGMENT_SHADER));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+const aPos=gl.getAttribLocation(prog,'aPos');
+const aCol=gl.getAttribLocation(prog,'aCol');
+const uMVP=gl.getUniformLocation(prog,'uMVP');
+gl.enableVertexAttribArray(aPos);
+gl.enableVertexAttribArray(aCol);
+
+// Math
+function mat4(){return new Float32Array(16)}
+function identity(m){m.fill(0);m[0]=m[5]=m[10]=m[15]=1;return m}
+function perspective(fov,asp,near,far){
+  const m=mat4();const f=1/Math.tan(fov/2);const nf=1/(near-far);
+  m[0]=f/asp;m[5]=f;m[10]=(far+near)*nf;m[11]=-1;m[14]=2*far*near*nf;return m;
+}
+function lookAt(eye,center,up){
+  const m=mat4();
+  let zx=eye[0]-center[0],zy=eye[1]-center[1],zz=eye[2]-center[2];
+  let l=1/Math.sqrt(zx*zx+zy*zy+zz*zz);zx*=l;zy*=l;zz*=l;
+  let xx=up[1]*zz-up[2]*zy,xy=up[2]*zx-up[0]*zz,xz=up[0]*zy-up[1]*zx;
+  l=1/Math.sqrt(xx*xx+xy*xy+xz*xz);xx*=l;xy*=l;xz*=l;
+  let yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;
+  m[0]=xx;m[1]=yx;m[2]=zx;m[4]=xy;m[5]=yy;m[6]=zy;m[8]=xz;m[9]=yz;m[10]=zz;
+  m[12]=-(xx*eye[0]+xy*eye[1]+xz*eye[2]);m[13]=-(yx*eye[0]+yy*eye[1]+yz*eye[2]);
+  m[14]=-(zx*eye[0]+zy*eye[1]+zz*eye[2]);m[15]=1;return m;
+}
+function multiply(a,b){
+  const r=mat4();
+  for(let i=0;i<4;i++)for(let j=0;j<4;j++){
+    r[j*4+i]=a[i]*b[j*4]+a[4+i]*b[j*4+1]+a[8+i]*b[j*4+2]+a[12+i]*b[j*4+3];
+  }return r;
+}
+
+// Build geometry
+const CX=16.18,CY=-61.55,S=14;
+function gps(la,lo){return[(lo-CY)*S,0,-(la-CX)*S]}
+
+let verts=[],cols=[];
+function addBox(cx,cy,cz,w,h,d,r,g,b){
+  const x0=cx-w/2,x1=cx+w/2,y0=cy,y1=cy+h,z0=cz-d/2,z1=cz+d/2;
+  // 6 faces × 2 triangles × 3 verts
+  const faces=[
+    [x0,y0,z1, x1,y0,z1, x1,y1,z1, x0,y0,z1, x1,y1,z1, x0,y1,z1],//front
+    [x1,y0,z0, x0,y0,z0, x0,y1,z0, x1,y0,z0, x0,y1,z0, x1,y1,z0],//back
+    [x0,y1,z1, x1,y1,z1, x1,y1,z0, x0,y1,z1, x1,y1,z0, x0,y1,z0],//top
+    [x0,y0,z0, x1,y0,z0, x1,y0,z1, x0,y0,z0, x1,y0,z1, x0,y0,z1],//bottom
+    [x1,y0,z1, x1,y0,z0, x1,y1,z0, x1,y0,z1, x1,y1,z0, x1,y1,z1],//right
+    [x0,y0,z0, x0,y0,z1, x0,y1,z1, x0,y0,z0, x0,y1,z1, x0,y1,z0],//left
+  ];
+  const shades=[1,0.7,1.2,0.5,0.9,0.85];
+  faces.forEach((f,fi)=>{
+    const s=shades[fi];
+    for(let i=0;i<18;i+=3){verts.push(f[i],f[i+1],f[i+2]);cols.push(r*s,g*s,b*s)}
+  });
+}
+
+// Ocean
+addBox(0,-0.15,0, 30,0.1,30, 0.04,0.12,0.22);
+
+// Island bases (simplified)
+addBox(-2.4*S*((-61.72)-CY)/S, 0, 2.4*S*(16.05-CX)/S, 3.5,0.08,3.0, 0.08,0.2,0.1); // Basse-Terre
+addBox(-1.5, 0, -0.8, 4.0,0.06,2.5, 0.06,0.18,0.09); // Grande-Terre
+
+// Pillars for each commune
+const pillarData=[];
+D.forEach(d=>{
+  const p=gps(d.la,d.lo);
+  const h=Math.max(0.25, Math.log2(d.c+1)*0.5);
+  const w=0.15+d.c*0.002;
+  // Color based on size
+  let r,g,b;
+  if(d.c>=10){r=0.88;g=0.48;b=0.18;} // orange
+  else if(d.c>=3){r=0.83;g=0.63;b=0.09;} // gold
+  else{r=0.02;g=0.49;b=0.42;} // teal
+
+  addBox(p[0],0,p[2], w,h,w, r,g,b);
+
+  // Glowing top
+  addBox(p[0],h,p[2], w*1.4,0.04,w*1.4, 1,0.85,0.6);
+
+  pillarData.push({x:p[0],z:p[2],h,w,data:d});
+});
+
+// Create buffers
+const vBuf=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,vBuf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(verts),gl.STATIC_DRAW);
+
+const cBuf=gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER,cBuf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(cols),gl.STATIC_DRAW);
+
+const vertCount=verts.length/3;
+
+// Camera
+let camA=0.6,camP=0.5,camD=16;
+let autoRot=true;
+const proj=perspective(0.9,W/H,0.1,200);
+
+function getCamPos(){
+  return[
+    Math.sin(camA)*Math.cos(camP)*camD,
+    Math.sin(camP)*camD+2,
+    Math.cos(camA)*Math.cos(camP)*camD
+  ];
+}
+
+// Mouse drag
+let dragging=false,mx=0,my=0;
+canvas.onmousedown=e=>{dragging=true;mx=e.clientX;my=e.clientY;autoRot=false};
+window.onmouseup=()=>dragging=false;
+window.onmousemove=e=>{
+  if(dragging){
+    camA+=(e.clientX-mx)*0.004;
+    camP=Math.max(0.08,Math.min(1.3,camP+(e.clientY-my)*0.004));
+    mx=e.clientX;my=e.clientY;
+  }
+  // Tooltip
+  checkHover(e.clientX,e.clientY);
+};
+canvas.onwheel=e=>{camD=Math.max(5,Math.min(30,camD+e.deltaY*0.01))};
+// Touch
+canvas.ontouchstart=e=>{dragging=true;mx=e.touches[0].clientX;my=e.touches[0].clientY;autoRot=false};
+canvas.ontouchend=()=>dragging=false;
+canvas.ontouchmove=e=>{
+  if(!dragging)return;
+  camA+=(e.touches[0].clientX-mx)*0.004;
+  camP=Math.max(0.08,Math.min(1.3,camP+(e.touches[0].clientY-my)*0.004));
+  mx=e.touches[0].clientX;my=e.touches[0].clientY;
+};
+
+function resetCam(){camA=0.6;camP=0.5;camD=16}
+
+// Project 3D to screen
+function project(x,y,z,mvp){
+  const cx=mvp[0]*x+mvp[4]*y+mvp[8]*z+mvp[12];
+  const cy=mvp[1]*x+mvp[5]*y+mvp[9]*z+mvp[13];
+  const cw=mvp[3]*x+mvp[7]*y+mvp[11]*z+mvp[15];
+  if(cw<=0)return null;
+  return[(cx/cw+1)*W/2, (1-cy/cw)*H/2];
+}
+
+// Hover detection
+const tt=document.getElementById('tooltip');
+function checkHover(sx,sy){
+  const eye=getCamPos();
+  const view=lookAt(eye,[0,0.5,0],[0,1,0]);
+  const mvp=multiply(proj,view);
+  let closest=null,closestDist=40;
+  pillarData.forEach(p=>{
+    const sp=project(p.x,p.h/2,p.z,mvp);
+    if(!sp)return;
+    const dist=Math.sqrt((sp[0]-sx)**2+(sp[1]-sy)**2);
+    if(dist<closestDist){closestDist=dist;closest=p}
+  });
+  if(closest && closestDist<50){
+    const d=closest.data;
+    let catH='';
+    Object.entries(d.cats).sort((a,b)=>b[1]-a[1]).forEach(([k,v])=>{
+      catH+=`<span style="color:${CC[k]}">${CL[k]}: ${v}</span><br>`;
+    });
+    tt.innerHTML=`<h3>📍 ${d.n}</h3><div class="big">${d.c} artisans</div><div class="cats">${catH}</div>`;
+    tt.style.display='block';
+    tt.style.left=Math.min(sx+16,W-220)+'px';
+    tt.style.top=Math.max(sy-10,10)+'px';
+  } else {
+    tt.style.display='none';
+  }
+}
+
+// Legend
+const leg=document.getElementById('legend');
+Object.entries(CL).forEach(([k,v])=>{
+  leg.innerHTML+=`<div class="chip"><div class="d" style="background:${CC[k]}"></div>${v}</div>`;
+});
+
+// Render loop
+function render(){
+  requestAnimationFrame(render);
+  if(autoRot)camA+=0.003;
+
+  const eye=getCamPos();
+  const view=lookAt(eye,[0,0.5,0],[0,1,0]);
+  const mvp=multiply(proj,view);
+
+  gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.uniformMatrix4fv(uMVP,false,mvp);
+
+  gl.bindBuffer(gl.ARRAY_BUFFER,vBuf);
+  gl.vertexAttribPointer(aPos,3,gl.FLOAT,false,0,0);
+  gl.bindBuffer(gl.ARRAY_BUFFER,cBuf);
+  gl.vertexAttribPointer(aCol,3,gl.FLOAT,false,0,0);
+
+  gl.drawArrays(gl.TRIANGLES,0,vertCount);
+}
+render();
+
+window.onresize=()=>{W=window.innerWidth;H=window.innerHeight;canvas.width=W;canvas.height=H;gl.viewport(0,0,W,H)};
+</script>
+</body>
+</html>

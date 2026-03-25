@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étude de Marché — Topo3D-Antilles vs Concurrents</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: linear-gradient(135deg, #0a0a14 0%, #0f0f1e 100%);
+            color: #e8e8f0;
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            padding: 6rem 0 4rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 200, 150, 0.1);
+            background: linear-gradient(180deg, rgba(0, 200, 150, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #00c896 0%, #00f0b0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 200, 150, 0.2);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a8a8c0;
+            font-weight: 500;
+        }
+
+        /* ===== SECTION STYLING ===== */
+        section {
+            margin: 5rem 0;
+            scroll-margin-top: 2rem;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            color: #00c896;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 2rem;
+            background: linear-gradient(180deg, #00c896 0%, #00f0b0 100%);
+            border-radius: 2px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #e8e8f0;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== EXECUTIVE SUMMARY ===== */
+        .exec-summary {
+            background: rgba(0, 200, 150, 0.08);
+            border: 1px solid rgba(0, 200, 150, 0.2);
+            border-radius: 12px;
+            padding: 2.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .exec-summary p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #d0d0e0;
+        }
+
+        .highlight {
+            color: #00c896;
+            font-weight: 600;
+        }
+
+        /* ===== COMPETITOR CARDS ===== */
+        .competitors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .competitor-card {
+            background: rgba(20, 20, 35, 0.7);
+            border: 1px solid rgba(0, 200, 150, 0.15);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .competitor-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--card-accent);
+            opacity: 0.8;
+        }
+
+        .competitor-card:hover {
+            border-color: rgba(0, 200, 150, 0.4);
+            background: rgba(25, 25, 45, 0.9);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 200, 150, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #e8e8f0;
+        }
+
+        .card-badge {
+            background: var(--card-accent);
+            color: #0a0a14;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .info-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 1rem;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: #00c896;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            color: #d0d0e0;
+            margin-top: 0.3rem;
+            line-height: 1.5;
+        }
+
+        .strengths, .weaknesses {
+            margin-top: 0.8rem;
+            padding: 0;
+        }
+
+        .strengths li, .weaknesses li {
+            margin-left: 1.2rem;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            color: #c0c0d0;
+        }
+
+        .strengths li::marker {
+            color: #00c896;
+        }
+
+        .weaknesses li::marker {
+            color: #ff6b6b;
+        }
+
+        /* Card accent colors */
+        .card-topoexport { --card-accent: #5b4e8f; }
+        .card-maps3d { --card-accent: #00c896; }
+        .card-3dmapper { --card-accent: #ff9500; }
+        .card-procadastre { --card-accent: #0084ff; }
+        .card-cadastre { --card-accent: #8b5cf6; }
+        .card-geoportail { --card-accent: #ec4899; }
+        .card-urbansimul { --card-accent: #14b8a6; }
+        .card-freetopo { --card-accent: #06b6d4; }
+
+        /* ===== COMPARISON TABLES ===== */
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 2rem 0;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 200, 150, 0.15);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(20, 20, 35, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        th {
+            background: rgba(0, 200, 150, 0.1);
+            border-bottom: 2px solid rgba(0, 200, 150, 0.3);
+            padding: 1.2rem;
+            text-align: left;
+            font-weight: 600;
+            color: #00c896;
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #d0d0e0;
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background: rgba(0, 200, 150, 0.05);
+        }
+
+        .check {
+            color: #00c896;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .cross {
+            color: #ff6b6b;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .partial {
+            color: #ffa500;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* ===== PRICING TABLE ===== */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .pricing-card {
+            background: rgba(20, 20, 35, 0.7);
+            border: 1px solid rgba(0, 200, 150, 0.15);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card:hover {
+            border-color: rgba(0, 200, 150, 0.4);
+            background: rgba(25, 25, 45, 0.9);
+        }
+
+        .pricing-service {
+            font-weight: 600;
+            color: #00c896;
+            margin-bottom: 1rem;
+        }
+
+        .pricing-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #e8e8f0;
+            margin: 1rem 0;
+        }
+
+        .pricing-note {
+            font-size: 0.85rem;
+            color: #a8a8c0;
+        }
+
+        /* ===== RECOMMENDATIONS ===== */
+        .recommendation {
+            background: rgba(20, 20, 35, 0.7);
+            border-left: 4px solid var(--rec-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .recommendation:hover {
+            background: rgba(25, 25, 45, 0.9);
+            transform: translateX(4px);
+        }
+
+        .rec-priority1 { --rec-color: #ff6b6b; }
+        .rec-priority2 { --rec-color: #ffa500; }
+        .rec-priority3 { --rec-color: #00c896; }
+
+        .rec-title {
+            font-weight: 700;
+            color: #e8e8f0;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .rec-content {
+            color: #d0d0e0;
+            line-height: 1.6;
+        }
+
+        /* ===== SWOT ANALYSIS ===== */
+        .swot-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .swot-box {
+            background: rgba(20, 20, 35, 0.7);
+            border: 1px solid rgba(0, 200, 150, 0.15);
+            border-radius: 12px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .swot-box h4 {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .swot-forces h4 { color: #00c896; }
+        .swot-weaknesses h4 { color: #ff6b6b; }
+        .swot-opportunities h4 { color: #ffd700; }
+        .swot-threats h4 { color: #ff9500; }
+
+        .swot-box ul {
+            list-style: none;
+        }
+
+        .swot-box li {
+            padding: 0.8rem 0;
+            padding-left: 1.5rem;
+            color: #d0d0e0;
+            position: relative;
+        }
+
+        .swot-box li::before {
+            content: '▸';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .swot-forces li::before { color: #00c896; }
+        .swot-weaknesses li::before { color: #ff6b6b; }
+        .swot-opportunities li::before { color: #ffd700; }
+        .swot-threats li::before { color: #ff9500; }
+
+        /* ===== FOOTER ===== */
+        footer {
+            border-top: 1px solid rgba(0, 200, 150, 0.1);
+            padding: 3rem 0;
+            text-align: center;
+            color: #a8a8c0;
+            font-size: 0.95rem;
+            margin-top: 6rem;
+        }
+
+        .footer-highlight {
+            color: #00c896;
+            font-weight: 600;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .competitors-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .swot-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.8rem;
+            }
+        }
+
+        /* ===== UTILITY CLASSES ===== */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .section-intro {
+            color: #d0d0e0;
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ===== HEADER ===== -->
+        <header>
+            <h1>Étude de Marché</h1>
+            <p class="subtitle">Topo3D-Antilles vs Concurrents</p>
+            <p style="color: #a8a8c0; margin-top: 1rem; font-size: 1rem;">
+                Analyse comparative des services de topographie 3D et cadastre en ligne — Mars 2026
+            </p>
+        </header>
+
+        <!-- ===== EXECUTIVE SUMMARY ===== -->
+        <section>
+            <h2>Synthèse Exécutive</h2>
+            <div class="exec-summary">
+                <p>
+                    Cette étude analyse <span class="highlight">8 concurrents majeurs</span> dans l'écosystème de la topographie 3D et du cadastre en ligne.
+                    <strong>Topo3D-Antilles se positionne dans un créneau unique et prometteur</strong> : seul acteur proposant une combinaison de
+                    <span class="highlight">LiDAR haute résolution + SaaS instant + focus DOM-TOM + données réglementaires locales</span>.
+                </p>
+                <p style="margin-top: 1.5rem;">
+                    Cependant, l'étude révèle que Topo3D doit s'inspirer des leaders du marché pour <strong>monter en gamme</strong> : social proof institutionnel,
+                    export BIM (IFC), app mobile, API documentée, et élargissement géographique sont des priorités pour capter la demande des architectes,
+                    promoteurs et investisseurs métropolitains qui affluent aux Antilles.
+                </p>
+            </div>
+        </section>
+
+        <!-- ===== COMPETITORS ===== -->
+        <section>
+            <h2>Analyse des Concurrents</h2>
+            <p class="section-intro">
+                8 concurrents directs et indirects analysés selon leur positionnement, couverture, formats d'export, tarification et forces/faiblesses.
+            </p>
+
+            <div class="competitors-grid">
+                <!-- TopoExport -->
+                <div class="competitor-card card-topoexport">
+                    <div class="card-header">
+                        <div class="card-title">TopoExport</div>
+                        <div class="card-badge">Direct #1</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">SaaS mondial, terrain 3D + cadastre</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Couverture</div>
+                            <div class="info-value">15+ pays (FR, US, CA, UK, DE, CH, IT, JP, AU, BR, MX, TW, BE)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Formats</div>
+                            <div class="info-value">DXF, SVG, PDF (2D) + OBJ, STL, IFC (3D)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">Multi-couches, DTM 50km², LoD2 toits (DE/CH)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Utilisateurs</div>
+                            <div class="info-value">100K+/mois, 120+ références (SNCF, EDF, Min. Culture)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Pricing</div>
+                            <div class="info-value">Freemium (export gratuit) + plans payants</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>Couverture mondiale</li>
+                                <li>Multi-format BIM (IFC)</li>
+                                <li>Social proof institutionnel</li>
+                                <li>UX premium</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Pas de focus DOM-TOM</li>
+                                <li>Pas de données réglementaires locales</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maps3D -->
+                <div class="competitor-card card-maps3d">
+                    <div class="card-header">
+                        <div class="card-title">Maps3D</div>
+                        <div class="card-badge">Direct #2</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">SaaS, cartes 3D géoréférencées</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Formats</div>
+                            <div class="info-value">glTF, OBJ, STL, 3MF, IFC</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">TIN mesh, impression 3D optimisée (70% matière), modèles offline</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Pricing</div>
+                            <div class="info-value">Achat unitaire + Pro mensuel (illimité). 15j remboursé.</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>Formats BIM (IFC géoréférencé)</li>
+                                <li>Licence commerciale incluse</li>
+                                <li>3D print ready</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Pas de cadastre</li>
+                                <li>Pas de couches réglementaires</li>
+                                <li>Pas de focus France/DOM</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3D-Mapper -->
+                <div class="competitor-card card-3dmapper">
+                    <div class="card-header">
+                        <div class="card-title">3D-Mapper</div>
+                        <div class="card-badge">Direct #3</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">SaaS, cartes 3D personnalisables</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Formats</div>
+                            <div class="info-value">glTF, GLB, STL, OBJ, heightmap, textures</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Pricing</div>
+                            <div class="info-value">Free ($0) • Starter ($9) • Eco ($19) • Business ($39)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">GPS track import, embed 3D, plugin WordPress, Blender add-on</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>Pricing transparent et accessible</li>
+                                <li>Système de crédits simple</li>
+                                <li>Embed web</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Pas de cadastre</li>
+                                <li>Pas de couches réglementaires</li>
+                                <li>Usage privé sur free/starter</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ProCadastre -->
+                <div class="competitor-card card-procadastre">
+                    <div class="card-header">
+                        <div class="card-title">ProCadastre</div>
+                        <div class="card-badge">Indirect</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">SaaS France, données cadastrales & urbanisme</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Pricing</div>
+                            <div class="info-value">14,90€/mois (Premium)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Note</div>
+                            <div class="info-value">4.78/5 (106 avis)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">7 PDF types, recherche foncière, DPE, mesures, app mobile iOS/Android</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>Ultra complet cadastre FR</li>
+                                <li>App mobile native</li>
+                                <li>Prix imbattable</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Pas de 3D</li>
+                                <li>Données pas toujours à jour</li>
+                                <li>Estimation peu fiable</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cadastre.com -->
+                <div class="competitor-card card-cadastre">
+                    <div class="card-header">
+                        <div class="card-title">Cadastre.com</div>
+                        <div class="card-badge">Indirect</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">SaaS France, prospection immobilière</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">Pige multi-portails, module cadastral, DVF, DPE temps réel, Immo-Mètre</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Pricing</div>
+                            <div class="info-value">1 mois gratuit → abonnement (prix non affiché)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>Pige immobilière puissante</li>
+                                <li>DPE temps réel</li>
+                                <li>Bon rapport qualité-prix</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Pas de 3D</li>
+                                <li>Pas de focus DOM-TOM</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Géoportail IGN -->
+                <div class="competitor-card card-geoportail">
+                    <div class="card-header">
+                        <div class="card-title">Géoportail / IGN</div>
+                        <div class="card-badge">Référence</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">Portail public gratuit</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">Vue 2D/3D, photos aériennes, cartes IGN, cadastre, altitude, mesures</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>100% gratuit</li>
+                                <li>Source officielle</li>
+                                <li>Couverture France + DOM</li>
+                                <li>Données IGN de référence</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>UX datée</li>
+                                <li>Pas d'export 3D (OBJ/DXF)</li>
+                                <li>Pas d'analyse avancée</li>
+                                <li>Pas de couches réglementaires combinées</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UrbanSIMUL -->
+                <div class="competitor-card card-urbansimul">
+                    <div class="card-header">
+                        <div class="card-title">UrbanSIMUL</div>
+                        <div class="card-badge">Institution</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">Outil public CEREMA, analyse foncière</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Accès</div>
+                            <div class="info-value">Gratuit sur demande (secteur public uniquement)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">Analyse unité foncière, PLU/risques, vue 3D aérienne, enjeux environnementaux</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>Données très riches</li>
+                                <li>Croisement multi-sources</li>
+                                <li>Outil de prospective</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Réservé au secteur public</li>
+                                <li>UX institutionnelle</li>
+                                <li>Pas d'export 3D pro</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FreeTopoMaps -->
+                <div class="competitor-card card-freetopo">
+                    <div class="card-header">
+                        <div class="card-title">FreeTopoMaps</div>
+                        <div class="card-badge">Gratuit</div>
+                    </div>
+                    <div class="card-info">
+                        <div class="info-row">
+                            <div class="info-label">Type</div>
+                            <div class="info-value">Outil gratuit, topo 3D interactive</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Formats</div>
+                            <div class="info-value">PNG, JPG, SVG (laser engraving)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Clés</div>
+                            <div class="info-value">3D terrain interactif, contours personnalisables, export laser</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Forces</div>
+                            <ul class="strengths">
+                                <li>100% gratuit</li>
+                                <li>Mobile responsive</li>
+                                <li>Bon pour visualisation rapide</li>
+                            </ul>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Faiblesses</div>
+                            <ul class="weaknesses">
+                                <li>Pas de cadastre</li>
+                                <li>Pas d'export CAD/BIM</li>
+                                <li>Pas de couches réglementaires</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FEATURES COMPARISON ===== -->
+        <section>
+            <h2>Matrice Comparative des Fonctionnalités</h2>
+            <p class="section-intro">
+                Tableau de comparaison détaillé des capacités techniques et commerciales : terrain 3D, exports BIM, cadastre, couches réglementaires,
+                géographie, mobile, API, et tarification.
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fonctionnalité</th>
+                            <th>Topo3D</th>
+                            <th>TopoExport</th>
+                            <th>Maps3D</th>
+                            <th>3D-Mapper</th>
+                            <th>ProCadastre</th>
+                            <th>Géoportail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Terrain 3D</strong></td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="partial">~</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Export OBJ/STL</strong></td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Export DXF/CAD</strong></td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Export IFC (BIM)</strong></td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cadastre (parcelles)</strong></td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Couches réglementaires</strong></td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="partial">~</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Focus DOM-TOM</strong></td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Analyse parcelle</strong></td>
+                            <td class="check">✓</td>
+                            <td class="partial">~</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="partial">~</td>
+                        </tr>
+                        <tr>
+                            <td><strong>App mobile</strong></td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>API/Embed</strong></td>
+                            <td class="partial">~</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pricing transparent</strong></td>
+                            <td class="check">✓</td>
+                            <td class="partial">~</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Freemium/Gratuit</strong></td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="partial">~</td>
+                            <td class="check">✓</td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Social proof (refs)</strong></td>
+                            <td class="cross">✗</td>
+                            <td class="check">✓</td>
+                            <td class="partial">~</td>
+                            <td class="partial">~</td>
+                            <td class="check">✓</td>
+                            <td class="check">✓</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===== PRICING COMPARISON ===== -->
+        <section>
+            <h2>Comparaison Tarifaire</h2>
+            <p class="section-intro">
+                Vue d'ensemble des modèles de prix : freemium vs premium, structures de coûts, et meilleure valeur par segment client.
+            </p>
+
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-service">Topo3D-Antilles</div>
+                    <div class="pricing-price">À partir de<br><span style="font-size: 1.5rem;">49€/mois</span></div>
+                    <div class="pricing-note">Accès illimité terrain 3D + cadastre + couches réglementaires</div>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-service">TopoExport</div>
+                    <div class="pricing-price">Gratuit<br><span style="font-size: 1.2rem;">+ plans</span></div>
+                    <div class="pricing-note">Export gratuit limité, détails payants non affichés</div>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-service">Maps3D</div>
+                    <div class="pricing-price">Variable<br><span style="font-size: 1.2rem;">+Pro/mois</span></div>
+                    <div class="pricing-note">Achat unitaire (prix variable) + abonnement illimité</div>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-service">3D-Mapper</div>
+                    <div class="pricing-price">$0 / $9<br><span style="font-size: 1.2rem;">$19 / $39</span></div>
+                    <div class="pricing-note">Free • Starter • Eco • Business (système de crédits)</div>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-service">ProCadastre</div>
+                    <div class="pricing-price">14,90€<br><span style="font-size: 1.2rem;">/ mois</span></div>
+                    <div class="pricing-note">Plan Premium unique, données cadastrales complètes</div>
+                </div>
+                <div class="pricing-card">
+                    <div class="pricing-service">Géoportail</div>
+                    <div class="pricing-price">100%<br><span style="font-size: 1.2rem;">Gratuit</span></div>
+                    <div class="pricing-note">Portail public illimité, aucun frais caché</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== RECOMMENDATIONS ===== -->
+        <section>
+            <h2>Recommandations Stratégiques</h2>
+            <p class="section-intro">
+                13 actions prioritaires pour que Topo3D-Antilles monte en gamme et capture les segments hauts (architectes, promoteurs, investisseurs)
+                tout en défendant son créneau unique DOM-TOM.
+            </p>
+
+            <h3 style="color: #ff6b6b; margin-top: 2.5rem; margin-bottom: 1.5rem;">
+                🔴 PRIORITÉ 1 — Quick Wins (1-2 semaines)
+            </h3>
+            <p class="section-intro" style="color: #d0d0e0;">Actions rapides à haut impact pour améliorer l'image de marque et la confiance clients.</p>
+
+            <div class="recommendation rec-priority1">
+                <div class="rec-title">1. Preview 3D inline sur landing page</div>
+                <div class="rec-content">
+                    TopoExport et 3D-Mapper affichent une preview 3D interactive directement sur la homepage. Topo3D ne montre le terrain qu'après login.
+                    <strong>Action :</strong> Ajouter un mini globe 3D Three.js rotatif dans la hero section (demo de la Guadeloupe ou Martinique) pour
+                    capturer l'attention et crédibiliser le produit.
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority1">
+                <div class="rec-title">2. Témoignages clients et social proof</div>
+                <div class="rec-content">
+                    TopoExport affiche SNCF, EDF, 100K+ users. Topo3D n'a aucun témoignage visible.
+                    <strong>Action :</strong> Ajouter au minimum 3 avis d'architectes, promoteurs ou collectivités en Guadeloupe/Martinique.
+                    Solliciter des références institutionnelles (CCI, SCOT, communes).
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority1">
+                <div class="rec-title">3. Vidéo démo / explainer video</div>
+                <div class="rec-content">
+                    Aucun concurrent ne propose de vidéo sur sa landing. C'est une opportunité de différenciation majeure.
+                    <strong>Action :</strong> Produire un screencast 60-90 secondes du workflow complet : upload parcelle → export 3D/PDF/DXF → mesures cadastrales.
+                    Héberger sur YouTube + embed landing.
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority1">
+                <div class="rec-title">4. Images de rendu 3D réelles</div>
+                <div class="rec-content">
+                    Les feature cards utilisent des emojis au lieu de vraies captures.
+                    <strong>Action :</strong> Créer des visuels Pro : un OBJ rendu en Blender, un plan topo PDF exporté, un terrain 3D avec overlay cadastre + mesures.
+                    Remplacer tous les emojis par des screenshots authentiques.
+                </div>
+            </div>
+
+            <h3 style="color: #ffa500; margin-top: 2.5rem; margin-bottom: 1.5rem;">
+                🟠 PRIORITÉ 2 — Différenciation (1-2 mois)
+            </h3>
+            <p class="section-intro" style="color: #d0d0e0;">Fonctionnalités qui rapprochent Topo3D des leaders et ouvrent la porte au segment premium.</p>
+
+            <div class="recommendation rec-priority2">
+                <div class="rec-title">5. Export IFC (BIM)</div>
+                <div class="rec-content">
+                    TopoExport et Maps3D le proposent. C'est LE format demandé par architectes et ingénieurs (Revit, ArchiCAD).
+                    <strong>Action :</strong> Ajouter IFC géoréférencé à l'offre Premium. Partenariat possible avec une lib BIM (ifcplusplus, xeokit).
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority2">
+                <div class="rec-title">6. App mobile (ou PWA)</div>
+                <div class="rec-content">
+                    ProCadastre a iOS + Android. Topo3D devrait au minimum être une PWA installable.
+                    <strong>Action :</strong> Ajouter manifest.json et service worker pour offline. Permettre aux terrains de consulter cadastre/mesures sur chantier.
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority2">
+                <div class="rec-title">7. Embed 3D / Widget</div>
+                <div class="rec-content">
+                    3D-Mapper permet d'intégrer le terrain 3D sur des sites web et WordPress.
+                    <strong>Action :</strong> Documenter API d'embed pour permettre aux agences, promoteurs d'intégrer Topo3D sur leur site (iframe + événements).
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority2">
+                <div class="rec-title">8. Système de crédits / Pay-as-you-go</div>
+                <div class="rec-content">
+                    3D-Mapper offre un modèle flexible à crédits. Topo3D pourrait proposer : 1 parcelle = 1 crédit à la demande.
+                    <strong>Action :</strong> Ajouter plan "Usage léger" (10 crédits/mois à 9€) en plus des abonnements.
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority2">
+                <div class="rec-title">9. API REST documentée publiquement</div>
+                <div class="rec-content">
+                    L'API existe mais n'est pas documentée publiquement. Les pros veulent intégrer dans AutoCAD, QGIS, Revit.
+                    <strong>Action :</strong> Publier Swagger/OpenAPI, créer guide intégration + webhook pour automations. Cibler intégrateurs locaux.
+                </div>
+            </div>
+
+            <h3 style="color: #00c896; margin-top: 2.5rem; margin-bottom: 1.5rem;">
+                🟢 PRIORITÉ 3 — Vision long terme (3-6 mois)
+            </h3>
+            <p class="section-intro" style="color: #d0d0e0;">Stratégie de croissance pour devenir la plateforme de référence des données terrain aux Antilles.</p>
+
+            <div class="recommendation rec-priority3">
+                <div class="rec-title">10. Couverture géographique élargie</div>
+                <div class="rec-content">
+                    TopoExport couvre 15+ pays. Topo3D devrait élargir : Guyane (très demandé), La Réunion, puis Métropole (B2B avec collectivités).
+                    <strong>Action :</strong> Négocier accès données IGN pour Guyane. Roadmap triannuelle : Guyane S2 2026, Réunion 2027, Métropole sélective 2027.
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority3">
+                <div class="rec-title">11. LoD2 bâtiments existants</div>
+                <div class="rec-content">
+                    TopoExport propose des toits LoD2 (DE/CH). Exploiter BDTOPO IGN pour modéliser les bâtiments existants sur parcelles.
+                    <strong>Action :</strong> Intégrer empreinte bâtis IGN en LoD1, puis enrichir progressivement (toits, hauteurs) pour villes principales.
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority3">
+                <div class="rec-title">12. Intégration DVF / estimation terrain</div>
+                <div class="rec-content">
+                    ProCadastre et Cadastre.com croisent cadastre + DVF. Topo3D pourrait ajouter historique ventes sur chaque parcelle.
+                    <strong>Action :</strong> Partenariat avec ETALAB (DVF open data) pour afficher prix historiques. Ajouter estimateur simple (prix/m²).
+                </div>
+            </div>
+
+            <div class="recommendation rec-priority3">
+                <div class="rec-title">13. Marketplace de données géotechniques/géoriques</div>
+                <div class="rec-content">
+                    Devenir la plateforme de référence des données terrain aux Antilles : géotechnique, hydrologie, sismicité.
+                    <strong>Action :</strong> Partenariat avec bureaux d'études locaux (BRGM, géologues privés) pour vendre datasets complémentaires.
+                    Marketplace de données spécialisées (Pinel, risques, sismique) accessible via API.
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SWOT ANALYSIS ===== -->
+        <section>
+            <h2>Analyse SWOT</h2>
+            <p class="section-intro">
+                Positionnement stratégique de Topo3D-Antilles : forces uniques, faiblesses à corriger, opportunités du marché et menaces concurrentielles.
+            </p>
+
+            <div class="swot-grid">
+                <div class="swot-box swot-forces">
+                    <h4>
+                        <span style="font-size: 1.5rem;">💪</span> Forces
+                    </h4>
+                    <ul>
+                        <li>Niche DOM-TOM unique et peu contestée</li>
+                        <li>Données LiDAR IGN haute résolution (meilleure qualité 3D)</li>
+                        <li>Prix attractifs vs géomètre traditionnel</li>
+                        <li>Couches réglementaires locales (Loi Littoral, PLU locaux)</li>
+                        <li>Focus immobilier + investisseurs métropolitains</li>
+                        <li>SaaS instant (vs délais géomètre)</li>
+                    </ul>
+                </div>
+
+                <div class="swot-box swot-weaknesses">
+                    <h4>
+                        <span style="font-size: 1.5rem;">⚠️</span> Faiblesses
+                    </h4>
+                    <ul>
+                        <li>Zéro social proof (pas de refs institutionnelles)</li>
+                        <li>Landing page UX générique (pas de preview 3D, pas de démo)</li>
+                        <li>Pas d'app mobile (frein adoption)</li>
+                        <li>Couverture limitée à 2 départements</li>
+                        <li>Pas d'export IFC (BIM) — frein auprès architectes</li>
+                        <li>API non documentée publiquement</li>
+                        <li>Pas de témoignages clients visibles</li>
+                    </ul>
+                </div>
+
+                <div class="swot-box swot-opportunities">
+                    <h4>
+                        <span style="font-size: 1.5rem;">🚀</span> Opportunités
+                    </h4>
+                    <ul>
+                        <li>Aucun concurrent direct sur DOM-TOM</li>
+                        <li>Marché immobilier Antilles en croissance (diaspora, Pinel)</li>
+                        <li>Pinel/Girardin attirent investisseurs métropolitains high-value</li>
+                        <li>Loi Littoral renforce diagnostic environnemental</li>
+                        <li>Expansion Guyane/Réunion (zéro concurrence)</li>
+                        <li>Demande en expertise locale (bureaux d'études, notaires)</li>
+                        <li>Intégration IA pour estimation + analyse de risque</li>
+                    </ul>
+                </div>
+
+                <div class="swot-box swot-threats">
+                    <h4>
+                        <span style="font-size: 1.5rem;">🔥</span> Menaces
+                    </h4>
+                    <ul>
+                        <li>TopoExport pourrait ajouter couverture DOM rapidement</li>
+                        <li>Géomètres traditionnels qui digitalisent (Geofoncier/Ordre)</li>
+                        <li>Géoportail IGN reste gratuit et officiel</li>
+                        <li>Cadastre.com/ProCadastre pourraient ajouter 3D</li>
+                        <li>Consolidation du marché (rachat par leader SaaS)</li>
+                        <li>Dépendance IGN pour données LiDAR</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FOOTER ===== -->
+        <footer>
+            <p>
+                <strong>Étude de Marché — Topo3D-Antilles</strong><br>
+                Mars 2026 — Analyse comparative 8 concurrents<br>
+                <span class="footer-highlight">Préparé pour Dereck Rauzduel</span>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

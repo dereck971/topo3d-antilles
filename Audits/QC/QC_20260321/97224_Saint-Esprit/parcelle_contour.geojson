@@ -1,0 +1,52 @@
+{
+  "type": "Feature",
+  "id": "parcelle.57612233",
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [
+            -60.92402569,
+            14.56567115
+          ],
+          [
+            -60.92411985,
+            14.56568237
+          ],
+          [
+            -60.92410233,
+            14.56610693
+          ],
+          [
+            -60.92371699,
+            14.5662189
+          ],
+          [
+            -60.92379269,
+            14.56564468
+          ],
+          [
+            -60.92402569,
+            14.56567115
+          ]
+        ]
+      ]
+    ]
+  },
+  "geometry_name": "geom",
+  "properties": {
+    "gid": 85248561,
+    "numero": "0008",
+    "feuille": 1,
+    "section": "0W",
+    "code_dep": "97",
+    "nom_com": "Saint-Esprit",
+    "code_com": "223",
+    "com_abs": "000",
+    "code_arr": "000",
+    "idu": "972230000W0008",
+    "contenance": 2070,
+    "code_insee": "97223"
+  }
+}

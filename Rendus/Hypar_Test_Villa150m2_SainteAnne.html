@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KCI Premium — Test Hypar | Villa 150m² — Sainte-Anne</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #fff; }
+.header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 30px 40px; border-bottom: 3px solid #e6a817; }
+.header h1 { font-size: 28px; font-weight: 700; color: #e6a817; }
+.header .subtitle { font-size: 14px; color: #aaa; margin-top: 5px; }
+.badge { display: inline-block; background: #e6a817; color: #000; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-top: 8px; }
+.container { display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: calc(100vh - 120px); }
+.panel-left { padding: 30px; background: #111; }
+.panel-right { position: relative; background: #0d1117; }
+#canvas3d { width: 100%; height: 100%; display: block; }
+.section { margin-bottom: 25px; }
+.section h3 { font-size: 13px; font-weight: 600; color: #e6a817; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; border-bottom: 1px solid #333; padding-bottom: 6px; }
+.kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kpi { background: #1a1a2e; border-radius: 8px; padding: 14px; border-left: 3px solid #e6a817; }
+.kpi .label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+.kpi .value { font-size: 22px; font-weight: 700; color: #fff; margin-top: 4px; }
+.kpi .unit { font-size: 11px; color: #666; }
+.constraint { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+.constraint .key { color: #888; }
+.constraint .val { color: #fff; font-weight: 500; }
+.score-bar { height: 8px; background: #1a1a2e; border-radius: 4px; margin-top: 6px; overflow: hidden; }
+.score-fill { height: 100%; background: linear-gradient(90deg, #e6a817, #f0c040); border-radius: 4px; }
+.program-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1a1a2e; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
+.program-dot { width: 10px; height: 10px; border-radius: 50%; }
+.program-name { flex: 1; }
+.program-area { color: #e6a817; font-weight: 600; }
+.legend { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.85); padding: 15px; border-radius: 8px; font-size: 11px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.legend-color { width: 14px; height: 14px; border-radius: 3px; }
+.controls { position: absolute; top: 20px; right: 20px; background: rgba(0,0,0,0.85); padding: 12px; border-radius: 8px; font-size: 11px; color: #888; }
+.footer { background: #111; border-top: 1px solid #222; padding: 15px 40px; display: flex; justify-content: space-between; font-size: 11px; color: #666; }
+.tag-hypar { background: #2563eb; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <h1>Simulation Masse Bâtiment — Villa 150 m²</h1>
+      <div class="subtitle">Sainte-Anne (97180) · Zone UC · Parcelle type 600 m² · PLU 2025</div>
+      <span class="badge">TEST HYPAR — RAPPORT KCI PREMIUM 299€</span>
+    </div>
+    <div style="text-align:right;">
+      <span class="tag-hypar">HYPAR SIMULATION</span>
+      <div style="color:#666;font-size:11px;margin-top:5px;">19 mars 2026</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="panel-left">
+    <div class="section">
+      <h3>Contraintes PLU — Zone UC Sainte-Anne</h3>
+      <div class="constraint"><span class="key">Hauteur max</span><span class="val">10 m (R+2)</span></div>
+      <div class="constraint"><span class="key">CES max</span><span class="val">75%</span></div>
+      <div class="constraint"><span class="key">Coeff. biotope</span><span class="val">10%</span></div>
+      <div class="constraint"><span class="key">Recul voie</span><span class="val">≥ 2 m (alignement)</span></div>
+      <div class="constraint"><span class="key">Limites séparatives</span><span class="val">H/2 ≥ 3 m</span></div>
+      <div class="constraint"><span class="key">Stationnement</span><span class="val">2 places / logement</span></div>
+      <div class="constraint"><span class="key">Toiture</span><span class="val">Pente 20-45° ou terrasse</span></div>
+    </div>
+
+    <div class="section">
+      <h3>KPIs Projet</h3>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">Surface habitable</div><div class="value">150 <span class="unit">m²</span></div></div>
+        <div class="kpi"><div class="label">Emprise au sol</div><div class="value">112 <span class="unit">m²</span></div></div>
+        <div class="kpi"><div class="label">CES réel</div><div class="value">18.7 <span class="unit">%</span></div></div>
+        <div class="kpi"><div class="label">Niveaux</div><div class="value">R+1</div></div>
+        <div class="kpi"><div class="label">Haut. faîtage</div><div class="value">7.5 <span class="unit">m</span></div></div>
+        <div class="kpi"><div class="label">Terrain</div><div class="value">600 <span class="unit">m²</span></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Programme Fonctionnel</h3>
+      <div class="program-item"><div class="program-dot" style="background:#4ade80;"></div><div class="program-name">Séjour / Salon</div><div class="program-area">35 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#60a5fa;"></div><div class="program-name">Cuisine ouverte</div><div class="program-area">18 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#c084fc;"></div><div class="program-name">Ch. parentale + SdB</div><div class="program-area">22 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#f472b6;"></div><div class="program-name">Chambre 2</div><div class="program-area">14 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#fb923c;"></div><div class="program-name">Chambre 3</div><div class="program-area">14 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#facc15;"></div><div class="program-name">SdB + WC</div><div class="program-area">8 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#94a3b8;"></div><div class="program-name">Terrasse couverte</div><div class="program-area">25 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#78716c;"></div><div class="program-name">Circulations</div><div class="program-area">14 m²</div></div>
+    </div>
+
+    <div class="section">
+      <h3>Estimation Financière</h3>
+      <div class="constraint"><span class="key">Terrain (600m² × 412€)</span><span class="val">247 200 €</span></div>
+      <div class="constraint"><span class="key">Construction (150m² × 2 200€)</span><span class="val">330 000 €</span></div>
+      <div class="constraint"><span class="key">Coût total estimé</span><span class="val" style="color:#e6a817;font-size:16px;">577 200 €</span></div>
+      <div class="constraint"><span class="key">Valeur marché (150m² × 3 900€)</span><span class="val" style="color:#4ade80;">585 000 €</span></div>
+      <div style="margin-top:10px;font-size:11px;color:#888;">Score d'intérêt investisseur</div>
+      <div class="score-bar"><div class="score-fill" style="width:65%;"></div></div>
+      <div style="font-size:20px;font-weight:700;margin-top:6px;">6.5<span style="font-size:12px;color:#888;">/10</span></div>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <canvas id="canvas3d"></canvas>
+    <div class="legend">
+      <div style="font-weight:600;margin-bottom:8px;color:#e6a817;">Légende</div>
+      <div class="legend-item"><div class="legend-color" style="background:#4ade80;"></div>RDC — Séjour/Cuisine</div>
+      <div class="legend-item"><div class="legend-color" style="background:#60a5fa;"></div>R+1 — Chambres</div>
+      <div class="legend-item"><div class="legend-color" style="background:#94a3b8;opacity:0.5;"></div>Terrasse couverte</div>
+      <div class="legend-item"><div class="legend-color" style="background:#22c55e;opacity:0.3;"></div>Parcelle (600m²)</div>
+      <div class="legend-item"><div class="legend-color" style="background:rgba(255,0,0,0.2);border:1px dashed red;"></div>Reculs PLU</div>
+    </div>
+    <div class="controls">
+      Clic + glisser = rotation<br>
+      Molette = zoom<br>
+      Clic droit = déplacement
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div>KCI — Karukera Conseil Immobilier · Test intégration Hypar.io</div>
+  <div>Données PLU : Géoportail de l'Urbanisme · DVF 2020-2025 · Sainte-Anne 97180</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// Scene setup
+const canvas = document.getElementById('canvas3d');
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1117);
+
+const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+renderer.shadowMap.enabled = true;
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+scene.add(ambientLight);
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(30, 40, 20);
+dirLight.castShadow = true;
+scene.add(dirLight);
+const hemiLight = new THREE.HemisphereLight(0x87ceeb, 0x362d1a, 0.3);
+scene.add(hemiLight);
+
+// Scale: 1 unit = 1 meter
+// Parcelle 600m² = ~24m x 25m
+const parcelW = 24, parcelD = 25;
+
+// Ground / Parcelle
+const groundGeo = new THREE.PlaneGeometry(parcelW, parcelD);
+const groundMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, transparent: true, opacity: 0.15 });
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Parcelle border
+const borderGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(parcelW, 0.05, parcelD));
+const borderMat = new THREE.LineBasicMaterial({ color: 0x22c55e });
+const border = new THREE.LineSegments(borderGeo, borderMat);
+border.position.y = 0.025;
+scene.add(border);
+
+// PLU Recul zones (dashed red lines)
+const reculVoie = 2; // recul voie
+const reculLimites = 3; // recul limites séparatives
+const reculGeo = new THREE.EdgesGeometry(new THREE.BoxGeometry(parcelW - 2*reculLimites, 0.05, parcelD - reculVoie - reculLimites));
+const reculMat = new THREE.LineDashedMaterial({ color: 0xff4444, dashSize: 0.5, gapSize: 0.3 });
+const recul = new THREE.LineSegments(reculGeo, reculMat);
+recul.computeLineDistances();
+recul.position.y = 0.05;
+recul.position.z = -(reculVoie - reculLimites)/2;
+scene.add(recul);
+
+// Villa RDC — L-shape
+// Main body: 14m x 8m = 112m²
+const rdcW = 14, rdcD = 8, rdcH = 3;
+const rdcGeo = new THREE.BoxGeometry(rdcW, rdcH, rdcD);
+const rdcMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, transparent: true, opacity: 0.75 });
+const rdc = new THREE.Mesh(rdcGeo, rdcMat);
+rdc.position.set(0, rdcH/2, -2);
+rdc.castShadow = true;
+scene.add(rdc);
+
+// RDC edges
+const rdcEdges = new THREE.LineSegments(new THREE.EdgesGeometry(rdcGeo), new THREE.LineBasicMaterial({ color: 0x166534 }));
+rdcEdges.position.copy(rdc.position);
+scene.add(rdcEdges);
+
+// Etage R+1
+const r1W = 10, r1D = 8, r1H = 2.8;
+const r1Geo = new THREE.BoxGeometry(r1W, r1H, r1D);
+const r1Mat = new THREE.MeshStandardMaterial({ color: 0x60a5fa, transparent: true, opacity: 0.7 });
+const r1 = new THREE.Mesh(r1Geo, r1Mat);
+r1.position.set(-2, rdcH + r1H/2, -2);
+r1.castShadow = true;
+scene.add(r1);
+
+const r1Edges = new THREE.LineSegments(new THREE.EdgesGeometry(r1Geo), new THREE.LineBasicMaterial({ color: 0x1e40af }));
+r1Edges.position.copy(r1.position);
+scene.add(r1Edges);
+
+// Toit en pente (30°)
+const roofGeo = new THREE.ConeGeometry(7.5, 3, 4);
+const roofMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, transparent: true, opacity: 0.6 });
+const roof = new THREE.Mesh(roofGeo, roofMat);
+roof.position.set(-2, rdcH + r1H + 1.5, -2);
+roof.rotation.y = Math.PI / 4;
+roof.castShadow = true;
+scene.add(roof);
+
+// Terrasse couverte
+const terGeo = new THREE.BoxGeometry(8, 0.15, 5);
+const terMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.4 });
+const terrasse = new THREE.Mesh(terGeo, terMat);
+terrasse.position.set(3, 3.1, 3);
+scene.add(terrasse);
+
+// Terrasse pillars
+for (let x of [-3.5, 3.5]) {
+  for (let z of [-2, 2]) {
+    const pillarGeo = new THREE.CylinderGeometry(0.1, 0.1, 3, 8);
+    const pillarMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+    const pillar = new THREE.Mesh(pillarGeo, pillarMat);
+    pillar.position.set(x + 3, 1.5, z + 3);
+    scene.add(pillar);
+  }
+}
+
+// Parking area
+const parkGeo = new THREE.PlaneGeometry(5, 3);
+const parkMat = new THREE.MeshStandardMaterial({ color: 0x555555, transparent: true, opacity: 0.4 });
+const park = new THREE.Mesh(parkGeo, parkMat);
+park.rotation.x = -Math.PI / 2;
+park.position.set(8, 0.02, 10);
+scene.add(park);
+
+// Parking label
+const parkBorder = new THREE.LineSegments(
+  new THREE.EdgesGeometry(new THREE.BoxGeometry(5, 0.02, 3)),
+  new THREE.LineBasicMaterial({ color: 0xffffff })
+);
+parkBorder.position.set(8, 0.03, 10);
+scene.add(parkBorder);
+
+// Height marker line
+const heightLine = new THREE.BufferGeometry().setFromPoints([
+  new THREE.Vector3(10, 0, -6),
+  new THREE.Vector3(10, 10, -6)
+]);
+const heightMat = new THREE.LineDashedMaterial({ color: 0xe6a817, dashSize: 0.3, gapSize: 0.15 });
+const heightMarker = new THREE.LineSegments(heightLine, heightMat);
+heightMarker.computeLineDistances();
+scene.add(heightMarker);
+
+// Max height plane
+const maxHGeo = new THREE.PlaneGeometry(parcelW, parcelD);
+const maxHMat = new THREE.MeshBasicMaterial({ color: 0xe6a817, transparent: true, opacity: 0.05, side: THREE.DoubleSide });
+const maxHPlane = new THREE.Mesh(maxHGeo, maxHMat);
+maxHPlane.rotation.x = -Math.PI / 2;
+maxHPlane.position.y = 10;
+scene.add(maxHPlane);
+
+// Grid
+const gridHelper = new THREE.GridHelper(40, 40, 0x333333, 0x222222);
+gridHelper.position.y = -0.01;
+scene.add(gridHelper);
+
+// Camera position
+camera.position.set(25, 20, 25);
+camera.lookAt(0, 3, 0);
+
+// Simple orbit controls
+let isDragging = false, isRightDrag = false;
+let prevX, prevY;
+let theta = Math.PI / 4, phi = Math.PI / 4, radius = 35;
+let target = new THREE.Vector3(0, 3, 0);
+
+function updateCamera() {
+  camera.position.x = target.x + radius * Math.sin(phi) * Math.cos(theta);
+  camera.position.y = target.y + radius * Math.cos(phi);
+  camera.position.z = target.z + radius * Math.sin(phi) * Math.sin(theta);
+  camera.lookAt(target);
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button === 2) { isRightDrag = true; } else { isDragging = true; }
+  prevX = e.clientX; prevY = e.clientY;
+});
+canvas.addEventListener('mousemove', (e) => {
+  if (isDragging) {
+    theta -= (e.clientX - prevX) * 0.005;
+    phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.01, phi - (e.clientY - prevY) * 0.005));
+    updateCamera();
+  }
+  if (isRightDrag) {
+    target.x -= (e.clientX - prevX) * 0.05;
+    target.y += (e.clientY - prevY) * 0.05;
+    updateCamera();
+  }
+  prevX = e.clientX; prevY = e.clientY;
+});
+canvas.addEventListener('mouseup', () => { isDragging = false; isRightDrag = false; });
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('wheel', (e) => {
+  radius = Math.max(10, Math.min(80, radius + e.deltaY * 0.05));
+  updateCamera();
+});
+
+updateCamera();
+
+function animate() {
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = canvas.clientWidth / canvas.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+});
+</script>
+</body>
+</html>

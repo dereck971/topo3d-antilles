@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>KCI Premium — Test Hypar | Bungalow 40m² — Le Gosier</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0a0a0a;color:#fff}
+.header{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:30px 40px;border-bottom:3px solid #e6a817}
+.header h1{font-size:26px;font-weight:700;color:#e6a817}
+.header .subtitle{font-size:14px;color:#aaa;margin-top:5px}
+.badge{display:inline-block;background:#e6a817;color:#000;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;margin-top:8px}
+.container{display:grid;grid-template-columns:1fr 1fr;gap:0;min-height:calc(100vh - 120px)}
+.panel-left{padding:30px;background:#111;overflow-y:auto}
+.panel-right{position:relative;background:#0d1117}
+#canvas3d{width:100%;height:100%;display:block}
+.section{margin-bottom:25px}
+.section h3{font-size:13px;font-weight:600;color:#e6a817;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;border-bottom:1px solid #333;padding-bottom:6px}
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{background:#1a1a2e;border-radius:8px;padding:14px;border-left:3px solid #e6a817}
+.kpi .label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px}
+.kpi .value{font-size:22px;font-weight:700;color:#fff;margin-top:4px}
+.kpi .unit{font-size:11px;color:#666}
+.constraint{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a1a;font-size:13px}
+.constraint .key{color:#888}.constraint .val{color:#fff;font-weight:500}
+.score-bar{height:8px;background:#1a1a2e;border-radius:4px;margin-top:6px;overflow:hidden}
+.score-fill{height:100%;background:linear-gradient(90deg,#e6a817,#f0c040);border-radius:4px}
+.program-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#1a1a2e;border-radius:6px;margin-bottom:6px;font-size:12px}
+.program-dot{width:10px;height:10px;border-radius:50%}.program-name{flex:1}
+.program-area{color:#e6a817;font-weight:600}
+.legend{position:absolute;bottom:20px;left:20px;background:rgba(0,0,0,0.85);padding:15px;border-radius:8px;font-size:11px}
+.legend-item{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.legend-color{width:14px;height:14px;border-radius:3px}
+.controls{position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.85);padding:12px;border-radius:8px;font-size:11px;color:#888}
+.footer{background:#111;border-top:1px solid #222;padding:15px 40px;display:flex;justify-content:space-between;font-size:11px;color:#666}
+.tag-hypar{background:#2563eb;color:#fff;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600}
+.comparison{background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:15px;margin-top:10px}
+.comparison h4{color:#e6a817;font-size:12px;margin-bottom:10px}
+.comp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;font-size:11px;padding:6px 0;border-bottom:1px solid #222}
+.comp-header{color:#888;font-weight:600}
+.comp-best{color:#4ade80;font-weight:600}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <div>
+      <h1>Simulation Masse Bâtiment — Bungalow T2 40 m²</h1>
+      <div class="subtitle">Le Gosier (97190) · Zone UB · Meublé de tourisme premium · PLU 2021</div>
+      <span class="badge">TEST HYPAR — BUNGALOW T2 TOURISME 40M²</span>
+    </div>
+    <div style="text-align:right">
+      <span class="tag-hypar">HYPAR SIMULATION</span>
+      <div style="color:#666;font-size:11px;margin-top:5px">19 mars 2026</div>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="panel-left">
+    <div class="section">
+      <h3>Contraintes PLU — Zone UB Le Gosier</h3>
+      <div class="constraint"><span class="key">Hauteur max</span><span class="val">9 m (R+1)</span></div>
+      <div class="constraint"><span class="key">CES max</span><span class="val">50%</span></div>
+      <div class="constraint"><span class="key">Recul voie</span><span class="val">5 m</span></div>
+      <div class="constraint"><span class="key">Limites séparatives</span><span class="val">3 m</span></div>
+      <div class="constraint"><span class="key">Vocation</span><span class="val">Résidentiel structuré</span></div>
+      <div class="constraint"><span class="key">Intérêt investisseur</span><span class="val" style="color:#4ade80">Maisons + petits collectifs</span></div>
+    </div>
+    <div class="section">
+      <h3>KPIs Projet</h3>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="label">Surface habitable</div><div class="value">40 <span class="unit">m²</span></div></div>
+        <div class="kpi"><div class="label">Emprise au sol</div><div class="value">48 <span class="unit">m²</span></div></div>
+        <div class="kpi"><div class="label">CES réel</div><div class="value">8 <span class="unit">%</span></div></div>
+        <div class="kpi"><div class="label">Niveaux</div><div class="value">RDC</div></div>
+        <div class="kpi"><div class="label">Haut. faîtage</div><div class="value">4.5 <span class="unit">m</span></div></div>
+        <div class="kpi"><div class="label">Terrain</div><div class="value">600 <span class="unit">m²</span></div></div>
+      </div>
+    </div>
+    <div class="section">
+      <h3>Programme Fonctionnel</h3>
+      <div class="program-item"><div class="program-dot" style="background:#4ade80"></div><div class="program-name">Séjour / Cuisine ouverte</div><div class="program-area">18 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#60a5fa"></div><div class="program-name">Chambre parentale</div><div class="program-area">12 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#c084fc"></div><div class="program-name">Salle de bain</div><div class="program-area">5 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#f472b6"></div><div class="program-name">WC séparé</div><div class="program-area">2 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#78716c"></div><div class="program-name">Rangement / Buanderie</div><div class="program-area">3 m²</div></div>
+      <div class="program-item"><div class="program-dot" style="background:#94a3b8"></div><div class="program-name">Terrasse couverte</div><div class="program-area">15 m²</div></div>
+    </div>
+    <div class="section">
+      <h3>Estimation Financière</h3>
+      <div class="constraint"><span class="key">Construction (40m² × 2 300€)</span><span class="val">92 000 €</span></div>
+      <div class="constraint"><span class="key">Terrasse + piscine hors-sol</span><span class="val">18 000 €</span></div>
+      <div class="constraint"><span class="key">Coût total estimé</span><span class="val" style="color:#e6a817;font-size:16px">110 000 €</span></div>
+      <div class="constraint"><span class="key">ADR Airbnb Le Gosier</span><span class="val">115 €/nuit</span></div>
+      <div class="constraint"><span class="key">Occupation estimée</span><span class="val">55%</span></div>
+      <div class="constraint"><span class="key">Revenu annuel estimé</span><span class="val" style="color:#4ade80">23 100 €</span></div>
+      <div class="constraint"><span class="key">Rendement brut</span><span class="val" style="color:#4ade80;font-size:16px">21.0 %</span></div>
+      <div style="margin-top:10px;font-size:11px;color:#888">Score d'intérêt investisseur</div>
+      <div class="score-bar"><div class="score-fill" style="width:90%"></div></div>
+      <div style="font-size:20px;font-weight:700;margin-top:6px">9.0<span style="font-size:12px;color:#888">/10</span></div>
+    </div>
+    <div class="comparison">
+      <h4>Comparatif tailles bungalow</h4>
+      <div class="comp-row"><div class="comp-header">Type</div><div class="comp-header">Coût</div><div class="comp-header">Rendement</div></div>
+      <div class="comp-row"><div>Bungalow 20m²</div><div>60 000 €</div><div>18.1%</div></div>
+      <div class="comp-row"><div>Bungalow 30m²</div><div>85 000 €</div><div>19.5%</div></div>
+      <div class="comp-row"><div class="comp-best">Bungalow 40m²</div><div class="comp-best">110 000 €</div><div class="comp-best">21.0%</div></div>
+      <div class="comp-row"><div>Villa 150m²</div><div>577 200 €</div><div>6.5%</div></div>
+      <div style="font-size:10px;color:#666;margin-top:8px">Le bungalow 40m² T2 offre le meilleur ratio investissement/rendement grâce au premium de prix sur le T2 meublé tourisme.</div>
+    </div>
+  </div>
+  <div class="panel-right">
+    <canvas id="canvas3d"></canvas>
+    <div class="legend">
+      <div style="font-weight:600;margin-bottom:8px;color:#e6a817">Légende</div>
+      <div class="legend-item"><div class="legend-color" style="background:#4ade80"></div>Séjour / Cuisine</div>
+      <div class="legend-item"><div class="legend-color" style="background:#60a5fa"></div>Chambre</div>
+      <div class="legend-item"><div class="legend-color" style="background:#c084fc"></div>Salle de bain</div>
+      <div class="legend-item"><div class="legend-color" style="background:#94a3b8;opacity:0.5"></div>Terrasse</div>
+      <div class="legend-item"><div class="legend-color" style="background:#38bdf8;opacity:0.3"></div>Piscine</div>
+      <div class="legend-item"><div class="legend-color" style="background:#22c55e;opacity:0.3"></div>Parcelle (600m²)</div>
+    </div>
+    <div class="controls">Clic + glisser = rotation<br>Molette = zoom</div>
+  </div>
+</div>
+<div class="footer">
+  <div>KCI — Karukera Conseil Immobilier · Test intégration Hypar.io</div>
+  <div>PLU Le Gosier 2021 · DVF 2020-2025 · AirROI Guadeloupe</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const canvas=document.getElementById('canvas3d');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0d1117);
+const camera=new THREE.PerspectiveCamera(45,canvas.clientWidth/canvas.clientHeight,0.1,500);
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setSize(canvas.clientWidth,canvas.clientHeight);renderer.shadowMap.enabled=true;
+
+scene.add(new THREE.AmbientLight(0xffffff,0.4));
+const dl=new THREE.DirectionalLight(0xffffff,0.8);dl.position.set(25,35,20);dl.castShadow=true;scene.add(dl);
+scene.add(new THREE.HemisphereLight(0x87ceeb,0x362d1a,0.3));
+
+const pW=24,pD=25;
+const gnd=new THREE.Mesh(new THREE.PlaneGeometry(pW,pD),new THREE.MeshStandardMaterial({color:0x22c55e,transparent:true,opacity:0.15}));
+gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
+scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(pW,0.05,pD)),new THREE.LineBasicMaterial({color:0x22c55e})));
+
+// Bungalow T2 — 8m x 6m = 48m² emprise
+const bW=8,bD=6,bH=2.8;
+const bung=new THREE.Mesh(new THREE.BoxGeometry(bW,bH,bD),new THREE.MeshStandardMaterial({color:0x4ade80,transparent:true,opacity:0.75}));
+bung.position.set(-2,bH/2,-3);bung.castShadow=true;scene.add(bung);
+scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(bW,bH,bD)),new THREE.LineBasicMaterial({color:0x166534})).translateX(-2).translateY(bH/2).translateZ(-3));
+
+// Interior dividers (visible through transparency)
+const divMat=new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:0.2});
+// Séjour/chambre divider
+const div1=new THREE.Mesh(new THREE.BoxGeometry(0.1,bH,bD),divMat);div1.position.set(-1.5,bH/2,-3);scene.add(div1);
+// SdB divider
+const div2=new THREE.Mesh(new THREE.BoxGeometry(3.5,bH,0.1),divMat);div2.position.set(-4,bH/2,-1.5);scene.add(div2);
+
+// Roof — 4 pentes (hip roof)
+const roofGeo=new THREE.ConeGeometry(6.5,2.5,4);
+const roof=new THREE.Mesh(roofGeo,new THREE.MeshStandardMaterial({color:0xdc2626,transparent:true,opacity:0.5}));
+roof.position.set(-2,bH+1.25,-3);roof.rotation.y=Math.PI/4;roof.castShadow=true;scene.add(roof);
+
+// Terrasse couverte — L-shape
+const terr1=new THREE.Mesh(new THREE.BoxGeometry(8,0.1,3),new THREE.MeshStandardMaterial({color:0x94a3b8,transparent:true,opacity:0.35}));
+terr1.position.set(-2,0.05,1.5);scene.add(terr1);
+const terr2=new THREE.Mesh(new THREE.BoxGeometry(3,0.1,6),new THREE.MeshStandardMaterial({color:0x94a3b8,transparent:true,opacity:0.35}));
+terr2.position.set(4.5,0.05,-3);scene.add(terr2);
+
+// Terrasse pergola
+const perg=new THREE.Mesh(new THREE.BoxGeometry(9,0.06,3.5),new THREE.MeshStandardMaterial({color:0xfbbf24,transparent:true,opacity:0.2}));
+perg.position.set(-2,2.6,1.5);scene.add(perg);
+
+// Pillars
+for(let x of [-5.5,1.5]){for(let z of [0,3]){
+  const p=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.6,8),new THREE.MeshStandardMaterial({color:0x94a3b8}));
+  p.position.set(x,1.3,z);scene.add(p);
+}}
+
+// Piscine
+const poolGeo=new THREE.BoxGeometry(4,0.6,2.5);
+const poolMat=new THREE.MeshStandardMaterial({color:0x38bdf8,transparent:true,opacity:0.4});
+const pool=new THREE.Mesh(poolGeo,poolMat);pool.position.set(-2,-0.3,6);scene.add(pool);
+// Pool water surface
+const water=new THREE.Mesh(new THREE.PlaneGeometry(3.8,2.3),new THREE.MeshStandardMaterial({color:0x38bdf8,transparent:true,opacity:0.6}));
+water.rotation.x=-Math.PI/2;water.position.set(-2,0.01,6);scene.add(water);
+// Pool border
+scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(poolGeo),new THREE.LineBasicMaterial({color:0x38bdf8})).translateX(-2).translateY(-0.3).translateZ(6));
+
+// Vegetation
+for(let i=0;i<8;i++){
+  const r=0.6+Math.random()*0.7;
+  const tree=new THREE.Mesh(new THREE.SphereGeometry(r,8,8),new THREE.MeshStandardMaterial({color:0x15803d,transparent:true,opacity:0.5}));
+  const angle=Math.random()*Math.PI*2;
+  const dist=9+Math.random()*3;
+  tree.position.set(Math.cos(angle)*dist,r+0.5,Math.sin(angle)*dist);
+  if(Math.abs(tree.position.x)<pW/2&&Math.abs(tree.position.z)<pD/2){scene.add(tree);
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.08,1.2,6),new THREE.MeshStandardMaterial({color:0x78350f}));
+    trunk.position.set(tree.position.x,0.6,tree.position.z);scene.add(trunk);
+  }
+}
+
+// Parking
+const park=new THREE.Mesh(new THREE.PlaneGeometry(3,5),new THREE.MeshStandardMaterial({color:0x555,transparent:true,opacity:0.35}));
+park.rotation.x=-Math.PI/2;park.position.set(9,0.02,-8);scene.add(park);
+
+// Grid
+scene.add(new THREE.GridHelper(35,35,0x333333,0x222222).translateY(-0.01));
+
+// Compass
+const compassGroup = new THREE.Group();
+const arrowN = new THREE.Mesh(new THREE.ConeGeometry(0.3,1,4), new THREE.MeshStandardMaterial({color:0xff4444}));
+arrowN.position.set(10,0.5,-10); arrowN.rotation.x = 0; compassGroup.add(arrowN);
+scene.add(compassGroup);
+
+camera.position.set(22,16,22);camera.lookAt(0,2,0);
+
+let isDragging=false,prevX,prevY,theta=Math.PI/4,phi=Math.PI/4,radius=28;
+const target=new THREE.Vector3(0,2,0);
+function updateCam(){
+  camera.position.x=target.x+radius*Math.sin(phi)*Math.cos(theta);
+  camera.position.y=target.y+radius*Math.cos(phi);
+  camera.position.z=target.z+radius*Math.sin(phi)*Math.sin(theta);
+  camera.lookAt(target);
+}
+canvas.addEventListener('mousedown',e=>{isDragging=true;prevX=e.clientX;prevY=e.clientY});
+canvas.addEventListener('mousemove',e=>{if(!isDragging)return;theta-=(e.clientX-prevX)*0.005;phi=Math.max(0.1,Math.min(1.5,phi-(e.clientY-prevY)*0.005));updateCam();prevX=e.clientX;prevY=e.clientY});
+canvas.addEventListener('mouseup',()=>isDragging=false);
+canvas.addEventListener('wheel',e=>{radius=Math.max(8,Math.min(60,radius+e.deltaY*0.04));updateCam()});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+updateCam();
+(function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)})();
+window.addEventListener('resize',()=>{camera.aspect=canvas.clientWidth/canvas.clientHeight;camera.updateProjectionMatrix();renderer.setSize(canvas.clientWidth,canvas.clientHeight)});
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "parcelle": {
+    "reference": "97 AB 0001",
+    "commune": "Baie-Mahault",
+    "surface_m2": 54750,
+    "code_dep": "97",
+    "code_com": "103"
+  },
+  "terrain": {
+    "z_min_m": -0.71,
+    "z_max_m": 24.14,
+    "denivele_m": 24.85,
+    "resolution_m": 10.0
+  },
+  "mesh": {
+    "vertices": 2816,
+    "triangles": 5418,
+    "format": "OBJ (Wavefront)"
+  },
+  "dxf": {
+    "contours": 21,
+    "interval_m": 2.0,
+    "format": "DXF R12 (AC1009)"
+  },
+  "origin": {
+    "lat": 16.27441215981982,
+    "lng": -61.62278323347214,
+    "crs": "WGS84 (EPSG:4326)"
+  },
+  "source": "IGN RGE ALTI via API Géoplateforme",
+  "generated": "2026-03-18T09:25:28.662318"
+}

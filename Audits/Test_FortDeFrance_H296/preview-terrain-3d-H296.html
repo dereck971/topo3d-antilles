@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terrain 3D — Parcelle H296 Fort-de-France</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1e1e1e;font-family:'Segoe UI',system-ui,sans-serif;color:#eee;overflow:hidden}
+#canvas-container{width:100vw;height:100vh;position:relative}
+canvas{display:block}
+#info-panel{position:absolute;top:10px;left:10px;background:rgba(27,42,74,0.92);padding:16px;border-radius:10px;font-size:12px;max-width:280px;border:1px solid rgba(201,168,76,0.4)}
+#info-panel h2{color:#C9A84C;margin-bottom:8px;font-size:15px}
+#info-panel .row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
+#info-panel .label{color:#999}
+#info-panel .value{color:#00C896;font-weight:600}
+#controls{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;gap:8px}
+#controls button{background:rgba(27,42,74,0.9);color:#fff;border:1px solid rgba(201,168,76,0.4);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s}
+#controls button:hover,#controls button.active{background:#C9A84C;color:#1B2A4A}
+#layers{position:absolute;top:10px;right:10px;background:rgba(27,42,74,0.92);padding:14px;border-radius:10px;font-size:12px;border:1px solid rgba(201,168,76,0.4)}
+#layers h3{color:#C9A84C;margin-bottom:8px;font-size:13px}
+.layer-toggle{display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer}
+.layer-toggle .dot{width:10px;height:10px;border-radius:50%}
+.layer-toggle input{accent-color:#00C896}
+#legend{position:absolute;bottom:15px;right:10px;background:rgba(27,42,74,0.85);padding:10px;border-radius:8px;font-size:10px}
+</style>
+</head>
+<body>
+<div id="canvas-container">
+<div id="info-panel">
+<h2>Parcelle H296</h2>
+<div class="row"><span class="label">Commune</span><span class="value">Fort-de-France (972)</span></div>
+<div class="row"><span class="label">Section</span><span class="value">0H N°0296</span></div>
+<div class="row"><span class="label">Surface</span><span class="value">2 721 m²</span></div>
+<div class="row"><span class="label">Alt. min</span><span class="value">187,9 m</span></div>
+<div class="row"><span class="label">Alt. max</span><span class="value">218,2 m</span></div>
+<div class="row"><span class="label">Dénivelé</span><span class="value">30,3 m</span></div>
+<div class="row"><span class="label">Pente moy.</span><span class="value">~29%</span></div>
+<div class="row"><span class="label">Zone PLU</span><span class="value">UGf2 (Urbanisée)</span></div>
+<div class="row"><span class="label">Bâtiment</span><span class="value">1 (Résidentiel, 6.3m)</span></div>
+<div class="row"><span class="label">Points</span><span class="value">1 368</span></div>
+<div class="row"><span class="label">Triangles</span><span class="value">2 590</span></div>
+</div>
+<div id="layers">
+<h3>Calques</h3>
+<label class="layer-toggle"><input type="checkbox" checked data-layer="terrain"><span class="dot" style="background:#e8e5e0"></span>Terrain</label>
+<label class="layer-toggle"><input type="checkbox" checked data-layer="wireframe"><span class="dot" style="background:#666"></span>Wireframe</label>
+<label class="layer-toggle"><input type="checkbox" checked data-layer="contours"><span class="dot" style="background:#00C896"></span>Courbes de niveau</label>
+<label class="layer-toggle"><input type="checkbox" checked data-layer="parcel"><span class="dot" style="background:#FF4444"></span>Limite parcelle</label>
+<label class="layer-toggle"><input type="checkbox" checked data-layer="building"><span class="dot" style="background:#CD853F"></span>Bâti existant</label>
+<label class="layer-toggle"><input type="checkbox" checked data-layer="grid"><span class="dot" style="background:#444"></span>Grille</label>
+</div>
+<div id="controls">
+<button class="active" onclick="setMode('shaded')">Shaded</button>
+<button onclick="setMode('wire')">Wireframe</button>
+<button onclick="setMode('both')">Shaded+Wire</button>
+<button onclick="resetView()">Reset View</button>
+</div>
+</div>
+<script>
+// Inline terrain data
+</script>
+<script src="terrain_data.js"></script>
+<script>
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x1e1e1e);
+scene.fog=new THREE.Fog(0x1e1e1e,30,60);
+const camera=new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+// Lights
+const ambient=new THREE.AmbientLight(0xffffff,0.4);
+scene.add(ambient);
+const dirLight=new THREE.DirectionalLight(0xffffff,0.8);
+dirLight.position.set(5,10,5);
+dirLight.castShadow=true;
+scene.add(dirLight);
+const hemiLight=new THREE.HemisphereLight(0x87CEEB,0x362A1B,0.3);
+scene.add(hemiLight);
+
+const D=TERRAIN_DATA;
+const layerMap={};
+
+// Build terrain mesh
+const geom=new THREE.BufferGeometry();
+const verts=new Float32Array(D.vertices);
+geom.setAttribute('position',new THREE.BufferAttribute(verts,3));
+
+// Vertex colors by altitude
+const colors=new Float32Array(verts.length);
+const minY=D.meta.min_alt,maxY=D.meta.max_alt;
+for(let i=0;i<verts.length;i+=3){
+  const t=(verts[i+1]/((maxY-minY)*D.meta.h_scale));
+  const r=t<0.5?0.2:0.3+t*0.7;
+  const g=0.4+t*0.4;
+  const b=t<0.5?0.6-t:0.2;
+  colors[i]=r;colors[i+1]=g;colors[i+2]=b;
+}
+geom.setAttribute('color',new THREE.BufferAttribute(colors,3));
+
+const indices=[];
+D.faces.forEach(f=>{indices.push(f[0],f[1],f[2])});
+geom.setIndex(indices);
+geom.computeVertexNormals();
+
+const terrainMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.85,metalness:0.05,side:THREE.DoubleSide});
+const terrainMesh=new THREE.Mesh(geom,terrainMat);
+terrainMesh.receiveShadow=true;
+const terrainGroup=new THREE.Group();
+terrainGroup.add(terrainMesh);
+scene.add(terrainGroup);
+layerMap.terrain=terrainGroup;
+
+// Wireframe
+const wireMat=new THREE.MeshBasicMaterial({color:0x444444,wireframe:true,transparent:true,opacity:0.3});
+const wireMesh=new THREE.Mesh(geom.clone(),wireMat);
+const wireGroup=new THREE.Group();
+wireGroup.add(wireMesh);
+scene.add(wireGroup);
+layerMap.wireframe=wireGroup;
+
+// Contour lines
+function extractContour(yLevel){
+  const pts=[];const pos=geom.attributes.position.array;const idx=geom.index.array;
+  for(let i=0;i<idx.length;i+=3){
+    const i0=idx[i]*3,i1=idx[i+1]*3,i2=idx[i+2]*3;
+    const y0=pos[i0+1],y1=pos[i1+1],y2=pos[i2+1];
+    const edges=[[i0,i1,y0,y1],[i1,i2,y1,y2],[i2,i0,y2,y0]];
+    const crossPts=[];
+    edges.forEach(([a,b,ya,yb])=>{
+      if((ya<=yLevel&&yb>yLevel)||(ya>yLevel&&yb<=yLevel)){
+        const t=(yLevel-ya)/(yb-ya);
+        crossPts.push(new THREE.Vector3(
+          pos[a]+t*(pos[b]-pos[a]),
+          yLevel,
+          pos[a+2]+t*(pos[b+2]-pos[a+2])
+        ));
+      }
+    });
+    if(crossPts.length===2){pts.push(crossPts[0],crossPts[1])}
+  }
+  return pts;
+}
+const contourGroup=new THREE.Group();
+D.contours.forEach((c,i)=>{
+  const pts=extractContour(c.y);
+  if(pts.length<2)return;
+  const cGeom=new THREE.BufferGeometry().setFromPoints(pts);
+  const isMajor=c.alt%10===0;
+  const mat=new THREE.LineBasicMaterial({color:isMajor?0x00C896:0x666666,linewidth:1,transparent:!isMajor,opacity:isMajor?1:0.5});
+  contourGroup.add(new THREE.LineSegments(cGeom,mat));
+});
+scene.add(contourGroup);
+layerMap.contours=contourGroup;
+
+// Parcel outline
+const parcelGroup=new THREE.Group();
+function getHeightAtXZ(x,z){
+  let minDist=Infinity,bestY=0;const pos=geom.attributes.position.array;
+  for(let i=0;i<pos.length;i+=3){
+    const dx=pos[i]-x,dz=pos[i+2]-z,d=dx*dx+dz*dz;
+    if(d<minDist){minDist=d;bestY=pos[i+1]}
+  }
+  return bestY;
+}
+const parcelPts=D.parcel.map(p=>new THREE.Vector3(p[0],getHeightAtXZ(p[0],p[1])+0.05,p[1]));
+parcelPts.push(parcelPts[0].clone());
+const parcelGeom=new THREE.BufferGeometry().setFromPoints(parcelPts);
+const parcelLine=new THREE.Line(parcelGeom,new THREE.LineBasicMaterial({color:0xFF4444,linewidth:2}));
+parcelGroup.add(parcelLine);
+scene.add(parcelGroup);
+layerMap.parcel=parcelGroup;
+
+// Buildings
+const buildingGroup=new THREE.Group();
+D.buildings.forEach(b=>{
+  if(!b.footprint||b.footprint.length<3)return;
+  const cx=b.footprint.reduce((s,p)=>s+p[0],0)/b.footprint.length;
+  const cz=b.footprint.reduce((s,p)=>s+p[1],0)/b.footprint.length;
+  const baseY=getHeightAtXZ(cx,cz);
+  const h=b.height*D.meta.h_scale/10;
+  const shape=new THREE.Shape();
+  b.footprint.forEach((p,i)=>{i===0?shape.moveTo(p[0],p[1]):shape.lineTo(p[0],p[1])});
+  shape.closePath();
+  const extGeo=new THREE.ExtrudeGeometry(shape,{depth:h,bevelEnabled:false});
+  extGeo.rotateX(-Math.PI/2);
+  const mat=new THREE.MeshStandardMaterial({color:0xCD853F,transparent:true,opacity:0.7,side:THREE.DoubleSide});
+  const mesh=new THREE.Mesh(extGeo,mat);
+  mesh.position.y=baseY;
+  buildingGroup.add(mesh);
+  const edgesGeo=new THREE.EdgesGeometry(extGeo);
+  const edgeMat=new THREE.LineBasicMaterial({color:0x333333});
+  const edges=new THREE.LineSegments(edgesGeo,edgeMat);
+  edges.position.y=baseY;
+  buildingGroup.add(edges);
+});
+scene.add(buildingGroup);
+layerMap.building=buildingGroup;
+
+// Grid
+const gridHelper=new THREE.GridHelper(20,20,0x333333,0x222222);
+gridHelper.position.y=-0.1;
+const gridGroup=new THREE.Group();
+gridGroup.add(gridHelper);
+scene.add(gridGroup);
+layerMap.grid=gridGroup;
+
+// Axes
+const axesHelper=new THREE.AxesHelper(1.5);
+axesHelper.position.set(-6,-0.1,-6);
+scene.add(axesHelper);
+
+// Camera
+let theta=Math.PI/4,phi=Math.PI/4,radius=15;
+let target=new THREE.Vector3(0,2,0);
+function updateCamera(){
+  camera.position.set(
+    target.x+radius*Math.sin(phi)*Math.cos(theta),
+    target.y+radius*Math.cos(phi),
+    target.z+radius*Math.sin(phi)*Math.sin(theta)
+  );
+  camera.lookAt(target);
+}
+updateCamera();
+
+// Controls
+let isDragging=false,isRightDrag=false,lastX=0,lastY=0;
+const cvs=renderer.domElement;
+cvs.addEventListener('contextmenu',e=>e.preventDefault());
+cvs.addEventListener('mousedown',e=>{
+  isDragging=true;isRightDrag=e.button===2;lastX=e.clientX;lastY=e.clientY;
+});
+window.addEventListener('mouseup',()=>{isDragging=false;isRightDrag=false});
+window.addEventListener('mousemove',e=>{
+  if(!isDragging)return;
+  const dx=e.clientX-lastX,dy=e.clientY-lastY;
+  if(isRightDrag){
+    const right=new THREE.Vector3();camera.getWorldDirection(right);
+    right.cross(camera.up).normalize();
+    const up=new THREE.Vector3(0,1,0);
+    target.add(right.multiplyScalar(-dx*0.01));
+    target.add(up.multiplyScalar(dy*0.01));
+  }else{
+    theta-=dx*0.005;phi=Math.max(0.1,Math.min(Math.PI-0.1,phi+dy*0.005));
+  }
+  lastX=e.clientX;lastY=e.clientY;updateCamera();
+});
+cvs.addEventListener('wheel',e=>{
+  radius=Math.max(5,Math.min(50,radius+e.deltaY*0.01));updateCamera();
+});
+
+// Touch support
+let lastTouches=[];
+cvs.addEventListener('touchstart',e=>{e.preventDefault();lastTouches=[...e.touches]},{passive:false});
+cvs.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(e.touches.length===1&&lastTouches.length===1){
+    const dx=e.touches[0].clientX-lastTouches[0].clientX;
+    const dy=e.touches[0].clientY-lastTouches[0].clientY;
+    theta-=dx*0.005;phi=Math.max(0.1,Math.min(Math.PI-0.1,phi+dy*0.005));
+    updateCamera();
+  }else if(e.touches.length===2&&lastTouches.length===2){
+    const d1=Math.hypot(lastTouches[0].clientX-lastTouches[1].clientX,lastTouches[0].clientY-lastTouches[1].clientY);
+    const d2=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    radius=Math.max(5,Math.min(50,radius-(d2-d1)*0.03));updateCamera();
+  }
+  lastTouches=[...e.touches];
+},{passive:false});
+
+// Layer toggles
+document.querySelectorAll('[data-layer]').forEach(cb=>{
+  cb.addEventListener('change',()=>{
+    const layer=layerMap[cb.dataset.layer];
+    if(layer)layer.visible=cb.checked;
+  });
+});
+
+// Mode
+function setMode(m){
+  document.querySelectorAll('#controls button').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  terrainMesh.visible=m!=='wire';
+  wireMesh.visible=m!=='shaded';
+}
+function resetView(){theta=Math.PI/4;phi=Math.PI/4;radius=15;target.set(0,2,0);updateCamera()}
+
+window.addEventListener('resize',()=>{
+  camera.aspect=window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+});
+
+function animate(){requestAnimationFrame(animate);renderer.render(scene,camera)}
+animate();
+</script>
+</body>
+</html>

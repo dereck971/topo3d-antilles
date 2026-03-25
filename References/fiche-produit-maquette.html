@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maquette Topographique 3D — Topo3D-Antilles</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #fafafa;
+            color: #111;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fade-in-on-scroll {
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        /* Header & Navigation */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #111;
+        }
+
+        .logo-accent {
+            color: #00c896;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+            padding: 120px 20px 100px;
+            text-align: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #00c896;
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-bottom: 32px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .hero p {
+            font-size: 24px;
+            color: #666;
+            font-weight: 400;
+            line-height: 1.4;
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+
+        /* Section Base */
+        .section {
+            padding: 100px 20px;
+        }
+
+        .section-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 60px;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        .section-subtitle {
+            font-size: 20px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        /* Product Images Section */
+        .product-images {
+            background: white;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .images-grid:last-child {
+            margin-bottom: 0;
+        }
+
+        .product-image {
+            border-radius: 20px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-label {
+            font-size: 16px;
+            color: #666;
+            font-weight: 500;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Specs Section */
+        .specs {
+            background: #fafafa;
+        }
+
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .spec-item {
+            padding: 0;
+        }
+
+        .spec-label {
+            font-size: 13px;
+            color: #999;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .spec-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #111;
+            line-height: 1.2;
+        }
+
+        .spec-unit {
+            font-size: 18px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* Deliverables Section */
+        .deliverables {
+            background: white;
+        }
+
+        .deliverables-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .deliverable-item {
+            padding: 30px;
+            background: #f9f9f9;
+            border-radius: 16px;
+            border: 1px solid #f0f0f0;
+            transition: all 0.3s ease;
+        }
+
+        .deliverable-item:hover {
+            border-color: #e0e0e0;
+            background: #fafafa;
+        }
+
+        .deliverable-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+
+        .deliverable-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 8px;
+        }
+
+        .deliverable-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Maquette Section */
+        .maquette {
+            background: #f5f5f5;
+        }
+
+        .maquette-render {
+            margin: 0 auto;
+            max-width: 900px;
+            border-radius: 20px;
+            overflow: hidden;
+            background: #e8e8e8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 600px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            color: #999;
+            font-size: 18px;
+            font-weight: 500;
+            text-align: center;
+            padding: 40px;
+        }
+
+        /* Footer */
+        footer {
+            background: white;
+            border-top: 1px solid #f0f0f0;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .footer-contact {
+            font-size: 14px;
+            color: #00c896;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .footer-contact:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 42px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+
+            .section-title {
+                font-size: 36px;
+            }
+
+            .section {
+                padding: 60px 20px;
+            }
+
+            .images-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .product-image {
+                min-height: 350px;
+            }
+
+            .specs-grid {
+                gap: 30px;
+            }
+
+            .spec-value {
+                font-size: 24px;
+            }
+
+            .deliverables-list {
+                grid-template-columns: 1fr;
+            }
+
+            .maquette-render {
+                min-height: 400px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 32px;
+                margin-bottom: 16px;
+            }
+
+            .hero p {
+                font-size: 16px;
+                margin-bottom: 40px;
+            }
+
+            .section-title {
+                font-size: 28px;
+                margin-bottom: 40px;
+            }
+
+            .hero {
+                padding: 80px 16px 60px;
+            }
+
+            .spec-value {
+                font-size: 20px;
+            }
+
+            .spec-label {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">Topo<span class="logo-accent">3D</span>-Antilles</div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">Aperçu Produit</div>
+            <h1>Maquette Topographique 3D</h1>
+            <p>Modélisation précise du terrain de Trois-Rivières en Guadeloupe. Données géospatiales haute résolution pour vos projets d'aménagement et de construction.</p>
+        </div>
+    </section>
+
+    <!-- Product Images Section -->
+    <section class="section product-images">
+        <div class="section-container">
+            <h2 class="section-title">Représentations du Terrain</h2>
+
+            <!-- Grid 1: Blanc + 3D -->
+            <div class="images-grid">
+                <div>
+                    <div class="product-image">
+                        <img src="assets/topo-trois-rivieres-blanc.png" alt="Carte topographique en contours blancs">
+                    </div>
+                    <div class="image-label">Contours topographiques</div>
+                </div>
+                <div>
+                    <div class="product-image">
+                        <img src="assets/topo-trois-rivieres-3d.png" alt="Vue 3D du terrain">
+                    </div>
+                    <div class="image-label">Visualisation 3D</div>
+                </div>
+            </div>
+
+            <!-- Grid 2: Couleur -->
+            <div class="images-grid">
+                <div>
+                    <div class="product-image">
+                        <img src="assets/topo-trois-rivieres-couleur.png" alt="Carte topographique en couleurs">
+                    </div>
+                    <div class="image-label">Carte altimétrique colorisée</div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <p style="font-size: 18px; color: #666; margin-bottom: 16px; font-weight: 500;">Couverture précise et détaillée</p>
+                        <p style="font-size: 14px; color: #999; line-height: 1.6;">Résolution de grille optimale pour une précision millimétrique. Basée sur les données de référence nationale IGN.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specs Section -->
+    <section class="section specs">
+        <div class="section-container">
+            <h2 class="section-title">Caractéristiques Techniques</h2>
+
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-label">Parcelle</div>
+                    <div class="spec-value">AM 0332</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Commune</div>
+                    <div class="spec-value">Trois-Rivières</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Surface</div>
+                    <div class="spec-value">23 360 <span class="spec-unit">m²</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Altitude Minimale</div>
+                    <div class="spec-value">109.1 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Altitude Maximale</div>
+                    <div class="spec-value">158.4 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Dénivelé</div>
+                    <div class="spec-value">49.3 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Pente Moyenne</div>
+                    <div class="spec-value">20.1 <span class="spec-unit">%</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Résolution Grille</div>
+                    <div class="spec-value">5 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Points d'Altitude</div>
+                    <div class="spec-value">2 332</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Triangles Mesh</div>
+                    <div class="spec-value">4 472</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Source Données</div>
+                    <div class="spec-value">IGN RGE ALTI</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Formats Livrés</div>
+                    <div class="spec-value">.OBJ, .DXF, .PNG</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deliverables Section -->
+    <section class="section deliverables">
+        <div class="section-container">
+            <h2 class="section-title">Fichiers Livrés</h2>
+
+            <div class="deliverables-list">
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">📦</div>
+                    <div class="deliverable-name">Modèle 3D</div>
+                    <div class="deliverable-desc">Fichiers .OBJ et .DXF pour importation dans vos logiciels CAO et 3D préférés.</div>
+                </div>
+
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">🗺️</div>
+                    <div class="deliverable-name">Cartes Topographiques</div>
+                    <div class="deliverable-desc">PNG haute résolution en plusieurs rendus : contours, 3D, et altimétrie colorisée.</div>
+                </div>
+
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">📊</div>
+                    <div class="deliverable-name">Données Altimétriques</div>
+                    <div class="deliverable-desc">Points d'altitude précis et mesh triangulé pour analyses géospatiales avancées.</div>
+                </div>
+
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">📋</div>
+                    <div class="deliverable-name">Documentation</div>
+                    <div class="deliverable-desc">Guide complet avec méthodologie, précision des mesures et recommandations d'utilisation.</div>
+                </div>
+
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">🔍</div>
+                    <div class="deliverable-name">Rapport Technique</div>
+                    <div class="deliverable-desc">Analyse détaillée des données, certifications et conformité aux standards IGN.</div>
+                </div>
+
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">🛠️</div>
+                    <div class="deliverable-name">Support Technique</div>
+                    <div class="deliverable-desc">Assistance pour l'intégration et l'utilisation optimale des données dans vos projets.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Maquette Render Section -->
+    <section class="section maquette">
+        <div class="section-container">
+            <h2 class="section-title">Rendu Maquette</h2>
+            <div id="maquette-render" class="maquette-render">
+                Rendu maquette blanche — Gemini
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-text">
+                <strong>Topo3D-Antilles</strong><br>
+                Topographie 3D de précision
+            </div>
+            <a href="mailto:contact@topo3d-antilles.com" class="footer-contact">contact@topo3d-antilles.com</a>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-on-scroll');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('.section, .images-grid, .spec-item, .deliverable-item').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Animate hero content on load
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.hero-content > *').forEach((el, index) => {
+                el.style.animation = `fadeInUp 0.8s ease-out ${index * 0.1}s forwards`;
+                el.style.opacity = '0';
+            });
+        });
+    </script>
+</body>
+</html>

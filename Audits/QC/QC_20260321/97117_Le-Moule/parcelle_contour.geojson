@@ -1,0 +1,52 @@
+{
+  "type": "Feature",
+  "id": "parcelle.14359032",
+  "geometry": {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [
+            -61.36161568,
+            16.33371631
+          ],
+          [
+            -61.36162543,
+            16.33387164
+          ],
+          [
+            -61.36130117,
+            16.33386749
+          ],
+          [
+            -61.36129878,
+            16.33372803
+          ],
+          [
+            -61.36132331,
+            16.33372714
+          ],
+          [
+            -61.36161568,
+            16.33371631
+          ]
+        ]
+      ]
+    ]
+  },
+  "geometry_name": "geom",
+  "properties": {
+    "gid": 40357105,
+    "numero": "0272",
+    "feuille": 1,
+    "section": "AL",
+    "code_dep": "97",
+    "nom_com": "Le Moule",
+    "code_com": "117",
+    "com_abs": "000",
+    "code_arr": "000",
+    "idu": "97117000AL0272",
+    "contenance": 529,
+    "code_insee": "97117"
+  }
+}

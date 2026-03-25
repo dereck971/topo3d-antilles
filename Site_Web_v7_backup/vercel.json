@@ -1,0 +1,71 @@
+{
+  "functions": {
+    "api/*.js": {
+      "maxDuration": 60,
+      "memory": 1024
+    }
+  },
+  "rewrites": [
+    { "source": "/carte", "destination": "/carte.html" },
+    { "source": "/comment-ca-marche", "destination": "/comment-ca-marche.html" },
+    { "source": "/references", "destination": "/references.html" },
+    { "source": "/cgv", "destination": "/cgv.html" },
+    { "source": "/confidentialite", "destination": "/confidentialite.html" },
+    { "source": "/produit", "destination": "/fiche-produit-maquette.html" },
+    { "source": "/preview-3d", "destination": "/preview-maquette-3d.html" },
+    { "source": "/success", "destination": "/success.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=(self)"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://js.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com https://demotiles.maplibre.org https://tiles.openfreemap.org; font-src 'self' https://fonts.gstatic.com https://demotiles.maplibre.org; img-src 'self' data: https://*.geopf.fr https://*.openfreemap.org https://tiles.openfreemap.org https://demotiles.maplibre.org https://s3.amazonaws.com blob:; connect-src 'self' https://*.geopf.fr https://apicarto.ign.fr https://*.georisques.gouv.fr https://inpn.mnhn.fr https://data.culture.gouv.fr https://*.openfreemap.org https://tiles.openfreemap.org https://demotiles.maplibre.org https://api.stripe.com https://s3.amazonaws.com; frame-src https://js.stripe.com; worker-src 'self' blob:"
+        }
+      ]
+    },
+    {
+      "source": "/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(index|comment-ca-marche|references|cgv|fiche-produit-maquette)\\.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    }
+  ]
+}

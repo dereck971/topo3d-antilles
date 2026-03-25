@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Topo3D-Antilles - Topographie 3D LiDAR HD pour les Antilles. Remplacez les délais de 6 semaines et les coûts de 800-3000€ par un service 24h à partir de 59€. Données IGN certifiées, précision ±0.2m.">
+    <meta name="keywords" content="topographie, LiDAR, 3D, Antilles, Guadeloupe, Martinique, terrain, relief, cadastre, OBJ, DXF, IGN">
+
+    <!-- OG Tags -->
+    <meta property="og:title" content="Topo3D-Antilles 🏔️ - Topographie 3D LiDAR HD">
+    <meta property="og:description" content="Données topographiques 3D LiDAR haute définition pour les Antilles. 24h de délai, à partir de 59€.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://topo3d-antilles.com">
+    <meta property="og:image" content="https://topo3d-antilles.com/hero-topo3d.webp">
+
+    <!-- Twitter/Social Meta -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Topo3D-Antilles">
+    <meta name="twitter:description" content="Topographie 3D LiDAR HD pour les Antilles">
+    <meta name="twitter:image" content="https://topo3d-antilles.com/hero-topo3d.webp">
+
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#fafafa">
+
+    <!-- Canonical -->
+    <link rel="canonical" href="https://topo3d-antilles.com">
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🏔️</text></svg>">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Schema.org -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebSite",
+                "url": "https://topo3d-antilles.com",
+                "name": "Topo3D-Antilles",
+                "description": "Topographie 3D LiDAR HD pour les Antilles",
+                "potentialAction": {
+                    "@type": "SearchAction",
+                    "target": "https://topo3d-antilles.com/carte"
+                }
+            },
+            {
+                "@type": "SoftwareApplication",
+                "name": "Topo3D-Antilles",
+                "description": "Plateforme de topographie 3D LiDAR haute définition pour les Antilles",
+                "url": "https://topo3d-antilles.com",
+                "applicationCategory": "GIS",
+                "offers": {
+                    "@type": "AggregateOffer",
+                    "priceCurrency": "EUR",
+                    "lowPrice": "19",
+                    "highPrice": "349"
+                }
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Quelle est la précision des données?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "±0.2m en planimetrie et altimetrie, basée sur les données LiDAR IGN haute définition"
+                        }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Combien de temps pour recevoir les données?",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": "Moins de 24h après la commande et le paiement"
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+    </script>
+
+    <title>Topo3D-Antilles 🏔️ - Topographie 3D LiDAR HD Antilles</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #fafafa;
+            color: #222;
+            line-height: 1.6;
+        }
+
+        /* Accessibility */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #00c896;
+            color: #0a0a14;
+            padding: 8px 16px;
+            z-index: 10000;
+            font-weight: 600;
+            transition: top 0.3s;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .skip-link:focus {
+            top: 0;
+        }
+
+        *:focus-visible {
+            outline: 2px solid #00c896;
+            outline-offset: 2px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 200, 150, 0.1);
+            z-index: 1000;
+            padding: 16px 20px;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0a0a14;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #00c896;
+        }
+
+        .nav-cta {
+            background: #00c896 !important;
+            color: #0a0a14 !important;
+            padding: 10px 20px !important;
+            border-radius: 8px;
+            font-weight: 600 !important;
+        }
+
+        .nav-cta:hover {
+            background: #00d4aa !important;
+        }
+
+        /* Hamburger Menu */
+        .hamburger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 10px 12px;
+            gap: 5px;
+            min-width: 44px;
+            min-height: 44px;
+            justify-content: center;
+        }
+
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background: #0a0a14;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(10px, 10px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
+        }
+
+        @media (max-width: 768px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: rgba(250, 250, 250, 0.98);
+                flex-direction: column;
+                gap: 0;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+                padding: 0;
+            }
+
+            .nav-links.active {
+                max-height: 500px;
+                padding: 20px;
+                gap: 10px;
+            }
+
+            .nav-links li {
+                border-bottom: 1px solid #eee;
+                padding: 10px 0;
+            }
+
+            .nav-links li:last-child {
+                border-bottom: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 15px;
+            }
+
+            .nav-links a {
+                font-size: 12px;
+            }
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+            background-image: linear-gradient(rgba(10, 10, 20, 0.4), rgba(10, 10, 20, 0.4)), url('hero-topo3d.webp');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .hero-content h1 {
+            font-size: 56px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+
+        .hero-content p {
+            font-size: 20px;
+            color: #ccc;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-cta {
+            display: inline-block;
+            background: #00c896;
+            color: #0a0a14;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+            margin-bottom: 15px;
+        }
+
+        .hero-cta:hover {
+            background: #00d4aa;
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 200, 150, 0.3);
+        }
+
+        .hero-cta-secondary {
+            background: transparent;
+            border: 2px solid #00c896;
+            color: #00c896;
+        }
+
+        .hero-cta-secondary:hover {
+            background: rgba(0, 200, 150, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .hero-content h1 {
+                font-size: 36px;
+            }
+
+            .hero-content p {
+                font-size: 16px;
+            }
+        }
+
+        /* Stats Bar */
+        .stats {
+            background: #fff;
+            padding: 40px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stats-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            text-align: center;
+        }
+
+        .stat-item h3 {
+            font-size: 24px;
+            color: #00c896;
+            margin-bottom: 5px;
+        }
+
+        .stat-item p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Avant/Après Section */
+        .comparison {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 40px 20px;
+        }
+
+        .comparison h2 {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #0a0a14;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .comparison-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .comparison-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #0a0a14;
+        }
+
+        .comparison-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .comparison-badge.old {
+            background: rgba(255, 100, 100, 0.1);
+            color: #c00;
+        }
+
+        .comparison-badge.new {
+            background: rgba(0, 200, 150, 0.1);
+            color: #00c896;
+        }
+
+        .comparison-metric {
+            margin: 15px 0;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+
+        .comparison-metric strong {
+            color: #0a0a14;
+        }
+
+        .comparison-metric .value {
+            color: #00c896;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .old .value {
+            color: #c00;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* How it Works */
+        .how-it-works {
+            background: #f5f5f5;
+            padding: 60px 20px;
+            margin: 60px 0;
+        }
+
+        .how-it-works h2 {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #0a0a14;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .steps-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        .step {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            box-shadow: 0 8px 24px rgba(0, 200, 150, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: #00c896;
+            color: white;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .step h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #0a0a14;
+        }
+
+        .step p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Features Section */
+        .features {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 40px 20px;
+        }
+
+        .features h2 {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #0a0a14;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-item {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+
+        .feature-item h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #0a0a14;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feature-icon {
+            font-size: 24px;
+        }
+
+        .feature-item p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            background: #f5f5f5;
+            padding: 60px 20px;
+            margin: 60px 0;
+        }
+
+        .pricing h2 {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #0a0a14;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .pricing-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .pricing-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .pricing-card:hover {
+            box-shadow: 0 12px 32px rgba(0, 200, 150, 0.15);
+            transform: translateY(-8px);
+            border-color: #00c896;
+        }
+
+        .pricing-card.featured {
+            border: 2px solid #00c896;
+            transform: scale(1.05);
+        }
+
+        .pricing-badge {
+            display: inline-block;
+            background: rgba(0, 200, 150, 0.1);
+            color: #00c896;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .pricing-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0a0a14;
+            margin-bottom: 10px;
+        }
+
+        .pricing-price {
+            font-size: 36px;
+            font-weight: 700;
+            color: #00c896;
+            margin-bottom: 5px;
+        }
+
+        .pricing-period {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .pricing-features {
+            flex-grow: 1;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .pricing-features li {
+            list-style: none;
+            padding: 8px 0;
+            color: #666;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .pricing-features li:last-child {
+            border-bottom: none;
+        }
+
+        .pricing-features li::before {
+            content: "✓ ";
+            color: #00c896;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .pricing-cta {
+            background: #00c896;
+            color: #0a0a14;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            width: 100%;
+        }
+
+        .pricing-cta:hover {
+            background: #00d4aa;
+        }
+
+        @media (max-width: 768px) {
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+
+        /* Trust Section */
+        .trust {
+            max-width: 1200px;
+            margin: 60px auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .trust h2 {
+            font-size: 32px;
+            margin-bottom: 40px;
+            color: #0a0a14;
+        }
+
+        .trust-items {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+        }
+
+        .trust-item {
+            padding: 20px;
+        }
+
+        .trust-item-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .trust-item h3 {
+            font-size: 16px;
+            color: #0a0a14;
+            margin-bottom: 5px;
+        }
+
+        .trust-item p {
+            color: #666;
+            font-size: 13px;
+        }
+
+        /* FAQ Section */
+        .faq {
+            background: #f5f5f5;
+            padding: 60px 20px;
+        }
+
+        .faq h2 {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 50px;
+            color: #0a0a14;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: #fff;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .faq-question {
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-weight: 600;
+            color: #0a0a14;
+            transition: background 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+        }
+
+        .faq-question:hover {
+            background: #f9f9f9;
+        }
+
+        .faq-question::after {
+            content: "+";
+            font-size: 24px;
+            color: #00c896;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            display: none;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            line-height: 1.6;
+        }
+
+        .faq-item.active .faq-answer {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            background: #0a0a14;
+            color: #ccc;
+            padding: 40px 20px;
+            border-top: 1px solid rgba(0, 200, 150, 0.1);
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .footer-section h3 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .footer-section a {
+            display: block;
+            color: #ccc;
+            text-decoration: none;
+            margin-bottom: 10px;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #00c896;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .footer-bottom a {
+            color: #00c896;
+            text-decoration: none;
+        }
+
+        .footer-bottom a:hover {
+            color: #00d4aa;
+        }
+
+        @media (max-width: 768px) {
+            .footer-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utils */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(0, 200, 150, 0.1);
+            color: #00c896;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <!-- Navigation -->
+    <nav aria-label="Navigation principale">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">🏔️ Topo3D-Antilles</a>
+            <button class="hamburger" id="hamburger-menu" aria-label="Menu de navigation" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="/produit">Produit</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="/comment-ca-marche.html">Comment ça marche</a></li>
+                <li><a href="#faq">FAQ</a></li>
+                <li><a href="/carte.html" class="nav-cta">Accéder à la Carte</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main id="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+        <div class="hero-content">
+            <h1>Topographie 3D LiDAR HD pour les Antilles</h1>
+            <p>Remplacez les délais de 6 semaines et les coûts de 800-3000€ par un service 24h à partir de 59€. Données IGN certifiées, précision ±0.2m.</p>
+            <div>
+                <a href="/carte.html" class="hero-cta">Accéder à la Plateforme</a>
+                <a href="#pricing" class="hero-cta hero-cta-secondary">Voir les Tarifs</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Bar -->
+    <section class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>±0.2m</h3>
+                <p>Précision XYZ</p>
+            </div>
+            <div class="stat-item">
+                <h3>66</h3>
+                <p>Communes couvertes</p>
+            </div>
+            <div class="stat-item">
+                <h3>&lt;24h</h3>
+                <p>Délai de livraison</p>
+            </div>
+            <div class="stat-item">
+                <h3>4+</h3>
+                <p>Formats d'export</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison">
+        <h2>Avant / Après</h2>
+        <div class="comparison-grid">
+            <div class="comparison-card old">
+                <span class="comparison-badge old">Méthode classique</span>
+                <h3>Relevé sur site</h3>
+                <div class="comparison-metric">
+                    <strong>Délai</strong><br>
+                    <span class="value">4-6 semaines</span>
+                </div>
+                <div class="comparison-metric">
+                    <strong>Coût</strong><br>
+                    <span class="value">800-3000€</span>
+                </div>
+                <div class="comparison-metric">
+                    <strong>Accès 24/7</strong><br>
+                    ❌ Non
+                </div>
+                <div class="comparison-metric">
+                    <strong>Format</strong><br>
+                    PDF/Papier
+                </div>
+            </div>
+
+            <div class="comparison-card new">
+                <span class="comparison-badge new">Topo3D-Antilles</span>
+                <h3>Plateforme SaaS</h3>
+                <div class="comparison-metric">
+                    <strong>Délai</strong><br>
+                    <span class="value">&lt;24h</span>
+                </div>
+                <div class="comparison-metric">
+                    <strong>Coût</strong><br>
+                    <span class="value">À partir de 19€</span>
+                </div>
+                <div class="comparison-metric">
+                    <strong>Accès 24/7</strong><br>
+                    ✅ Oui
+                </div>
+                <div class="comparison-metric">
+                    <strong>Format</strong><br>
+                    OBJ, DXF, PDF, IFC...
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works -->
+    <section class="how-it-works">
+        <h2>Comment ça marche en 3 étapes</h2>
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Sélectionnez une parcelle</h3>
+                <p>Utilisez la carte interactive pour localiser votre zone d'intérêt aux Antilles</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Choisissez votre forfait</h3>
+                <p>Sélectionnez le format et le niveau de détail dont vous avez besoin</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Téléchargez vos données</h3>
+                <p>Recevez vos données 3D en moins de 24h via email</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <h2>Fonctionnalités</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <h3><span class="feature-icon">📊</span> 7 couches réglementaires</h3>
+                <p>PLU, Natura 2000, ZNIEFF, Conservatoire Littoral, Monuments historiques, PPR, et plus</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="feature-icon">📁</span> Multi-format export</h3>
+                <p>OBJ, DXF, PDF, IFC, DWG, SHP, STL, KML - Choisissez ce dont vous avez besoin</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="feature-icon">⚡</span> Traitement en temps réel</h3>
+                <p>Les données sont traitées immédiatement après votre commande</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="feature-icon">🔒</span> Données sécurisées</h3>
+                <p>Paiements Stripe, données hébergées en France, conformité RGPD</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="feature-icon">🗺️</span> Couverte totale</h3>
+                <p>66 communes couvrant Guadeloupe, Martinique et dépendances</p>
+            </div>
+            <div class="feature-item">
+                <h3><span class="feature-icon">🎯</span> Précision ±0.2m</h3>
+                <p>Basées sur données LiDAR HD IGN, certifiées et validées</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <h2>Tarification Simple et Transparente</h2>
+        <p style="text-align:center;color:#999;font-size:14px;margin:-10px 0 30px;">Tarif unique par parcelle. Parcelle &gt; 2 ha : supplément 0,005€/m² au-delà.</p>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <span class="pricing-badge">Démarrer</span>
+                <div class="pricing-name">Essentiel</div>
+                <div class="pricing-price">59€</div>
+                <div class="pricing-period">par parcelle</div>
+                <ul class="pricing-features">
+                    <li>OBJ (5m) + GeoJSON</li>
+                    <li>Rapport PDF</li>
+                    <li>Livraison &lt;24h</li>
+                    <li>Email de support</li>
+                </ul>
+                <a href="/carte" class="pricing-cta" style="display:block;text-align:center;text-decoration:none;">Sélectionner une parcelle</a>
+            </div>
+
+            <div class="pricing-card featured">
+                <span class="pricing-badge">Recommandé</span>
+                <div class="pricing-name">Complet</div>
+                <div class="pricing-price">129€</div>
+                <div class="pricing-period">par parcelle</div>
+                <ul class="pricing-features">
+                    <li>OBJ LiDAR (2m)</li>
+                    <li>DXF courbes de niveau</li>
+                    <li>Analyse pentes + PDF</li>
+                    <li>GeoJSON</li>
+                    <li>Support prioritaire</li>
+                </ul>
+                <a href="/carte" class="pricing-cta" style="display:block;text-align:center;text-decoration:none;">Sélectionner une parcelle</a>
+            </div>
+
+            <div class="pricing-card">
+                <span class="pricing-badge">Pro</span>
+                <div class="pricing-name">Premium</div>
+                <div class="pricing-price">249€</div>
+                <div class="pricing-period">par parcelle</div>
+                <ul class="pricing-features">
+                    <li>Tous formats : IFC, DWG, SHP, STL, KML</li>
+                    <li>Fiche parcelle réglementaire</li>
+                    <li>Révisions illimitées</li>
+                    <li>Support téléphonique</li>
+                </ul>
+                <a href="/carte" class="pricing-cta" style="display:block;text-align:center;text-decoration:none;">Sélectionner une parcelle</a>
+            </div>
+
+            <div class="pricing-card">
+                <span class="pricing-badge">Abonnement</span>
+                <div class="pricing-name">Pro Mensuel</div>
+                <div class="pricing-price">349€</div>
+                <div class="pricing-period">/mois — taille illimitée</div>
+                <ul class="pricing-features">
+                    <li>Commandes illimitées</li>
+                    <li>Tous les formats</li>
+                    <li>Accès API REST</li>
+                    <li>Priorité absolue</li>
+                    <li>Support dédié</li>
+                </ul>
+                <a href="/carte" class="pricing-cta" style="display:block;text-align:center;text-decoration:none;">Commencer l'essai</a>
+            </div>
+        </div>
+        <p style="text-align:center;color:#aaa;font-size:13px;margin-top:20px;">Pro annuel : 2 990€/an (remise 29%). Fiche Parcelle seule : 19€.</p>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust">
+        <h2>Nous vous faisons confiance</h2>
+        <div class="trust-items">
+            <div class="trust-item">
+                <div class="trust-item-icon">🏛️</div>
+                <h3>Données IGN</h3>
+                <p>Source officielle de données géographiques françaises</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-item-icon">🔐</div>
+                <h3>Paiements Stripe</h3>
+                <p>Plateforme de paiement la plus sécurisée d'Europe</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-item-icon">⚖️</div>
+                <h3>Licence Etalab 2.0</h3>
+                <p>Données ouvertes sous licence libre</p>
+            </div>
+            <div class="trust-item">
+                <div class="trust-item-icon">🇫🇷</div>
+                <h3>Hébergement France</h3>
+                <p>Serveurs en France, conformité RGPD garantie</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <h2>Questions Fréquemment Posées</h2>
+        <div class="faq-container">
+            <div class="faq-item">
+                <button class="faq-question">Quelle est la précision des données?</button>
+                <div class="faq-answer">
+                    Nos données ont une précision de ±0.2m en planimetrie et altimetrie. Elles sont basées sur les données LiDAR haute définition de l'Institut Géographique National (IGN) et ont été validées sur le terrain.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Combien de temps pour recevoir mes données?</button>
+                <div class="faq-answer">
+                    Votre commande est traitée immédiatement après le paiement. Les données sont générées en temps réel et livrées par email en moins de 24 heures, généralement en quelques minutes.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Quels formats sont disponibles?</button>
+                <div class="faq-answer">
+                    Les formats disponibles dépendent de votre forfait : OBJ, GeoJSON, DXF, PDF, IFC, DWG, SHP, STL, KML. Le forfait Essentiel inclut OBJ et GeoJSON, le Complet ajoute DXF et PDF, et le Premium inclut tous les formats.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Puis-je utiliser les données à titre commercial?</button>
+                <div class="faq-answer">
+                    Oui, les données sont sous licence Etalab 2.0, une licence libre qui permet l'utilisation à titre commercial, à condition de mentionner la source (IGN/Topo3D-Antilles).
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Y a-t-il des communes non couvertes?</button>
+                <div class="faq-answer">
+                    Non, nous couvrons les 66 communes des Antilles, incluant Guadeloupe, Martinique, Saint-Barthélemy et Saint-Martin. Si vous rencontrez un problème, contactez support@topo3d-antilles.com.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">Qui paie le support client?</button>
+                <div class="faq-answer">
+                    Pour les questions techniques, écrivez à contact@topo3d-antilles.com. Pour des projets importants, nous vous recommandons de contacter notre partenaire <a href="https://karukera-conseil.com" target="_blank">Karukera Conseil</a> pour un accompagnement dédié.
+                </div>
+            </div>
+        </div>
+    </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Topo3D-Antilles</h3>
+                <a href="/">Accueil</a>
+                <a href="/produit">Aperçu Produit</a>
+                <a href="#features">Fonctionnalités</a>
+                <a href="#pricing">Tarification</a>
+                <a href="/comment-ca-marche.html">Comment ça marche</a>
+            </div>
+
+            <div class="footer-section">
+                <h3>Ressources</h3>
+                <a href="/produit">Aperçu Produit</a>
+                <a href="/references.html">Mentions légales</a>
+                <a href="https://karukera-conseil.com" target="_blank">Karukera Conseil</a>
+                <a href="https://www.ign.fr" target="_blank">IGN France</a>
+                <a href="https://data.geopf.fr" target="_blank">Data.gouv.fr</a>
+            </div>
+
+            <div class="footer-section">
+                <h3>Support</h3>
+                <a href="mailto:contact@topo3d-antilles.com">contact@topo3d-antilles.com</a>
+                <a href="mailto:support@topo3d-antilles.com">support@topo3d-antilles.com</a>
+            </div>
+
+            <div class="footer-section">
+                <h3>Suivez-nous</h3>
+                <p style="font-size: 14px; color: #888;">Bêta Pro - 2026</p>
+                <p style="font-size: 12px; color: #666; margin-top: 10px;">Données topographiques 3D LiDAR pour les Antilles</p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 Topo3D-Antilles. Tous droits réservés | <a href="/references.html">Mentions légales</a></p>
+        </div>
+    </footer>
+
+    <script>
+        // Hamburger Menu
+        const hamburgerBtn = document.getElementById('hamburger-menu');
+        const navLinks = document.getElementById('nav-links');
+
+        hamburgerBtn.addEventListener('click', () => {
+            hamburgerBtn.classList.toggle('active');
+            navLinks.classList.toggle('active');
+            hamburgerBtn.setAttribute('aria-expanded', hamburgerBtn.classList.contains('active'));
+        });
+
+        // Close menu when a link is clicked
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburgerBtn.classList.remove('active');
+                navLinks.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            });
+        });
+
+        // FAQ Accordion
+        const faqItems = document.querySelectorAll('.faq-item');
+        faqItems.forEach(item => {
+            item.querySelector('.faq-question').addEventListener('click', () => {
+                item.classList.toggle('active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

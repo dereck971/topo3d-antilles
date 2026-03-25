@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pub Topo3D Antilles</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background: #0a0e1a;
+    font-family: 'DM Sans', sans-serif;
+    color: white;
+    position: relative;
+  }
+
+  /* ========== BACKGROUND EFFECTS ========== */
+  .bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 200, 150, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 200, 150, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0;
+  }
+
+  .bg-glow {
+    position: absolute;
+    width: 800px;
+    height: 800px;
+    border-radius: 50%;
+    filter: blur(150px);
+    opacity: 0;
+    z-index: 0;
+  }
+
+  .glow-1 { background: rgba(0, 200, 150, 0.15); top: -200px; left: -200px; }
+  .glow-2 { background: rgba(6, 182, 212, 0.1); bottom: -200px; right: -200px; }
+  .glow-3 { background: rgba(0, 200, 150, 0.08); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+  /* ========== SCENES ========== */
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    z-index: 10;
+    padding: 60px;
+  }
+
+  /* --- SCENE 1: LE PROBLÈME --- */
+  .scene-1 .problem-badge {
+    background: rgba(239, 68, 68, 0.15);
+    border: 2px solid rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    padding: 16px 40px;
+    border-radius: 100px;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 80px;
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .scene-1 .old-way {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+
+  .scene-1 .old-price {
+    font-size: 140px;
+    font-weight: 900;
+    color: rgba(239, 68, 68, 0.9);
+    line-height: 1;
+    position: relative;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  .scene-1 .old-price::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -5%;
+    width: 110%;
+    height: 8px;
+    background: #ef4444;
+    transform: rotate(-5deg);
+  }
+
+  .scene-1 .old-label {
+    font-size: 36px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 20px;
+    opacity: 0;
+  }
+
+  .scene-1 .old-time {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-top: 40px;
+    opacity: 0;
+  }
+
+  .scene-1 .old-time .icon {
+    font-size: 64px;
+  }
+
+  .scene-1 .old-time .text {
+    font-size: 48px;
+    font-weight: 700;
+    color: rgba(239, 68, 68, 0.8);
+  }
+
+  .scene-1 .old-time .sub {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* --- SCENE 2: TRANSITION --- */
+  .scene-2 {
+    background: radial-gradient(circle at center, rgba(0, 200, 150, 0.05) 0%, transparent 70%);
+  }
+
+  .scene-2 .now-text {
+    font-size: 72px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 8px;
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  .scene-2 .line {
+    width: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #00c896, transparent);
+    margin: 40px 0;
+  }
+
+  .scene-2 .sub-text {
+    font-size: 36px;
+    color: rgba(255, 255, 255, 0.6);
+    opacity: 0;
+  }
+
+  /* --- SCENE 3: LA SOLUTION --- */
+  .scene-3 .logo-area {
+    margin-bottom: 60px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .scene-3 .logo-text {
+    font-size: 96px;
+    font-weight: 900;
+    letter-spacing: -2px;
+  }
+
+  .scene-3 .logo-text span:first-child { color: #ffffff; }
+  .scene-3 .logo-text span:last-child {
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .scene-3 .logo-sub {
+    font-size: 32px;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 12px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .scene-3 .hero-frame {
+    width: 960px;
+    height: 600px;
+    border-radius: 24px;
+    border: 2px solid rgba(0, 200, 150, 0.3);
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    transform: scale(0.9);
+    box-shadow:
+      0 0 60px rgba(0, 200, 150, 0.1),
+      0 40px 80px rgba(0, 0, 0, 0.5);
+  }
+
+  .scene-3 .hero-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .scene-3 .hero-frame .overlay-badge {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: rgba(0, 200, 150, 0.9);
+    color: #0a0e1a;
+    padding: 12px 28px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 24px;
+  }
+
+  .scene-3 .feature-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 50px;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .scene-3 .feature-chip {
+    background: rgba(0, 200, 150, 0.08);
+    border: 1px solid rgba(0, 200, 150, 0.2);
+    padding: 16px 32px;
+    border-radius: 16px;
+    font-size: 26px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* --- SCENE 4: LES CHIFFRES --- */
+  .scene-4 .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    width: 100%;
+    max-width: 960px;
+  }
+
+  .scene-4 .stat-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(0, 200, 150, 0.15);
+    border-radius: 24px;
+    padding: 48px 36px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  .scene-4 .stat-card .number {
+    font-size: 80px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+  }
+
+  .scene-4 .stat-card .label {
+    font-size: 26px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 12px;
+    line-height: 1.3;
+  }
+
+  .scene-4 .vs-text {
+    grid-column: 1 / -1;
+    text-align: center;
+    font-size: 32px;
+    color: rgba(239, 68, 68, 0.6);
+    opacity: 0;
+    margin-top: 20px;
+  }
+
+  .scene-4 .vs-text s {
+    font-size: 48px;
+    color: rgba(239, 68, 68, 0.8);
+  }
+
+  /* --- SCENE 5: FORMATS --- */
+  .scene-5 .format-title {
+    font-size: 52px;
+    font-weight: 700;
+    margin-bottom: 60px;
+    text-align: center;
+    opacity: 0;
+  }
+
+  .scene-5 .formats-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    max-width: 960px;
+  }
+
+  .scene-5 .format-item {
+    background: rgba(0, 200, 150, 0.06);
+    border: 1px solid rgba(0, 200, 150, 0.15);
+    border-radius: 20px;
+    padding: 28px 36px;
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .scene-5 .format-item .ext {
+    font-size: 40px;
+    font-weight: 900;
+    color: #00c896;
+  }
+
+  .scene-5 .format-item .name {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 4px;
+  }
+
+  .scene-5 .compat-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 60px;
+    opacity: 0;
+  }
+
+  .scene-5 .compat-item {
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+  }
+
+  /* --- SCENE 6: PRICING --- */
+  .scene-6 .pricing-title {
+    font-size: 44px;
+    font-weight: 700;
+    margin-bottom: 50px;
+    opacity: 0;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .scene-6 .price-cards {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    max-width: 960px;
+    justify-content: center;
+  }
+
+  .scene-6 .price-card {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(0, 200, 150, 0.12);
+    border-radius: 24px;
+    padding: 36px 24px;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  .scene-6 .price-card.featured {
+    background: rgba(0, 200, 150, 0.08);
+    border-color: rgba(0, 200, 150, 0.4);
+    transform: translateY(30px) scale(1.05);
+    box-shadow: 0 0 40px rgba(0, 200, 150, 0.1);
+  }
+
+  .scene-6 .price-card .tier {
+    font-size: 24px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .scene-6 .price-card .price {
+    font-size: 64px;
+    font-weight: 900;
+    margin: 16px 0 8px;
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .scene-6 .price-card .unit {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .scene-6 .price-card .desc {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 16px;
+    line-height: 1.5;
+  }
+
+  /* --- SCENE 7: CTA --- */
+  .scene-7 {
+    background: radial-gradient(circle at center, rgba(0, 200, 150, 0.08) 0%, transparent 60%);
+  }
+
+  .scene-7 .cta-logo {
+    font-size: 80px;
+    font-weight: 900;
+    margin-bottom: 40px;
+    opacity: 0;
+    transform: scale(0.8);
+  }
+
+  .scene-7 .cta-logo span:first-child { color: #fff; }
+  .scene-7 .cta-logo span:last-child {
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .scene-7 .cta-tagline {
+    font-size: 48px;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 50px;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .scene-7 .cta-tagline em {
+    font-style: normal;
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .scene-7 .cta-button {
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    color: #0a0e1a;
+    padding: 28px 64px;
+    border-radius: 100px;
+    font-size: 36px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.9);
+    box-shadow: 0 0 60px rgba(0, 200, 150, 0.3);
+    animation-delay: 0.3s;
+  }
+
+  .scene-7 .cta-url {
+    margin-top: 30px;
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.4);
+    opacity: 0;
+  }
+
+  .scene-7 .cta-exclusive {
+    margin-top: 50px;
+    padding: 20px 40px;
+    background: rgba(0, 200, 150, 0.06);
+    border: 1px solid rgba(0, 200, 150, 0.2);
+    border-radius: 16px;
+    font-size: 28px;
+    color: #00c896;
+    font-weight: 600;
+    opacity: 0;
+  }
+
+  /* ========== PLAY BUTTON OVERLAY ========== */
+  .play-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 14, 26, 0.9);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.5s;
+  }
+
+  .play-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  .play-btn {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #00c896, #06b6d4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 80px rgba(0, 200, 150, 0.3);
+    animation: pulse-play 2s infinite;
+  }
+
+  .play-btn::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 48px solid #0a0e1a;
+    border-top: 30px solid transparent;
+    border-bottom: 30px solid transparent;
+    margin-left: 8px;
+  }
+
+  .play-label {
+    margin-top: 30px;
+    font-size: 32px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  @keyframes pulse-play {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  /* ========== PROGRESS BAR ========== */
+  .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #00c896, #06b6d4);
+    z-index: 50;
+    width: 0;
+  }
+
+  /* ========== WATERMARK ========== */
+  .watermark {
+    position: absolute;
+    top: 40px;
+    right: 40px;
+    z-index: 40;
+    opacity: 0;
+  }
+
+  .watermark .wm-text {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .watermark .wm-text span:first-child { color: rgba(255, 255, 255, 0.6); }
+  .watermark .wm-text span:last-child { color: rgba(0, 200, 150, 0.8); }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+<div class="bg-glow glow-3"></div>
+
+<div class="watermark">
+  <div class="wm-text"><span>TOPO</span><span>3D</span></div>
+</div>
+
+<div class="progress-bar"></div>
+
+<!-- PLAY OVERLAY -->
+<div class="play-overlay" id="playOverlay">
+  <div class="play-btn"></div>
+  <div class="play-label">Lancer la pub (15s)</div>
+</div>
+
+<!-- SCENE 1: LE PROBLÈME -->
+<div class="scene scene-1" id="scene1">
+  <div class="problem-badge">Le problème</div>
+  <div class="old-way">
+    <div class="old-price">3 000€</div>
+    <div class="old-label">Prix moyen d'un relevé topographique<br>en Guadeloupe</div>
+  </div>
+  <div class="old-time">
+    <div class="icon">⏳</div>
+    <div>
+      <div class="text">3 à 6 semaines</div>
+      <div class="sub">de délai pour recevoir vos fichiers</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 2: TRANSITION -->
+<div class="scene scene-2" id="scene2">
+  <div class="now-text">Et si c'était fini ?</div>
+  <div class="line"></div>
+  <div class="sub-text">La topographie 3D, réinventée.</div>
+</div>
+
+<!-- SCENE 3: LA SOLUTION -->
+<div class="scene scene-3" id="scene3">
+  <div class="logo-area">
+    <div class="logo-text"><span>TOPO</span><span>3D</span></div>
+    <div class="logo-sub">Antilles</div>
+  </div>
+  <div class="hero-frame">
+    <div style="width:100%;height:100%;background:linear-gradient(135deg, #0a1a2e 0%, #0d2b3e 30%, #0a2420 60%, #0a1a2e 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;">
+      <!-- Stylized terrain mesh -->
+      <svg viewBox="0 0 960 600" width="960" height="600" style="position:absolute;inset:0;">
+        <defs>
+          <linearGradient id="terrainGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#0a3d2e;stop-opacity:1"/>
+            <stop offset="50%" style="stop-color:#0d5040;stop-opacity:1"/>
+            <stop offset="100%" style="stop-color:#0a2a22;stop-opacity:1"/>
+          </linearGradient>
+          <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" style="stop-color:rgba(0,200,150,0.1)"/>
+            <stop offset="50%" style="stop-color:rgba(0,200,150,0.4)"/>
+            <stop offset="100%" style="stop-color:rgba(0,200,150,0.1)"/>
+          </linearGradient>
+        </defs>
+        <!-- Terrain wireframe lines -->
+        <g stroke="url(#lineGrad)" fill="none" stroke-width="1">
+          <path d="M0,400 Q120,350 240,380 T480,340 T720,370 T960,350"/>
+          <path d="M0,360 Q120,310 240,340 T480,290 T720,320 T960,300"/>
+          <path d="M0,320 Q120,270 240,300 T480,240 T720,270 T960,250"/>
+          <path d="M0,280 Q120,230 240,260 T480,190 T720,220 T960,200"/>
+          <path d="M0,240 Q120,190 240,220 T480,150 T720,170 T960,160"/>
+          <path d="M0,200 Q120,160 240,180 T480,120 T720,130 T960,125"/>
+          <path d="M0,160 Q120,130 240,150 T480,100 T720,100 T960,95"/>
+          <!-- Vertical cross-lines -->
+          <line x1="120" y1="95" x2="120" y2="400" opacity="0.15"/>
+          <line x1="240" y1="95" x2="240" y2="400" opacity="0.15"/>
+          <line x1="360" y1="95" x2="360" y2="400" opacity="0.15"/>
+          <line x1="480" y1="95" x2="480" y2="400" opacity="0.15"/>
+          <line x1="600" y1="95" x2="600" y2="400" opacity="0.15"/>
+          <line x1="720" y1="95" x2="720" y2="400" opacity="0.15"/>
+          <line x1="840" y1="95" x2="840" y2="400" opacity="0.15"/>
+        </g>
+        <!-- Highlight parcelle -->
+        <rect x="340" y="200" width="200" height="140" rx="4" fill="rgba(0,200,150,0.08)" stroke="#00c896" stroke-width="2" stroke-dasharray="8,4"/>
+        <!-- Label -->
+        <text x="440" y="260" text-anchor="middle" fill="#00c896" font-family="DM Sans" font-size="16" font-weight="700">PARCELLE AB 0042</text>
+        <text x="440" y="280" text-anchor="middle" fill="rgba(0,200,150,0.5)" font-family="DM Sans" font-size="12">608 m² — Le Gosier</text>
+        <!-- Sea -->
+        <rect x="0" y="420" width="960" height="180" fill="rgba(6,182,212,0.05)"/>
+        <path d="M0,440 Q240,420 480,435 T960,425" stroke="rgba(6,182,212,0.15)" fill="none" stroke-width="1"/>
+      </svg>
+    </div>
+    <div class="overlay-badge">Précision LiDAR ±0.2m</div>
+  </div>
+  <div class="feature-row">
+    <div class="feature-chip">OBJ + DXF</div>
+    <div class="feature-chip">LiDAR IGN HD</div>
+    <div class="feature-chip">66 communes</div>
+    <div class="feature-chip">24h max</div>
+  </div>
+</div>
+
+<!-- SCENE 4: LES CHIFFRES -->
+<div class="scene scene-4" id="scene4">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="number">24h</div>
+      <div class="label">Délai de livraison<br>max</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">±0.2m</div>
+      <div class="label">Précision<br>LiDAR HD</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">66</div>
+      <div class="label">Communes<br>couvertes</div>
+    </div>
+    <div class="stat-card">
+      <div class="number">8</div>
+      <div class="label">Logiciels<br>compatibles</div>
+    </div>
+    <div class="vs-text">
+      Géomètre classique : <s>3 000€ — 6 semaines</s>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 5: FORMATS -->
+<div class="scene scene-5" id="scene5">
+  <div class="format-title">Fichiers pro, directement exploitables</div>
+  <div class="formats-wrap">
+    <div class="format-item"><div class="ext">.OBJ</div><div class="name">SketchUp / Blender</div></div>
+    <div class="format-item"><div class="ext">.DXF</div><div class="name">AutoCAD</div></div>
+    <div class="format-item"><div class="ext">.IFC</div><div class="name">Revit / BIM</div></div>
+    <div class="format-item"><div class="ext">.STL</div><div class="name">Impression 3D</div></div>
+    <div class="format-item"><div class="ext">.KML</div><div class="name">Google Earth</div></div>
+    <div class="format-item"><div class="ext">.SHP</div><div class="name">QGIS / ArcGIS</div></div>
+    <div class="format-item"><div class="ext">.PDF</div><div class="name">Rapport technique</div></div>
+  </div>
+  <div class="compat-row">
+    <div class="compat-item">SketchUp</div>
+    <div class="compat-item">AutoCAD</div>
+    <div class="compat-item">Revit</div>
+    <div class="compat-item">Blender</div>
+    <div class="compat-item">Rhino</div>
+    <div class="compat-item">QGIS</div>
+  </div>
+</div>
+
+<!-- SCENE 6: PRICING -->
+<div class="scene scene-6" id="scene6">
+  <div class="pricing-title">À partir de 59€ / parcelle</div>
+  <div class="price-cards">
+    <div class="price-card">
+      <div class="tier">Essentiel</div>
+      <div class="price">59€</div>
+      <div class="unit">par parcelle</div>
+      <div class="desc">OBJ 5m + GeoJSON<br>+ rapport PDF</div>
+    </div>
+    <div class="price-card featured">
+      <div class="tier">Complet ⭐</div>
+      <div class="price">129€</div>
+      <div class="unit">par parcelle</div>
+      <div class="desc">OBJ LiDAR 2m + DXF<br>+ pentes + PDF</div>
+    </div>
+    <div class="price-card">
+      <div class="tier">Premium</div>
+      <div class="price">249€</div>
+      <div class="unit">par parcelle</div>
+      <div class="desc">IFC + DWG + STL<br>+ tous formats BIM</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 7: CTA -->
+<div class="scene scene-7" id="scene7">
+  <div class="cta-logo"><span>TOPO</span><span>3D</span></div>
+  <div class="cta-tagline">
+    Votre terrain en <em>3D</em>,<br>
+    livré en <em>24h</em>.
+  </div>
+  <div class="cta-button">Sélectionner ma parcelle →</div>
+  <div class="cta-url">topo3d-antilles.com</div>
+  <div class="cta-exclusive">Seul SaaS topo couvrant les Antilles</div>
+</div>
+
+<script>
+const SCENE_DURATION = 2200;
+const FADE_DURATION = 400;
+
+const scenes = [
+  { el: 'scene1', animations: animScene1 },
+  { el: 'scene2', animations: animScene2 },
+  { el: 'scene3', animations: animScene3 },
+  { el: 'scene4', animations: animScene4 },
+  { el: 'scene5', animations: animScene5 },
+  { el: 'scene6', animations: animScene6 },
+  { el: 'scene7', animations: animScene7 },
+];
+
+let currentScene = 0;
+let isPlaying = false;
+
+function animate(el, props, duration = 400, delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      el.style.transition = `all ${duration}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+      Object.assign(el.style, props);
+      setTimeout(resolve, duration);
+    }, delay);
+  });
+}
+
+function animScene1() {
+  const s = document.getElementById('scene1');
+  const badge = s.querySelector('.problem-badge');
+  const price = s.querySelector('.old-price');
+  const label = s.querySelector('.old-label');
+  const time = s.querySelector('.old-time');
+  animate(badge, { opacity: '1', transform: 'scale(1)' }, 500, 0);
+  animate(price, { opacity: '1', transform: 'translateY(0)' }, 600, 300);
+  animate(label, { opacity: '1' }, 400, 600);
+  animate(time, { opacity: '1' }, 400, 900);
+}
+
+function animScene2() {
+  const s = document.getElementById('scene2');
+  const now = s.querySelector('.now-text');
+  const line = s.querySelector('.line');
+  const sub = s.querySelector('.sub-text');
+  animate(now, { opacity: '1', transform: 'scale(1)' }, 600, 0);
+  animate(line, { width: '400px' }, 800, 400);
+  animate(sub, { opacity: '1' }, 400, 800);
+}
+
+function animScene3() {
+  const s = document.getElementById('scene3');
+  const logo = s.querySelector('.logo-area');
+  const frame = s.querySelector('.hero-frame');
+  const feat = s.querySelector('.feature-row');
+  animate(logo, { opacity: '1', transform: 'translateY(0)' }, 500, 0);
+  animate(frame, { opacity: '1', transform: 'scale(1)' }, 700, 300);
+  animate(feat, { opacity: '1', transform: 'translateY(0)' }, 400, 700);
+}
+
+function animScene4() {
+  const cards = document.querySelectorAll('#scene4 .stat-card');
+  const vs = document.querySelector('#scene4 .vs-text');
+  cards.forEach((card, i) => {
+    animate(card, { opacity: '1', transform: 'translateY(0)' }, 500, i * 150);
+  });
+  animate(vs, { opacity: '1' }, 400, 800);
+}
+
+function animScene5() {
+  const title = document.querySelector('#scene5 .format-title');
+  const items = document.querySelectorAll('#scene5 .format-item');
+  const compat = document.querySelector('#scene5 .compat-row');
+  animate(title, { opacity: '1' }, 400, 0);
+  items.forEach((item, i) => {
+    animate(item, { opacity: '1', transform: 'scale(1)' }, 300, 200 + i * 100);
+  });
+  animate(compat, { opacity: '1' }, 400, 1000);
+}
+
+function animScene6() {
+  const title = document.querySelector('#scene6 .pricing-title');
+  const cards = document.querySelectorAll('#scene6 .price-card');
+  animate(title, { opacity: '1' }, 400, 0);
+  cards.forEach((card, i) => {
+    const isFeatured = card.classList.contains('featured');
+    animate(card, {
+      opacity: '1',
+      transform: isFeatured ? 'translateY(0) scale(1.05)' : 'translateY(0)'
+    }, 500, 200 + i * 200);
+  });
+}
+
+function animScene7() {
+  const logo = document.querySelector('#scene7 .cta-logo');
+  const tagline = document.querySelector('#scene7 .cta-tagline');
+  const btn = document.querySelector('#scene7 .cta-button');
+  const url = document.querySelector('#scene7 .cta-url');
+  const excl = document.querySelector('#scene7 .cta-exclusive');
+  animate(logo, { opacity: '1', transform: 'scale(1)' }, 500, 0);
+  animate(tagline, { opacity: '1', transform: 'translateY(0)' }, 500, 300);
+  animate(btn, { opacity: '1', transform: 'scale(1)' }, 500, 600);
+  animate(url, { opacity: '1' }, 400, 900);
+  animate(excl, { opacity: '1' }, 400, 1100);
+}
+
+function showScene(index) {
+  // Hide all scenes
+  document.querySelectorAll('.scene').forEach(s => {
+    s.style.transition = `opacity ${FADE_DURATION}ms`;
+    s.style.opacity = '0';
+  });
+
+  // Show glows
+  document.querySelectorAll('.bg-glow').forEach(g => {
+    g.style.transition = 'opacity 1s';
+    g.style.opacity = '1';
+  });
+
+  // Show watermark
+  document.querySelector('.watermark').style.transition = 'opacity 0.5s';
+  document.querySelector('.watermark').style.opacity = '1';
+
+  setTimeout(() => {
+    const scene = scenes[index];
+    const el = document.getElementById(scene.el);
+    el.style.transition = `opacity ${FADE_DURATION}ms`;
+    el.style.opacity = '1';
+    scene.animations();
+  }, FADE_DURATION);
+}
+
+function updateProgress() {
+  const bar = document.querySelector('.progress-bar');
+  const totalDuration = scenes.length * SCENE_DURATION;
+  const elapsed = currentScene * SCENE_DURATION;
+  bar.style.transition = `width ${SCENE_DURATION}ms linear`;
+  bar.style.width = `${((elapsed + SCENE_DURATION) / totalDuration) * 100}%`;
+}
+
+function playSequence() {
+  if (currentScene >= scenes.length) {
+    currentScene = 0;
+    // Reset all elements
+    document.querySelectorAll('.scene').forEach(s => {
+      s.style.opacity = '0';
+      // Reset all animated children
+      s.querySelectorAll('*').forEach(child => {
+        child.style.transition = 'none';
+      });
+    });
+    document.querySelector('.progress-bar').style.width = '0';
+    setTimeout(() => playSequence(), 500);
+    return;
+  }
+
+  showScene(currentScene);
+  updateProgress();
+  currentScene++;
+  setTimeout(playSequence, SCENE_DURATION);
+}
+
+document.getElementById('playOverlay').addEventListener('click', () => {
+  if (isPlaying) return;
+  isPlaying = true;
+  document.getElementById('playOverlay').classList.add('hidden');
+  currentScene = 0;
+  playSequence();
+});
+</script>
+
+</body>
+</html>

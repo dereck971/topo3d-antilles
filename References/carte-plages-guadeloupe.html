@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Qualité des Eaux de Baignade — Guadeloupe</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0a0e27; color: #e0e0e0; }
+
+        #map { width: 100%; height: 100vh; }
+
+        /* Header overlay */
+        .header-overlay {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: linear-gradient(135deg, rgba(10,14,39,0.95), rgba(20,30,60,0.9));
+            backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(100,180,255,0.15);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+        .header-overlay h1 {
+            font-size: 1.2rem; font-weight: 700; color: #fff;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .header-overlay h1 span.wave { font-size: 1.5rem; }
+        .header-subtitle { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex; gap: 16px; align-items: center;
+        }
+        .stat-pill {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 6px 14px;
+            font-size: 0.75rem; color: rgba(255,255,255,0.8);
+        }
+        .stat-pill .dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .stat-pill .count { font-weight: 700; color: #fff; }
+
+        /* Legend panel */
+        .legend-panel {
+            position: fixed; bottom: 24px; left: 24px; z-index: 1000;
+            background: linear-gradient(135deg, rgba(10,14,39,0.95), rgba(20,30,60,0.92));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(100,180,255,0.15);
+            border-radius: 16px; padding: 18px 22px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            min-width: 220px;
+        }
+        .legend-panel h3 {
+            font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.5);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
+        }
+        .legend-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 5px 0; font-size: 0.85rem; color: rgba(255,255,255,0.85);
+            cursor: pointer; transition: opacity 0.2s;
+        }
+        .legend-item:hover { opacity: 0.7; }
+        .legend-item .icon {
+            width: 20px; height: 20px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 700; color: #fff;
+            box-shadow: 0 0 8px rgba(0,0,0,0.3);
+        }
+
+        /* Info panel */
+        .info-panel {
+            position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+            background: linear-gradient(135deg, rgba(10,14,39,0.95), rgba(20,30,60,0.92));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(100,180,255,0.15);
+            border-radius: 16px; padding: 18px 22px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            max-width: 320px;
+        }
+        .info-panel h3 {
+            font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.5);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        }
+        .info-panel .temp-display {
+            display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px;
+        }
+        .info-panel .temp-value {
+            font-size: 2rem; font-weight: 800;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .info-panel .temp-label { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+        .temp-months {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+            margin-top: 10px;
+        }
+        .temp-month {
+            text-align: center; padding: 6px 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px; font-size: 0.65rem;
+        }
+        .temp-month .label { color: rgba(255,255,255,0.4); }
+        .temp-month .value { color: #00d4ff; font-weight: 700; font-size: 0.75rem; }
+
+        /* Filter bar */
+        .filter-bar {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1000;
+            display: flex; gap: 8px; padding: 8px;
+            background: rgba(10,14,39,0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(100,180,255,0.12);
+            border-radius: 28px;
+        }
+        .filter-btn {
+            padding: 8px 16px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.78rem; font-weight: 500;
+            cursor: pointer; transition: all 0.25s;
+        }
+        .filter-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .filter-btn.active {
+            background: rgba(100,180,255,0.2);
+            border-color: rgba(100,180,255,0.4);
+            color: #fff;
+        }
+
+        /* Custom popup */
+        .leaflet-popup-content-wrapper {
+            background: linear-gradient(135deg, #0d1330, #162040) !important;
+            border: 1px solid rgba(100,180,255,0.2) !important;
+            border-radius: 14px !important;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
+            color: #e0e0e0 !important;
+        }
+        .leaflet-popup-tip { background: #0d1330 !important; }
+        .leaflet-popup-content { margin: 14px 16px !important; min-width: 220px; }
+
+        .popup-header {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px; padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .popup-badge {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .popup-title { font-size: 0.95rem; font-weight: 700; color: #fff; }
+        .popup-commune { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+
+        .popup-quality {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 5px 12px; border-radius: 12px;
+            font-size: 0.78rem; font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .popup-details {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+        }
+        .popup-detail {
+            background: rgba(255,255,255,0.04);
+            border-radius: 8px; padding: 8px 10px;
+        }
+        .popup-detail .label { font-size: 0.65rem; color: rgba(255,255,255,0.4); text-transform: uppercase; }
+        .popup-detail .value { font-size: 0.85rem; font-weight: 600; color: #fff; margin-top: 2px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-bar { display: none; }
+            .header-overlay h1 { font-size: 1rem; }
+            .info-panel { display: none; }
+            .legend-panel { bottom: 12px; left: 12px; padding: 14px; }
+            .filter-bar { top: 60px; flex-wrap: wrap; max-width: 90vw; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header-overlay">
+    <div>
+        <h1><span class="wave">🌊</span> Qualité des Eaux de Baignade — Guadeloupe</h1>
+        <div class="header-subtitle">Données ARS Guadeloupe — Bilan 2024 · Mise à jour mars 2026</div>
+    </div>
+    <div class="stats-bar">
+        <div class="stat-pill"><div class="dot" style="background:#00e676"></div><span class="count" id="count-excellent">0</span> Excellente</div>
+        <div class="stat-pill"><div class="dot" style="background:#29b6f6"></div><span class="count" id="count-bonne">0</span> Bonne</div>
+        <div class="stat-pill"><div class="dot" style="background:#ffa726"></div><span class="count" id="count-suffisante">0</span> Suffisante</div>
+        <div class="stat-pill"><div class="dot" style="background:#ef5350"></div><span class="count" id="count-insuffisante">0</span> Insuffisante</div>
+        <div class="stat-pill"><div class="dot" style="background:#b71c1c"></div><span class="count" id="count-interdite">0</span> Interdite</div>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <button class="filter-btn active" data-filter="all">🏖️ Toutes</button>
+    <button class="filter-btn" data-filter="excellent">✅ Excellente</button>
+    <button class="filter-btn" data-filter="bonne">💙 Bonne</button>
+    <button class="filter-btn" data-filter="suffisante">⚠️ Suffisante</button>
+    <button class="filter-btn" data-filter="insuffisante">🔴 Insuffisante</button>
+    <button class="filter-btn" data-filter="interdite">🚫 Interdite</button>
+    <button class="filter-btn" data-filter="mer">🌊 Mer</button>
+    <button class="filter-btn" data-filter="riviere">🏞️ Rivière</button>
+</div>
+
+<div id="map"></div>
+
+<div class="legend-panel">
+    <h3>Légende</h3>
+    <div class="legend-item" onclick="filterBy('excellent')">
+        <div class="icon" style="background:#00e676">✓</div>
+        <span>Excellente qualité</span>
+    </div>
+    <div class="legend-item" onclick="filterBy('bonne')">
+        <div class="icon" style="background:#29b6f6">B</div>
+        <span>Bonne qualité</span>
+    </div>
+    <div class="legend-item" onclick="filterBy('suffisante')">
+        <div class="icon" style="background:#ffa726">S</div>
+        <span>Suffisante</span>
+    </div>
+    <div class="legend-item" onclick="filterBy('insuffisante')">
+        <div class="icon" style="background:#ef5350">!</div>
+        <span>Insuffisante</span>
+    </div>
+    <div class="legend-item" onclick="filterBy('interdite')">
+        <div class="icon" style="background:#b71c1c">✕</div>
+        <span>Baignade interdite</span>
+    </div>
+    <div style="margin-top:12px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08);">
+        <div class="legend-item">
+            <div class="icon" style="background:rgba(0,150,255,0.3); border:2px solid #0096ff; font-size:0.5rem;">🌊</div>
+            <span style="font-size:0.78rem;">Eau de mer</span>
+        </div>
+        <div class="legend-item">
+            <div class="icon" style="background:rgba(0,200,100,0.3); border:2px solid #00c864; font-size:0.5rem;">🏞️</div>
+            <span style="font-size:0.78rem;">Eau douce / Rivière</span>
+        </div>
+    </div>
+    <div style="margin-top:14px; font-size:0.65rem; color:rgba(255,255,255,0.3); line-height:1.4;">
+        Source : ARS Guadeloupe<br>
+        Paramètres : E. coli + Entérocoques<br>
+        Directive 2006/7/CE
+    </div>
+</div>
+
+<div class="info-panel">
+    <h3>🌡️ Température de l'eau</h3>
+    <div class="temp-display">
+        <span class="temp-value" id="current-temp">27°C</span>
+        <span class="temp-label">en mars</span>
+    </div>
+    <div style="font-size:0.75rem; color:rgba(255,255,255,0.5); margin-bottom:10px;">
+        Moyenne annuelle : 26–29°C · Baignable toute l'année
+    </div>
+    <div class="temp-months">
+        <div class="temp-month"><div class="label">Jan</div><div class="value">26.9°</div></div>
+        <div class="temp-month"><div class="label">Fév</div><div class="value">26.5°</div></div>
+        <div class="temp-month" style="background:rgba(0,150,255,0.12); border:1px solid rgba(0,150,255,0.3);"><div class="label">Mar</div><div class="value">26.8°</div></div>
+        <div class="temp-month"><div class="label">Avr</div><div class="value">27.4°</div></div>
+        <div class="temp-month"><div class="label">Mai</div><div class="value">27.9°</div></div>
+        <div class="temp-month"><div class="label">Juin</div><div class="value">28.5°</div></div>
+        <div class="temp-month"><div class="label">Juil</div><div class="value">28.6°</div></div>
+        <div class="temp-month"><div class="label">Août</div><div class="value">29.0°</div></div>
+        <div class="temp-month"><div class="label">Sep</div><div class="value">29.4°</div></div>
+        <div class="temp-month"><div class="label">Oct</div><div class="value">29.0°</div></div>
+        <div class="temp-month"><div class="label">Nov</div><div class="value">28.5°</div></div>
+        <div class="temp-month"><div class="label">Déc</div><div class="value">27.6°</div></div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// DATA — Plages de Guadeloupe avec qualité eau (ARS 2024)
+// ============================================================
+const beaches = [
+    // === BASSE-TERRE (Côte sous le vent) ===
+    // Deshaies
+    { name: "Grande Anse", commune: "Deshaies", lat: 16.3158, lng: -61.7895, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "L'une des plus belles plages de Guadeloupe. Sable doré, eaux cristallines." },
+    { name: "Plage de la Perle", commune: "Deshaies", lat: 16.3052, lng: -61.7868, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage de sable blond bordée de cocotiers." },
+    { name: "Fond Héliot", commune: "Deshaies", lat: 16.3000, lng: -61.7750, quality: "interdite", type: "riviere", ecoli: "> 1800 UFC/100ml", enterocoques: "> 660 UFC/100ml", notes: "🚫 Baignade interdite depuis +6 ans. Pollution chronique." },
+
+    // Bouillante
+    { name: "Plage de Malendure", commune: "Bouillante", lat: 16.1650, lng: -61.7885, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Spot de plongée réputé, face aux Îlets Pigeon. Réserve Cousteau." },
+    { name: "Anse à Sable", commune: "Bouillante", lat: 16.1380, lng: -61.7610, quality: "interdite", type: "mer", ecoli: "> 500 UFC/100ml", enterocoques: "> 200 UFC/100ml", notes: "🚫 Baignade interdite. Qualité insuffisante depuis +5 ans." },
+    { name: "Petite Anse (Rejet)", commune: "Bouillante", lat: 16.1330, lng: -61.7580, quality: "interdite", type: "mer", ecoli: "> 500 UFC/100ml", enterocoques: "> 200 UFC/100ml", notes: "🚫 Baignade interdite. Rejet à proximité, pollution chronique." },
+
+    // Pointe-Noire
+    { name: "Plage de la Grande Anse", commune: "Pointe-Noire", lat: 16.2320, lng: -61.7870, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Belle plage de sable noir volcanique." },
+    { name: "Plage Caraïbe", commune: "Pointe-Noire", lat: 16.2210, lng: -61.7830, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage tranquille, cadre préservé." },
+    { name: "Acomat", commune: "Pointe-Noire", lat: 16.2400, lng: -61.7650, quality: "insuffisante", type: "riviere", ecoli: "500–1800 UFC/100ml", enterocoques: "200–660 UFC/100ml", notes: "⚠️ Qualité insuffisante en 2024. Bassin naturel en rivière." },
+
+    // Vieux-Habitants
+    { name: "Plage de Rocroy", commune: "Vieux-Habitants", lat: 16.0670, lng: -61.7560, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage paisible au sable gris." },
+    { name: "Plage du Bourg", commune: "Vieux-Habitants", lat: 16.0580, lng: -61.7500, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Plage du centre-bourg." },
+
+    // Baillif
+    { name: "Anse de Baillif", commune: "Baillif", lat: 16.0200, lng: -61.7430, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Petite anse en centre-ville." },
+
+    // Basse-Terre (ville)
+    { name: "Rivière aux Herbes", commune: "Basse-Terre", lat: 15.9980, lng: -61.7260, quality: "suffisante", type: "riviere", ecoli: "250–500 UFC/100ml", enterocoques: "100–200 UFC/100ml", notes: "Bassin de rivière. Qualité variable selon les pluies." },
+
+    // Trois-Rivières
+    { name: "Grande Anse", commune: "Trois-Rivières", lat: 15.9750, lng: -61.6430, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage de sable noir avec vue sur Les Saintes." },
+
+    // Capesterre-Belle-Eau
+    { name: "Plage de Roseau", commune: "Capesterre-Belle-Eau", lat: 16.0400, lng: -61.5600, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Longue plage de sable brun doré." },
+    { name: "Petit Pérou", commune: "Capesterre-Belle-Eau", lat: 16.0550, lng: -61.5780, quality: "interdite", type: "riviere", ecoli: "> 1800 UFC/100ml", enterocoques: "> 660 UFC/100ml", notes: "🚫 Baignade interdite. Rivière polluée." },
+
+    // Gourbeyre
+    { name: "Dolé", commune: "Gourbeyre", lat: 16.0020, lng: -61.6950, quality: "interdite", type: "riviere", ecoli: "> 1800 UFC/100ml", enterocoques: "> 660 UFC/100ml", notes: "🚫 Baignade interdite. Bassin rivière." },
+
+    // Petit-Bourg
+    { name: "Viard", commune: "Petit-Bourg", lat: 16.1960, lng: -61.6060, quality: "interdite", type: "mer", ecoli: "> 500 UFC/100ml", enterocoques: "> 200 UFC/100ml", notes: "🚫 Baignade interdite depuis +5 ans." },
+    { name: "Diane", commune: "Petit-Bourg", lat: 16.2050, lng: -61.6200, quality: "interdite", type: "riviere", ecoli: "> 1800 UFC/100ml", enterocoques: "> 660 UFC/100ml", notes: "🚫 Baignade interdite. Rivière polluée." },
+    { name: "Plage de la Jaille", commune: "Petit-Bourg", lat: 16.1820, lng: -61.5950, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Petite crique agréable." },
+
+    // === GRANDE-TERRE ===
+    // Les Abymes / Pointe-à-Pitre
+    { name: "Bas du Fort", commune: "Les Abymes", lat: 16.2240, lng: -61.5290, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Plage de la marina, accès facile." },
+
+    // Gosier
+    { name: "Plage de la Datcha", commune: "Le Gosier", lat: 16.2080, lng: -61.4940, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage urbaine populaire, face à l'Îlet du Gosier." },
+    { name: "Anse Canot", commune: "Le Gosier", lat: 16.2020, lng: -61.4760, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Petite anse protégée par un récif." },
+    { name: "Plage de Sainte-Anne (Gosier)", commune: "Le Gosier", lat: 16.2150, lng: -61.4800, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage de sable blanc, eaux turquoise." },
+    { name: "Petit Havre", commune: "Le Gosier", lat: 16.1980, lng: -61.4680, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Anse protégée idéale pour les familles." },
+
+    // Sainte-Anne
+    { name: "Plage de Bois Jolan", commune: "Sainte-Anne", lat: 16.2200, lng: -61.3700, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Magnifique plage de sable blanc, cocotiers. Carte postale." },
+    { name: "Plage de la Caravelle", commune: "Sainte-Anne", lat: 16.2270, lng: -61.3830, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Club Med, plage de sable blanc iconique." },
+    { name: "Plage du Bourg", commune: "Sainte-Anne", lat: 16.2290, lng: -61.3870, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage centrale animée de Sainte-Anne." },
+    { name: "Anse à l'Eau", commune: "Sainte-Anne", lat: 16.2310, lng: -61.3580, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Anse tranquille avec mangrove à proximité." },
+
+    // Saint-François
+    { name: "Plage des Raisins Clairs", commune: "Saint-François", lat: 16.2450, lng: -61.2870, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Grande plage de sable blanc, eaux peu profondes." },
+    { name: "Anse à la Gourde", commune: "Saint-François", lat: 16.2520, lng: -61.2560, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Site archéologique amérindien, plage sauvage magnifique." },
+    { name: "Plage de la Pointe des Châteaux", commune: "Saint-François", lat: 16.2480, lng: -61.2050, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Extrémité est de la Guadeloupe. Paysage grandiose." },
+    { name: "Anse Tarare", commune: "Saint-François", lat: 16.2510, lng: -61.2200, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage naturiste, cadre sauvage et préservé." },
+
+    // Le Moule
+    { name: "Plage de l'Autre Bord", commune: "Le Moule", lat: 16.3350, lng: -61.3420, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Grande plage de surf, sable blanc." },
+    { name: "Anse Salabouelle", commune: "Le Moule", lat: 16.3310, lng: -61.3480, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Anse du bourg du Moule." },
+    { name: "Anse Porte d'Enfer", commune: "Le Moule", lat: 16.3630, lng: -61.3180, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Lagon naturel spectaculaire protégé des vagues." },
+
+    // Morne-à-l'Eau
+    { name: "Babin", commune: "Morne-à-l'Eau", lat: 16.3260, lng: -61.4610, quality: "suffisante", type: "mer", ecoli: "250–500 UFC/100ml", enterocoques: "100–200 UFC/100ml", notes: "Zone de mangrove, qualité variable." },
+
+    // Port-Louis
+    { name: "Plage du Souffleur", commune: "Port-Louis", lat: 16.4280, lng: -61.5310, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "L'une des plus belles plages de Grande-Terre. Sable blanc immaculé." },
+    { name: "Anse du Souffleur", commune: "Port-Louis", lat: 16.4260, lng: -61.5280, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Cadre paradisiaque, eaux calmes et limpides." },
+
+    // Anse-Bertrand
+    { name: "Anse Laborde", commune: "Anse-Bertrand", lat: 16.4710, lng: -61.5070, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage sauvage du nord de Grande-Terre." },
+    { name: "Anse de la Chapelle", commune: "Anse-Bertrand", lat: 16.4680, lng: -61.4920, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Petite crique charmante." },
+
+    // Sainte-Rose
+    { name: "Plage de Cluny", commune: "Sainte-Rose", lat: 16.3330, lng: -61.6950, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Longue plage de sable doré dans un cadre verdoyant." },
+    { name: "Plage de la Ramée", commune: "Sainte-Rose", lat: 16.3440, lng: -61.6880, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Plage près du domaine de la Ramée." },
+    { name: "Sofaia", commune: "Sainte-Rose", lat: 16.3100, lng: -61.7080, quality: "bonne", type: "riviere", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Bassin naturel en forêt tropicale." },
+
+    // Lamentin
+    { name: "Plage de Sainte-Claire", commune: "Lamentin", lat: 16.2700, lng: -61.6300, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Plage calme." },
+
+    // Baie-Mahault
+    { name: "Jarry Plage", commune: "Baie-Mahault", lat: 16.2550, lng: -61.5870, quality: "suffisante", type: "mer", ecoli: "250–500 UFC/100ml", enterocoques: "100–200 UFC/100ml", notes: "Zone industrielle proche, qualité variable." },
+
+    // === ÎLES ===
+    // Marie-Galante
+    { name: "Anse Canot", commune: "Saint-Louis (Marie-Galante)", lat: 15.9540, lng: -61.3190, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage préservée de Marie-Galante." },
+    { name: "Plage de la Feuillère", commune: "Capesterre-de-MG", lat: 15.8870, lng: -61.2580, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Sublime plage de sable blanc, l'une des plus belles des Antilles." },
+    { name: "Anse de Mays", commune: "Capesterre-de-MG", lat: 15.8800, lng: -61.2670, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage sauvage et tranquille." },
+    { name: "Les Basses", commune: "Grand-Bourg (Marie-Galante)", lat: 15.8780, lng: -61.3150, quality: "interdite", type: "mer", ecoli: "> 500 UFC/100ml", enterocoques: "> 200 UFC/100ml", notes: "🚫 Baignade interdite depuis +5 ans." },
+    { name: "Plage de Grand-Bourg", commune: "Grand-Bourg (Marie-Galante)", lat: 15.8830, lng: -61.3120, quality: "bonne", type: "mer", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Plage du bourg principal." },
+
+    // Les Saintes
+    { name: "Plage de Pompierre", commune: "Terre-de-Haut (Les Saintes)", lat: 15.8630, lng: -61.5860, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Anse protégée et calme. Idéale pour le snorkeling." },
+    { name: "Anse du Bourg", commune: "Terre-de-Haut (Les Saintes)", lat: 15.8600, lng: -61.5810, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage principale de Terre-de-Haut, au pied du Fort." },
+    { name: "Anse Crawen", commune: "Terre-de-Haut (Les Saintes)", lat: 15.8530, lng: -61.5910, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage isolée, naturisme. Vue magnifique." },
+    { name: "Grande Anse", commune: "Terre-de-Bas (Les Saintes)", lat: 15.8500, lng: -61.6280, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage sauvage de Terre-de-Bas." },
+
+    // La Désirade
+    { name: "Plage du Souffleur", commune: "La Désirade", lat: 16.3130, lng: -61.0690, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage paradisiaque de sable blanc, eaux turquoise." },
+    { name: "Plage de Beauséjour", commune: "La Désirade", lat: 16.3160, lng: -61.0500, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Plage protégée par le récif." },
+    { name: "Anse Petite Rivière", commune: "La Désirade", lat: 16.3100, lng: -61.0850, quality: "excellent", type: "mer", ecoli: "< 100 UFC/100ml", enterocoques: "< 50 UFC/100ml", notes: "Petite crique charmante." },
+
+    // Autres rivières et bassins
+    { name: "Bras David", commune: "Petit-Bourg", lat: 16.1740, lng: -61.6800, quality: "bonne", type: "riviere", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Bassin en forêt tropicale, cœur du Parc National." },
+    { name: "Cascade aux Écrevisses", commune: "Petit-Bourg", lat: 16.1780, lng: -61.6920, quality: "bonne", type: "riviere", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Site très fréquenté, cascade accessible." },
+    { name: "Bassin Bleu", commune: "Goyave", lat: 16.1300, lng: -61.6200, quality: "bonne", type: "riviere", ecoli: "100–250 UFC/100ml", enterocoques: "50–100 UFC/100ml", notes: "Bassin naturel aux eaux bleutées." },
+    { name: "Saut de la Lézarde", commune: "Petit-Bourg", lat: 16.1680, lng: -61.6650, quality: "suffisante", type: "riviere", ecoli: "250–500 UFC/100ml", enterocoques: "100–200 UFC/100ml", notes: "Cascade et bassin naturel. Qualité variable." },
+];
+
+// ============================================================
+// MAP SETUP
+// ============================================================
+const map = L.map('map', {
+    center: [16.2, -61.55],
+    zoom: 10,
+    zoomControl: false,
+    attributionControl: false
+});
+
+L.control.zoom({ position: 'topright' }).addTo(map);
+L.control.attribution({ position: 'bottomright', prefix: '© OpenStreetMap' }).addTo(map);
+
+// Dark tile layer
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '© CARTO © OSM'
+}).addTo(map);
+
+// ============================================================
+// MARKER CREATION
+// ============================================================
+const qualityConfig = {
+    excellent:    { color: '#00e676', label: 'Excellente', emoji: '✅', bgAlpha: '33' },
+    bonne:        { color: '#29b6f6', label: 'Bonne',     emoji: '💙', bgAlpha: '33' },
+    suffisante:   { color: '#ffa726', label: 'Suffisante',emoji: '⚠️', bgAlpha: '33' },
+    insuffisante: { color: '#ef5350', label: 'Insuffisante', emoji: '🔴', bgAlpha: '33' },
+    interdite:    { color: '#b71c1c', label: 'Interdite 🚫', emoji: '🚫', bgAlpha: '44' }
+};
+
+function createMarkerIcon(beach) {
+    const cfg = qualityConfig[beach.quality];
+    const typeIcon = beach.type === 'mer' ? '🏖️' : '🏞️';
+    const size = beach.quality === 'interdite' ? 30 : 24;
+    const pulse = beach.quality === 'interdite' ?
+        `<div style="position:absolute;top:-4px;left:-4px;width:${size+8}px;height:${size+8}px;border-radius:50%;background:${cfg.color}22;animation:pulse 2s infinite;"></div>` : '';
+
+    return L.divIcon({
+        className: '',
+        iconSize: [size, size],
+        iconAnchor: [size/2, size/2],
+        popupAnchor: [0, -size/2 - 4],
+        html: `
+            <div style="position:relative;width:${size}px;height:${size}px;">
+                ${pulse}
+                <div style="
+                    position:relative;z-index:2;
+                    width:${size}px;height:${size}px;border-radius:50%;
+                    background:${cfg.color};
+                    border:2px solid ${cfg.color};
+                    box-shadow:0 0 12px ${cfg.color}66, 0 2px 8px rgba(0,0,0,0.4);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:${size*0.45}px;
+                    cursor:pointer;
+                    transition: transform 0.2s;
+                ">${typeIcon}</div>
+            </div>
+            <style>
+                @keyframes pulse {
+                    0% { transform: scale(1); opacity: 0.6; }
+                    50% { transform: scale(1.5); opacity: 0; }
+                    100% { transform: scale(1); opacity: 0; }
+                }
+            </style>
+        `
+    });
+}
+
+function createPopup(beach) {
+    const cfg = qualityConfig[beach.quality];
+    const typeLabel = beach.type === 'mer' ? '🌊 Eau de mer' : '🏞️ Eau douce';
+
+    return `
+        <div class="popup-header">
+            <div class="popup-badge" style="background:${cfg.color}22;border:2px solid ${cfg.color};">
+                ${cfg.emoji}
+            </div>
+            <div>
+                <div class="popup-title">${beach.name}</div>
+                <div class="popup-commune">${beach.commune} · ${typeLabel}</div>
+            </div>
+        </div>
+        <div class="popup-quality" style="background:${cfg.color}22;color:${cfg.color};border:1px solid ${cfg.color}44;">
+            ● ${cfg.label}
+        </div>
+        <div class="popup-details">
+            <div class="popup-detail">
+                <div class="label">E. coli</div>
+                <div class="value" style="color:${cfg.color}">${beach.ecoli}</div>
+            </div>
+            <div class="popup-detail">
+                <div class="label">Entérocoques</div>
+                <div class="value" style="color:${cfg.color}">${beach.enterocoques}</div>
+            </div>
+        </div>
+        ${beach.notes ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);font-size:0.75rem;color:rgba(255,255,255,0.55);line-height:1.4;">${beach.notes}</div>` : ''}
+    `;
+}
+
+// ============================================================
+// ADD MARKERS
+// ============================================================
+let markers = [];
+let allLayers = L.layerGroup().addTo(map);
+
+beaches.forEach(beach => {
+    const marker = L.marker([beach.lat, beach.lng], { icon: createMarkerIcon(beach) })
+        .bindPopup(createPopup(beach), { maxWidth: 280 });
+    marker.beachData = beach;
+    markers.push(marker);
+    allLayers.addLayer(marker);
+});
+
+// ============================================================
+// STATS
+// ============================================================
+function updateStats(filteredBeaches) {
+    const list = filteredBeaches || beaches;
+    document.getElementById('count-excellent').textContent = list.filter(b => b.quality === 'excellent').length;
+    document.getElementById('count-bonne').textContent = list.filter(b => b.quality === 'bonne').length;
+    document.getElementById('count-suffisante').textContent = list.filter(b => b.quality === 'suffisante').length;
+    document.getElementById('count-insuffisante').textContent = list.filter(b => b.quality === 'insuffisante').length;
+    document.getElementById('count-interdite').textContent = list.filter(b => b.quality === 'interdite').length;
+}
+updateStats();
+
+// ============================================================
+// FILTERS
+// ============================================================
+let activeFilter = 'all';
+
+function filterBy(filter) {
+    activeFilter = filter;
+
+    // Update buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.filter === filter);
+    });
+
+    // Clear and re-add markers
+    allLayers.clearLayers();
+
+    const filteredBeaches = [];
+    markers.forEach(marker => {
+        const b = marker.beachData;
+        let show = false;
+
+        if (filter === 'all') show = true;
+        else if (filter === 'mer') show = b.type === 'mer';
+        else if (filter === 'riviere') show = b.type === 'riviere';
+        else show = b.quality === filter;
+
+        if (show) {
+            allLayers.addLayer(marker);
+            filteredBeaches.push(b);
+        }
+    });
+
+    updateStats(filteredBeaches.length > 0 ? filteredBeaches : undefined);
+}
+
+// Button event listeners
+document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => filterBy(btn.dataset.filter));
+});
+
+// ============================================================
+// Current month temperature highlight
+// ============================================================
+const months = ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Août','Sep','Oct','Nov','Déc'];
+const temps = [26.9, 26.5, 26.8, 27.4, 27.9, 28.5, 28.6, 29.0, 29.4, 29.0, 28.5, 27.6];
+const currentMonth = new Date().getMonth();
+document.getElementById('current-temp').textContent = temps[currentMonth] + '°C';
+
+</script>
+</body>
+</html>

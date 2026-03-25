@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guadeloupe 3D — Visualisation Topographique</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* ─── Panel de contrôle ─── */
+        .control-panel {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 10;
+            background: rgba(10, 10, 20, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 20px;
+            width: 300px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .control-panel h1 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #00d4aa, #0088ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .control-panel .subtitle {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .control-group {
+            margin-bottom: 14px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 6px;
+        }
+
+        .control-group label span.value {
+            color: #00d4aa;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #00d4aa;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0,212,170,0.5);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.04);
+            color: #ccc;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: rgba(0,212,170,0.15);
+            border-color: rgba(0,212,170,0.4);
+            color: #00d4aa;
+        }
+
+        .btn.active {
+            background: rgba(0,212,170,0.2);
+            border-color: #00d4aa;
+            color: #00d4aa;
+        }
+
+        /* ─── Info panel ─── */
+        .info-panel {
+            position: absolute;
+            bottom: 32px;
+            left: 16px;
+            z-index: 10;
+            background: rgba(10, 10, 20, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 12px;
+            line-height: 1.6;
+            max-width: 340px;
+        }
+
+        .info-panel .coord {
+            color: rgba(255,255,255,0.5);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .info-panel .elev {
+            color: #00d4aa;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* ─── Légende altitude ─── */
+        .legend {
+            position: absolute;
+            bottom: 32px;
+            right: 16px;
+            z-index: 10;
+            background: rgba(10, 10, 20, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 14px 18px;
+        }
+
+        .legend h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 8px;
+        }
+
+        .legend-bar {
+            width: 200px;
+            height: 12px;
+            border-radius: 6px;
+            background: linear-gradient(to right, #004d40, #00796b, #4caf50, #cddc39, #ffeb3b, #ff9800, #f44336, #880e4f);
+        }
+
+        .legend-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            margin-top: 4px;
+        }
+
+        /* ─── POI markers ─── */
+        .poi-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+            padding: 3px 8px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+
+        /* ─── Sources panel ─── */
+        .sources-toggle {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+        }
+
+        .sources-btn {
+            padding: 8px 14px;
+            background: rgba(10, 10, 20, 0.88);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #ccc;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sources-btn:hover {
+            border-color: rgba(0,212,170,0.4);
+            color: #00d4aa;
+        }
+
+        .sources-content {
+            display: none;
+            margin-top: 8px;
+            background: rgba(10, 10, 20, 0.92);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 360px;
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        .sources-content.open { display: block; }
+
+        .sources-content h3 {
+            font-size: 12px;
+            color: #00d4aa;
+            margin-bottom: 8px;
+        }
+
+        .sources-content a {
+            color: #4db8ff;
+            text-decoration: none;
+        }
+
+        .sources-content a:hover { text-decoration: underline; }
+
+        .sources-content ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sources-content li {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .sources-content li:last-child { border: none; }
+
+        /* ─── Loading ─── */
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: #0a0a0f;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.6s;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #00d4aa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 640px) {
+            .control-panel { width: calc(100% - 32px); }
+            .legend { display: none; }
+        }
+
+        .maplibregl-ctrl-bottom-left, .maplibregl-ctrl-bottom-right {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loader">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Chargement du relief de la Guadeloupe…</div>
+</div>
+
+<!-- Panneau de contrôle -->
+<div class="control-panel">
+    <h1>🏝️ Guadeloupe 3D</h1>
+    <div class="subtitle">Visualisation topographique interactive</div>
+
+    <div class="control-group">
+        <label>Exagération du relief <span class="value" id="exagVal">1.5×</span></label>
+        <input type="range" id="exaggeration" min="0" max="5" step="0.1" value="1.5">
+    </div>
+
+    <div class="control-group">
+        <label>Direction lumière <span class="value" id="lightVal">210°</span></label>
+        <input type="range" id="lightDir" min="0" max="360" step="5" value="210">
+    </div>
+
+    <div class="control-group">
+        <label>Inclinaison caméra <span class="value" id="pitchVal">60°</span></label>
+        <input type="range" id="pitch" min="0" max="85" step="1" value="60">
+    </div>
+
+    <div class="btn-row">
+        <button class="btn" onclick="flyTo('soufriere')">🌋 La Soufrière</button>
+        <button class="btn" onclick="flyTo('pterre')">🏙️ Pointe-à-Pitre</button>
+        <button class="btn" onclick="flyTo('saintes')">🏖️ Les Saintes</button>
+    </div>
+    <div class="btn-row">
+        <button class="btn" onclick="flyTo('desirade')">⛵ La Désirade</button>
+        <button class="btn" onclick="flyTo('marie')">🌿 Marie-Galante</button>
+        <button class="btn" onclick="flyTo('overview')">🗺️ Vue globale</button>
+    </div>
+    <div class="btn-row" style="margin-top: 8px;">
+        <button class="btn" id="btnSatellite" onclick="toggleStyle('satellite')">🛰️ Satellite</button>
+        <button class="btn active" id="btnTopo" onclick="toggleStyle('topo')">🗻 Topographique</button>
+        <button class="btn" id="btnDark" onclick="toggleStyle('dark')">🌙 Sombre</button>
+    </div>
+</div>
+
+<!-- Info curseur -->
+<div class="info-panel" id="infoPanel">
+    <div>Position : <span class="coord" id="coordDisplay">—</span></div>
+    <div>Altitude : <span class="elev" id="elevDisplay">—</span></div>
+</div>
+
+<!-- Légende -->
+<div class="legend">
+    <h3>Altitude (m)</h3>
+    <div class="legend-bar"></div>
+    <div class="legend-labels">
+        <span>0</span>
+        <span>200</span>
+        <span>500</span>
+        <span>1000</span>
+        <span>1467</span>
+    </div>
+</div>
+
+<!-- Sources -->
+<div class="sources-toggle">
+    <button class="sources-btn" onclick="toggleSources()">📚 Sources</button>
+    <div class="sources-content" id="sourcesPanel">
+        <h3>Sources de données</h3>
+        <ul>
+            <li>🗻 <strong>Élévation</strong> — <a href="https://docs.mapbox.com/data/tilesets/reference/mapbox-terrain-dem-v1/" target="_blank">Mapbox Terrain-DEM v1</a> (SRTM 30m + Aster GDEM)</li>
+            <li>🛰️ <strong>Imagerie satellite</strong> — <a href="https://www.maptiler.com/maps/satellite/" target="_blank">MapTiler Satellite</a> (Sentinel-2, Maxar)</li>
+            <li>🗺️ <strong>Fond topo</strong> — <a href="https://www.maptiler.com/maps/topo-v2/" target="_blank">MapTiler Topo v2</a></li>
+            <li>📐 <strong>IGN France</strong> — <a href="https://geoservices.ign.fr/rgealti" target="_blank">RGE ALTI® 1m/5m</a> (MNT haute résolution, licence Etalab)</li>
+            <li>📊 <strong>BD TOPO®</strong> — <a href="https://geoservices.ign.fr/ressource/158235" target="_blank">IGN Guadeloupe D971</a></li>
+            <li>🌍 <strong>Open-Meteo</strong> — <a href="https://open-meteo.com/en/docs/elevation-api" target="_blank">API Élévation gratuite</a> (Copernicus DEM GLO-90)</li>
+            <li>🔬 <strong>SRTM NASA</strong> — <a href="https://www2.jpl.nasa.gov/srtm/" target="_blank">Shuttle Radar Topography Mission</a> (90m → 30m)</li>
+            <li>📍 <strong>Coordonnées</strong> — Bbox : 15.83°N–16.52°N / 61.87°W–61.15°W (<a href="https://latitudelongitude.org/gp/" target="_blank">ref</a>)</li>
+            <li>📏 <strong>Soufrière</strong> — 1 467 m, point culminant des Petites Antilles</li>
+        </ul>
+        <p style="margin-top: 10px; color: rgba(255,255,255,0.35); font-size: 10px;">
+            Rendu 3D : MapLibre GL JS + terrain-RGB tiles<br>
+            Données terrain DEM encodées en RGB (précision ~0.1m)
+        </p>
+    </div>
+</div>
+
+<div id="map"></div>
+
+<script>
+    // ─── MapTiler API Key (free tier — 100k tiles/month) ───
+    // Pour la production, créer un compte gratuit sur https://www.maptiler.com/
+    const MAPTILER_KEY = 'get_your_own_OpIi9ZULNHzrESv6T2vL';
+
+    // ─── Styles disponibles ───
+    const STYLES = {
+        topo: `https://api.maptiler.com/maps/topo-v2/style.json?key=${MAPTILER_KEY}`,
+        satellite: `https://api.maptiler.com/maps/hybrid/style.json?key=${MAPTILER_KEY}`,
+        dark: `https://api.maptiler.com/maps/streets-v2-dark/style.json?key=${MAPTILER_KEY}`
+    };
+
+    // ─── Points d'intérêt ───
+    const POI = {
+        soufriere: { center: [-61.6642, 16.0445], zoom: 13.5, pitch: 70, bearing: -30, name: 'La Soufrière (1 467 m)' },
+        pterre: { center: [-61.5353, 16.2411], zoom: 13, pitch: 55, bearing: 20, name: 'Pointe-à-Pitre' },
+        saintes: { center: [-61.6175, 15.8595], zoom: 12.5, pitch: 60, bearing: -45, name: 'Les Saintes' },
+        desirade: { center: [-61.0500, 16.3050], zoom: 12.5, pitch: 55, bearing: 10, name: 'La Désirade' },
+        marie: { center: [-61.2750, 15.9350], zoom: 11.5, pitch: 55, bearing: 0, name: 'Marie-Galante' },
+        overview: { center: [-61.55, 16.15], zoom: 9.8, pitch: 60, bearing: -15, name: 'Vue d\'ensemble' }
+    };
+
+    let currentStyle = 'topo';
+    let map;
+
+    function initMap() {
+        map = new maplibregl.Map({
+            container: 'map',
+            style: STYLES[currentStyle],
+            center: [-61.55, 16.15],
+            zoom: 9.8,
+            pitch: 60,
+            bearing: -15,
+            maxPitch: 85,
+            antialias: true,
+            hash: true
+        });
+
+        map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+        map.addControl(new maplibregl.ScaleControl({ maxWidth: 200 }), 'bottom-right');
+        map.addControl(new maplibregl.FullscreenControl(), 'top-right');
+
+        map.on('load', () => {
+            // ─── Terrain 3D ───
+            if (!map.getSource('terrain')) {
+                map.addSource('terrain', {
+                    type: 'raster-dem',
+                    url: `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=${MAPTILER_KEY}`,
+                    tileSize: 256
+                });
+            }
+
+            map.setTerrain({
+                source: 'terrain',
+                exaggeration: 1.5
+            });
+
+            // ─── Ciel / atmosphère ───
+            if (map.getLayer('sky') === undefined) {
+                map.addLayer({
+                    id: 'sky',
+                    type: 'sky',
+                    paint: {
+                        'sky-type': 'atmosphere',
+                        'sky-atmosphere-sun': [210, 40],
+                        'sky-atmosphere-sun-intensity': 6
+                    }
+                });
+            }
+
+            // ─── Hillshade ───
+            if (!map.getSource('hillshade-src')) {
+                map.addSource('hillshade-src', {
+                    type: 'raster-dem',
+                    url: `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=${MAPTILER_KEY}`,
+                    tileSize: 256
+                });
+            }
+
+            // ─── Masquer le loader ───
+            document.getElementById('loader').classList.add('hidden');
+
+            // ─── Marqueurs POI ───
+            addPOIMarkers();
+        });
+
+        // ─── Affichage coordonnées + altitude ───
+        map.on('mousemove', (e) => {
+            const { lng, lat } = e.lngLat;
+            document.getElementById('coordDisplay').textContent =
+                `${lat.toFixed(5)}°N, ${Math.abs(lng).toFixed(5)}°W`;
+
+            const elev = map.queryTerrainElevation(e.lngLat);
+            if (elev !== null && elev !== undefined) {
+                document.getElementById('elevDisplay').textContent = `${Math.round(elev)} m`;
+            } else {
+                document.getElementById('elevDisplay').textContent = '—';
+            }
+        });
+    }
+
+    function addPOIMarkers() {
+        const markers = [
+            { coord: [-61.6642, 16.0445], label: '🌋 La Soufrière · 1 467 m' },
+            { coord: [-61.5353, 16.2411], label: '🏙️ Pointe-à-Pitre' },
+            { coord: [-61.7275, 16.2700], label: '🏛️ Basse-Terre' },
+            { coord: [-61.7080, 16.3472], label: '🏖️ Sainte-Rose' },
+            { coord: [-61.6500, 16.1800], label: '🌊 Chutes du Carbet' },
+            { coord: [-61.6175, 15.8595], label: '⛵ Terre-de-Haut' },
+            { coord: [-61.0500, 16.3050], label: '🏝️ La Désirade' },
+            { coord: [-61.2750, 15.9350], label: '🌿 Marie-Galante' },
+            { coord: [-61.4892, 16.3472], label: '🐠 Le Gosier' },
+            { coord: [-61.5067, 16.2000], label: '📍 Petit-Bourg' },
+        ];
+
+        markers.forEach(m => {
+            const el = document.createElement('div');
+            el.className = 'poi-label';
+            el.textContent = m.label;
+
+            new maplibregl.Marker({ element: el, anchor: 'bottom' })
+                .setLngLat(m.coord)
+                .addTo(map);
+        });
+    }
+
+    // ─── Contrôles ───
+    document.getElementById('exaggeration').addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        document.getElementById('exagVal').textContent = val.toFixed(1) + '×';
+        if (map.getTerrain()) {
+            map.setTerrain({ source: 'terrain', exaggeration: val });
+        }
+    });
+
+    document.getElementById('lightDir').addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        document.getElementById('lightVal').textContent = val + '°';
+        const skyLayer = map.getLayer('sky');
+        if (skyLayer) {
+            const sunAltitude = 40;
+            map.setPaintProperty('sky', 'sky-atmosphere-sun', [val, sunAltitude]);
+        }
+    });
+
+    document.getElementById('pitch').addEventListener('input', (e) => {
+        const val = parseInt(e.target.value);
+        document.getElementById('pitchVal').textContent = val + '°';
+        map.easeTo({ pitch: val, duration: 300 });
+    });
+
+    function flyTo(key) {
+        const dest = POI[key];
+        if (!dest) return;
+        map.flyTo({
+            center: dest.center,
+            zoom: dest.zoom,
+            pitch: dest.pitch,
+            bearing: dest.bearing,
+            duration: 3000,
+            essential: true
+        });
+    }
+
+    function toggleStyle(style) {
+        currentStyle = style;
+        const currentCenter = map.getCenter();
+        const currentZoom = map.getZoom();
+        const currentPitch = map.getPitch();
+        const currentBearing = map.getBearing();
+        const exag = parseFloat(document.getElementById('exaggeration').value);
+
+        // Update button states
+        document.querySelectorAll('.btn-row .btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn' + style.charAt(0).toUpperCase() + style.slice(1))?.classList.add('active');
+
+        map.setStyle(STYLES[style]);
+
+        map.once('style.load', () => {
+            if (!map.getSource('terrain')) {
+                map.addSource('terrain', {
+                    type: 'raster-dem',
+                    url: `https://api.maptiler.com/tiles/terrain-rgb-v2/tiles.json?key=${MAPTILER_KEY}`,
+                    tileSize: 256
+                });
+            }
+            map.setTerrain({ source: 'terrain', exaggeration: exag });
+
+            if (!map.getLayer('sky')) {
+                map.addLayer({
+                    id: 'sky',
+                    type: 'sky',
+                    paint: {
+                        'sky-type': 'atmosphere',
+                        'sky-atmosphere-sun': [parseInt(document.getElementById('lightDir').value), 40],
+                        'sky-atmosphere-sun-intensity': 6
+                    }
+                });
+            }
+
+            addPOIMarkers();
+        });
+    }
+
+    function toggleSources() {
+        document.getElementById('sourcesPanel').classList.toggle('open');
+    }
+
+    // ─── Init ───
+    initMap();
+</script>
+
+</body>
+</html>

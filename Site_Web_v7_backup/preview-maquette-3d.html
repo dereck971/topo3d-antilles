@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Aperçu 3D de la maquette topographique blanche - Topo3D-Antilles">
+<title>Topo3D-Antilles — Aperçu Produit Maquette Blanche</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0f0f0;overflow:hidden;font-family:'DM Sans',system-ui,sans-serif}
+canvas{display:block}
+#overlay{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.92);backdrop-filter:blur(12px);
+  border-radius:16px;padding:16px 32px;text-align:center;
+  box-shadow:0 4px 24px rgba(0,0,0,.08);z-index:10;pointer-events:none}
+#overlay h3{font-size:14px;font-weight:600;color:#111;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+#overlay p{font-size:12px;color:#666;font-weight:400}
+#logo{position:fixed;top:24px;left:50%;transform:translateX(-50%);
+  font-size:18px;font-weight:700;color:#111;letter-spacing:1px;z-index:10;
+  background:rgba(255,255,255,.85);backdrop-filter:blur(10px);
+  padding:10px 24px;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+#logo span{color:#00c896}
+#badge{position:fixed;top:24px;right:24px;
+  background:#00c896;color:#fff;font-size:11px;font-weight:600;
+  padding:6px 14px;border-radius:20px;z-index:10;letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div id="logo">Topo3D<span>-Antilles</span></div>
+<div id="badge">APERÇU PRODUIT</div>
+<div id="overlay">
+  <h3>Maquette Topographique 3D</h3>
+  <p>3 Bungalows • Terrain en relief • Courbes de niveau • Guadeloupe</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// === SCENE SETUP ===
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf0f0f0);
+scene.fog = new THREE.Fog(0xf0f0f0, 35, 55);
+
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth/window.innerHeight, 0.1, 100);
+camera.position.set(12, 10, 12);
+camera.lookAt(0, 1, 0);
+
+const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+document.body.appendChild(renderer.domElement);
+
+// === MATERIALS ===
+const whiteMat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.85, metalness:0.0});
+const lightGrayMat = new THREE.MeshStandardMaterial({color:0xe8e8e8, roughness:0.9, metalness:0.0});
+const medGrayMat = new THREE.MeshStandardMaterial({color:0xd0d0d0, roughness:0.9, metalness:0.0});
+const woodMat = new THREE.MeshStandardMaterial({color:0xc8b090, roughness:0.8, metalness:0.0});
+const poolMat = new THREE.MeshStandardMaterial({color:0xd4e8f0, roughness:0.3, metalness:0.1});
+const pathMat = new THREE.MeshStandardMaterial({color:0xddd8d0, roughness:0.95, metalness:0.0});
+const wireMat = new THREE.MeshBasicMaterial({color:0xbbbbbb});
+
+// === MASTER GROUP (for rotation) ===
+const masterGroup = new THREE.Group();
+scene.add(masterGroup);
+
+// === TERRAIN LAYERS (topographic contours) ===
+function createTerrainLayer(y, scale, height, material) {
+  const shape = new THREE.Shape();
+  const s = scale;
+  const r = 0.3 * s;
+  // Rounded rectangle with slight organic variation
+  shape.moveTo(-s + r, -s);
+  shape.lineTo(s - r, -s);
+  shape.quadraticCurveTo(s, -s, s, -s + r);
+  shape.lineTo(s, s - r);
+  shape.quadraticCurveTo(s, s, s - r, s);
+  shape.lineTo(-s + r, s);
+  shape.quadraticCurveTo(-s, s, -s, s - r);
+  shape.lineTo(-s, -s + r);
+  shape.quadraticCurveTo(-s, -s, -s + r, -s);
+
+  const extrudeSettings = {depth: height, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2};
+  const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = y;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+// Stack of terrain layers — creates the topographic contour effect
+const numLayers = 14;
+const baseSize = 5.5;
+for (let i = 0; i < numLayers; i++) {
+  const t = i / numLayers;
+  const scale = baseSize - t * 2.2;
+  const layerHeight = 0.12;
+  const y = i * 0.15;
+  // Alternate between white and light gray for visual distinction
+  const mat = i % 2 === 0 ? whiteMat : lightGrayMat;
+  const layer = createTerrainLayer(y, scale, layerHeight, mat);
+  // Add slight offset for natural look
+  layer.position.x = Math.sin(i * 0.5) * 0.08;
+  layer.position.z = Math.cos(i * 0.7) * 0.06;
+  masterGroup.add(layer);
+}
+
+// Top terrain surface (gentle hill)
+const topGeo = new THREE.CylinderGeometry(3.2, 3.5, 0.15, 32);
+const topMesh = new THREE.Mesh(topGeo, whiteMat);
+topMesh.position.y = numLayers * 0.15 + 0.07;
+topMesh.castShadow = true;
+topMesh.receiveShadow = true;
+masterGroup.add(topMesh);
+
+const surfaceY = numLayers * 0.15 + 0.15;
+
+// === BUNGALOW FUNCTION ===
+function createBungalow(x, z, rotation) {
+  const group = new THREE.Group();
+
+  // Stilts (4 pillars)
+  const stiltGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.6, 8);
+  const positions = [[-0.4,-0.5],[0.4,-0.5],[-0.4,0.5],[0.4,0.5]];
+  positions.forEach(([sx, sz]) => {
+    const stilt = new THREE.Mesh(stiltGeo, woodMat);
+    stilt.position.set(sx, 0.3, sz);
+    stilt.castShadow = true;
+    group.add(stilt);
+  });
+
+  // Floor platform
+  const floorGeo = new THREE.BoxGeometry(1.1, 0.06, 1.3);
+  const floor = new THREE.Mesh(floorGeo, woodMat);
+  floor.position.y = 0.6;
+  floor.castShadow = true;
+  floor.receiveShadow = true;
+  group.add(floor);
+
+  // Walls
+  const wallGeo = new THREE.BoxGeometry(1.0, 0.55, 1.1);
+  const walls = new THREE.Mesh(wallGeo, whiteMat);
+  walls.position.y = 0.91;
+  walls.castShadow = true;
+  walls.receiveShadow = true;
+  group.add(walls);
+
+  // Terrace (front extension)
+  const terraceGeo = new THREE.BoxGeometry(1.1, 0.04, 0.5);
+  const terrace = new THREE.Mesh(terraceGeo, woodMat);
+  terrace.position.set(0, 0.6, 0.9);
+  terrace.castShadow = true;
+  group.add(terrace);
+
+  // Terrace columns
+  const colGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.7, 6);
+  [[-0.45, 1.1],[0.45, 1.1]].forEach(([cx, cz]) => {
+    const col = new THREE.Mesh(colGeo, whiteMat);
+    col.position.set(cx, 0.95, cz);
+    col.castShadow = true;
+    group.add(col);
+  });
+
+  // Roof (2-slope hip roof)
+  const roofShape = new THREE.Shape();
+  roofShape.moveTo(-0.65, 0);
+  roofShape.lineTo(0, 0.35);
+  roofShape.lineTo(0.65, 0);
+  roofShape.closePath();
+  const roofExtSettings = {depth: 1.5, bevelEnabled: false};
+  const roofGeo = new THREE.ExtrudeGeometry(roofShape, roofExtSettings);
+  const roof = new THREE.Mesh(roofGeo, whiteMat);
+  roof.rotation.x = -Math.PI / 2;
+  roof.position.set(0, 1.18, -0.75);
+  roof.castShadow = true;
+  group.add(roof);
+
+  // Stairs
+  for (let s = 0; s < 4; s++) {
+    const stepGeo = new THREE.BoxGeometry(0.3, 0.04, 0.12);
+    const step = new THREE.Mesh(stepGeo, woodMat);
+    step.position.set(0, 0.6 - s * 0.14, 1.2 + s * 0.13);
+    step.castShadow = true;
+    group.add(step);
+  }
+
+  group.position.set(x, surfaceY, z);
+  group.rotation.y = rotation;
+  return group;
+}
+
+// === PLACE 3 BUNGALOWS IN ARC ===
+const b1 = createBungalow(-2.2, -0.3, Math.PI * 0.1);
+const b2 = createBungalow(0, -1.2, 0);
+const b3 = createBungalow(2.2, -0.3, -Math.PI * 0.1);
+masterGroup.add(b1, b2, b3);
+
+// === POOL ===
+const poolGeo = new THREE.CylinderGeometry(0.5, 0.45, 0.15, 24);
+const pool = new THREE.Mesh(poolGeo, poolMat);
+pool.position.set(0, surfaceY + 0.07, 0.5);
+pool.castShadow = true;
+pool.receiveShadow = true;
+masterGroup.add(pool);
+
+// Pool rim
+const rimGeo = new THREE.TorusGeometry(0.5, 0.03, 8, 24);
+const rim = new THREE.Mesh(rimGeo, whiteMat);
+rim.rotation.x = -Math.PI / 2;
+rim.position.set(0, surfaceY + 0.15, 0.5);
+masterGroup.add(rim);
+
+// === PATHS (gravel) ===
+function createPath(points) {
+  points.forEach(([px, pz, pw, pl, pr]) => {
+    const pGeo = new THREE.BoxGeometry(pw || 0.2, 0.02, pl || 0.5);
+    const p = new THREE.Mesh(pGeo, pathMat);
+    p.position.set(px, surfaceY + 0.01, pz);
+    p.rotation.y = pr || 0;
+    p.receiveShadow = true;
+    masterGroup.add(p);
+  });
+}
+createPath([
+  [-1.1, 0.5, 0.2, 1.5, 0.3],
+  [1.1, 0.5, 0.2, 1.5, -0.3],
+  [0, 1.3, 1.5, 0.2, 0],
+]);
+
+// === PALM TREES (lollipop style) ===
+function createPalm(x, z, height) {
+  const group = new THREE.Group();
+  // Trunk
+  const trunkGeo = new THREE.CylinderGeometry(0.03, 0.04, height, 6);
+  const trunk = new THREE.Mesh(trunkGeo, whiteMat);
+  trunk.position.y = height / 2;
+  trunk.castShadow = true;
+  group.add(trunk);
+  // Crown (lollipop sphere)
+  const crownGeo = new THREE.SphereGeometry(0.2, 12, 8);
+  const crown = new THREE.Mesh(crownGeo, whiteMat);
+  crown.position.y = height + 0.1;
+  crown.castShadow = true;
+  group.add(crown);
+  // Leaves (simple planes)
+  for (let l = 0; l < 5; l++) {
+    const leafGeo = new THREE.PlaneGeometry(0.35, 0.08);
+    const leaf = new THREE.Mesh(leafGeo, whiteMat);
+    leaf.position.y = height + 0.05;
+    leaf.rotation.y = (l / 5) * Math.PI * 2;
+    leaf.rotation.z = -0.4;
+    leaf.position.x = Math.cos((l / 5) * Math.PI * 2) * 0.2;
+    leaf.position.z = Math.sin((l / 5) * Math.PI * 2) * 0.2;
+    group.add(leaf);
+  }
+  group.position.set(x, surfaceY, z);
+  return group;
+}
+
+// Place palms around
+const palmPositions = [
+  [-3, -2, 1.3], [-2.8, 1.5, 1.1], [-1.5, 2, 1.4],
+  [1.5, 2.2, 1.2], [2.8, 1, 1.3], [3, -1.5, 1.1],
+  [-0.8, -2.2, 1.0], [0.8, -2.2, 1.15],
+  [-1.5, 0.8, 0.9], [1.5, 0.8, 0.95],
+];
+palmPositions.forEach(([px, pz, ph]) => masterGroup.add(createPalm(px, pz, ph)));
+
+// === PLOT BOUNDARY (thin wire) ===
+const wirePoints = [
+  new THREE.Vector3(-4.8, surfaceY - 0.5, -4.8),
+  new THREE.Vector3(4.8, surfaceY - 0.5, -4.8),
+  new THREE.Vector3(4.8, surfaceY - 0.5, 4.8),
+  new THREE.Vector3(-4.8, surfaceY - 0.5, 4.8),
+  new THREE.Vector3(-4.8, surfaceY - 0.5, -4.8),
+];
+const wireGeo = new THREE.BufferGeometry().setFromPoints(wirePoints);
+const wireLine = new THREE.Line(wireGeo, new THREE.LineBasicMaterial({color:0xcccccc}));
+masterGroup.add(wireLine);
+
+// Wire posts
+[[-4.8,-4.8],[4.8,-4.8],[4.8,4.8],[-4.8,4.8]].forEach(([wx, wz]) => {
+  const postGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 4);
+  const post = new THREE.Mesh(postGeo, medGrayMat);
+  post.position.set(wx, surfaceY - 0.3, wz);
+  masterGroup.add(post);
+});
+
+// === LIGHTS ===
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(8, 15, 8);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 2048;
+dirLight.shadow.mapSize.height = 2048;
+dirLight.shadow.camera.near = 0.5;
+dirLight.shadow.camera.far = 50;
+dirLight.shadow.camera.left = -10;
+dirLight.shadow.camera.right = 10;
+dirLight.shadow.camera.top = 10;
+dirLight.shadow.camera.bottom = -10;
+dirLight.shadow.bias = -0.001;
+scene.add(dirLight);
+
+const fillLight = new THREE.DirectionalLight(0xf0f5ff, 0.3);
+fillLight.position.set(-5, 8, -5);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xfff5e8, 0.2);
+rimLight.position.set(0, 3, -10);
+scene.add(rimLight);
+
+// === GROUND PLANE ===
+const groundGeo = new THREE.PlaneGeometry(60, 60);
+const groundMat = new THREE.MeshStandardMaterial({color:0xf0f0f0, roughness:1.0});
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.1;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// === ANIMATION (auto-rotate, no user control) ===
+let time = 0;
+const rotationSpeed = 0.15; // radians per second
+const cameraRadius = 16;
+const cameraHeight = 9;
+
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.016;
+
+  // Smooth auto rotation
+  const angle = time * rotationSpeed;
+  camera.position.x = Math.cos(angle) * cameraRadius;
+  camera.position.z = Math.sin(angle) * cameraRadius;
+  camera.position.y = cameraHeight + Math.sin(time * 0.3) * 0.5;
+  camera.lookAt(0, 1.5, 0);
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// === RESIZE ===
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>

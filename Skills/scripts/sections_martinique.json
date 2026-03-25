@@ -1,0 +1,592 @@
+{
+  "departement": "972",
+  "nom": "Martinique",
+  "date": "2026-03-19 22:31:24",
+  "duree_indexation": "380s",
+  "stats": {
+    "communes_total": 34,
+    "communes_couvertes": 33,
+    "taux_couverture": "97.1%",
+    "total_sections": 374,
+    "moyenne_sections_par_commune": 11.3
+  },
+  "communes": {
+    "97201": {
+      "commune": "L'Ajoupa-Bouillon",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0H"
+      ],
+      "nb": 6
+    },
+    "97202": {
+      "commune": "Les Anses-d'Arlet",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0I",
+        "0K",
+        "0N"
+      ],
+      "nb": 8
+    },
+    "97203": {
+      "commune": "Basse-Pointe",
+      "sections": [
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N"
+      ],
+      "nb": 9
+    },
+    "97204": {
+      "commune": "Le Carbet",
+      "sections": [
+        "0A",
+        "0B",
+        "0D",
+        "0E",
+        "0H",
+        "0I"
+      ],
+      "nb": 6
+    },
+    "97205": {
+      "commune": "Case-Pilote",
+      "sections": [
+        "0A",
+        "0C",
+        "0D",
+        "0E",
+        "0I"
+      ],
+      "nb": 5
+    },
+    "97206": {
+      "commune": "Le Diamant",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0I",
+        "0K",
+        "0L",
+        "0O"
+      ],
+      "nb": 9
+    },
+    "97207": {
+      "commune": "Ducos",
+      "sections": [
+        "0A",
+        "0D",
+        "0E",
+        "0H",
+        "0L",
+        "0N",
+        "0P",
+        "0R",
+        "0T",
+        "0W",
+        "0Z",
+        "AE"
+      ],
+      "nb": 12
+    },
+    "97208": {
+      "commune": "Fonds-Saint-Denis",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0H",
+        "0I",
+        "0K",
+        "0L"
+      ],
+      "nb": 8
+    },
+    "97209": {
+      "commune": "Fort-de-France",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0I",
+        "0K",
+        "0L",
+        "0O",
+        "0P",
+        "0R",
+        "0S",
+        "0W",
+        "0X",
+        "0Y",
+        "0Z",
+        "AB",
+        "AC",
+        "AE",
+        "AI",
+        "AK",
+        "AL",
+        "AO",
+        "AR",
+        "AS",
+        "AT",
+        "AV",
+        "AX",
+        "AY",
+        "AZ",
+        "BC",
+        "BD",
+        "BE",
+        "BI",
+        "BK",
+        "BO",
+        "BS",
+        "BV",
+        "BW",
+        "BX"
+      ],
+      "nb": 38
+    },
+    "97210": {
+      "commune": "Le François",
+      "sections": [
+        "0A",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0K",
+        "0R",
+        "0S",
+        "0T",
+        "0W",
+        "0X",
+        "0Y",
+        "0Z",
+        "AB",
+        "AE",
+        "AH",
+        "AI",
+        "AK",
+        "AL"
+      ],
+      "nb": 19
+    },
+    "97211": {
+      "commune": "Grand-Rivière",
+      "sections": [
+        "0A",
+        "0B",
+        "0C"
+      ],
+      "nb": 3
+    },
+    "97213": {
+      "commune": "Gros-Morne",
+      "sections": [
+        "0A",
+        "0C",
+        "0E",
+        "0K",
+        "0N",
+        "0O",
+        "0P",
+        "0S",
+        "0T",
+        "0V",
+        "0W",
+        "0X",
+        "0Z",
+        "AC",
+        "AD",
+        "AE",
+        "AI",
+        "AK",
+        "AL",
+        "AN",
+        "AR",
+        "AT",
+        "AV",
+        "AW"
+      ],
+      "nb": 24
+    },
+    "97214": {
+      "commune": "Le Lamentin",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0H",
+        "0K",
+        "0L",
+        "0N",
+        "0P",
+        "0S",
+        "0T"
+      ],
+      "nb": 10
+    },
+    "97215": {
+      "commune": "Le Lorrain",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E"
+      ],
+      "nb": 5
+    },
+    "97216": {
+      "commune": "Macouba",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0H"
+      ],
+      "nb": 6
+    },
+    "97217": {
+      "commune": "Le Marigot",
+      "sections": [
+        "0C",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N",
+        "0P",
+        "0R"
+      ],
+      "nb": 11
+    },
+    "97218": {
+      "commune": "Le Marin",
+      "sections": [
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N",
+        "0O",
+        "0R",
+        "0S",
+        "0T"
+      ],
+      "nb": 14
+    },
+    "97219": {
+      "commune": "Le Morne-Rouge",
+      "sections": [
+        "0B",
+        "0D",
+        "0E",
+        "0H"
+      ],
+      "nb": 4
+    },
+    "97220": {
+      "commune": "Rivière-Pilote",
+      "sections": [
+        "0C",
+        "0D",
+        "0E",
+        "0I",
+        "0K",
+        "0L",
+        "0N",
+        "0O",
+        "0P",
+        "0S",
+        "0T",
+        "0Y",
+        "0Z",
+        "AB",
+        "AE",
+        "AH",
+        "AL"
+      ],
+      "nb": 17
+    },
+    "97221": {
+      "commune": "Le Prêcheur",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0H",
+        "0I",
+        "0K",
+        "0N"
+      ],
+      "nb": 8
+    },
+    "97222": {
+      "commune": "Le Robert",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0E",
+        "0M",
+        "0O",
+        "0V",
+        "0X",
+        "0Y",
+        "0Z",
+        "AB",
+        "AC",
+        "AD",
+        "AE",
+        "AH",
+        "AI",
+        "AL",
+        "AM",
+        "AN",
+        "AO",
+        "AP",
+        "AR",
+        "AS",
+        "AT"
+      ],
+      "nb": 24
+    },
+    "97223": {
+      "commune": "Le Vauclin",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0E",
+        "0H",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N",
+        "0O",
+        "0P",
+        "0S",
+        "0V",
+        "0W"
+      ],
+      "nb": 15
+    },
+    "97224": {
+      "commune": "Saint-Joseph",
+      "sections": [
+        "0B",
+        "0H",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N",
+        "0O",
+        "0S",
+        "0X",
+        "0Y",
+        "0Z",
+        "AB",
+        "AC"
+      ],
+      "nb": 14
+    },
+    "97225": {
+      "commune": "Saint-Pierre",
+      "sections": [
+        "0A",
+        "0B",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0K"
+      ],
+      "nb": 7
+    },
+    "97226": {
+      "commune": "Sainte-Anne",
+      "sections": [
+        "0A",
+        "0B",
+        "0D",
+        "0E",
+        "0I",
+        "0K",
+        "0L",
+        "0M"
+      ],
+      "nb": 8
+    },
+    "97227": {
+      "commune": "Sainte-Luce",
+      "sections": [
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N"
+      ],
+      "nb": 9
+    },
+    "97228": {
+      "commune": "Sainte-Marie",
+      "sections": [
+        "0B",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0L",
+        "0N",
+        "0O",
+        "0P",
+        "0T",
+        "0V",
+        "0W",
+        "0Z",
+        "AB",
+        "AC",
+        "AD"
+      ],
+      "nb": 16
+    },
+    "97229": {
+      "commune": "Schœlcher",
+      "sections": [
+        "0A",
+        "0B",
+        "0D",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N",
+        "0O",
+        "0P",
+        "0R",
+        "0W",
+        "AB",
+        "AC"
+      ],
+      "nb": 14
+    },
+    "97230": {
+      "commune": "Trinité",
+      "sections": [
+        "0A",
+        "0B",
+        "0E",
+        "0H",
+        "0I",
+        "0K",
+        "0L",
+        "0O",
+        "0S",
+        "0T",
+        "0W",
+        "0Y",
+        "AB"
+      ],
+      "nb": 13
+    },
+    "97231": {
+      "commune": "Trois-Îlets",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0I"
+      ],
+      "nb": 6
+    },
+    "97232": {
+      "commune": "Saint-Esprit",
+      "sections": [
+        "0B",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0K",
+        "0L",
+        "0M",
+        "0N",
+        "0O",
+        "0P",
+        "0T",
+        "0W",
+        "0X"
+      ],
+      "nb": 14
+    },
+    "97233": {
+      "commune": "Rivière-Salée",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D",
+        "0E",
+        "0H",
+        "0I",
+        "0K"
+      ],
+      "nb": 8
+    },
+    "97234": {
+      "commune": "Bellefontaine",
+      "sections": [
+        "0A",
+        "0B",
+        "0C",
+        "0D"
+      ],
+      "nb": 4
+    },
+    "97235": {
+      "commune": "Le Morne-Vert",
+      "sections": [],
+      "nb": 0
+    }
+  }
+}

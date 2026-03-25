@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topo3D-Antilles — Comparatif Versions V4 / V5 / V6</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: #0a0a14;
+            color: #e8e8ee;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 24px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .header h1 span { color: #00c896; }
+        .header p {
+            color: rgba(255,255,255,0.5);
+            font-size: 16px;
+        }
+
+        .version-section {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .version-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        .version-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .v4 .version-badge { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+        .v5 .version-badge { background: rgba(0,200,150,0.15); color: #00c896; border: 1px solid rgba(0,200,150,0.3); }
+        .v6 .version-badge { background: rgba(100,100,255,0.15); color: #8888ff; border: 1px solid rgba(100,100,255,0.3); }
+
+        .version-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .version-meta {
+            color: rgba(255,255,255,0.4);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .version-desc {
+            color: rgba(255,255,255,0.6);
+            font-size: 15px;
+            margin-bottom: 32px;
+            max-width: 800px;
+        }
+
+        .version-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 24px;
+        }
+        .status-archived { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+        .status-deployed { background: rgba(100,100,255,0.15); color: #8888ff; }
+        .status-issues { background: rgba(255,100,100,0.15); color: #ff6666; }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        .image-card {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: #12121e;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+        .image-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .image-card img {
+            width: 100%;
+            display: block;
+            aspect-ratio: 16/10;
+            object-fit: cover;
+        }
+        .image-card .card-info {
+            padding: 16px 20px;
+        }
+        .image-card .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .image-card .card-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .features-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .feature-tag {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.5);
+        }
+        .feature-tag.highlight {
+            background: rgba(0,200,150,0.1);
+            border-color: rgba(0,200,150,0.2);
+            color: #00c896;
+        }
+        .feature-tag.missing {
+            background: rgba(255,80,80,0.1);
+            border-color: rgba(255,80,80,0.2);
+            color: #ff6666;
+            text-decoration: line-through;
+        }
+
+        .v6-pages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .page-card {
+            background: #1a1a2a;
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .page-card h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .page-card .route {
+            font-family: monospace;
+            font-size: 12px;
+            color: #00c896;
+            background: rgba(0,200,150,0.08);
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .page-card p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin-top: 24px;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: rgba(255,255,255,0.06);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.15);
+            background: #0a0a14;
+        }
+        .timeline-item.current::before {
+            border-color: #00c896;
+            background: #00c896;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255,255,255,0.3);
+            font-size: 13px;
+        }
+
+        @media (max-width: 768px) {
+            .images-grid { grid-template-columns: 1fr; }
+            .header h1 { font-size: 24px; }
+            .version-title { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏔️ Topo3D-Antilles — <span>Historique des Versions</span></h1>
+        <p>Comparatif visuel V4 (Design Variants) / V5 (Screenshots App) / V6 (Reconstruction)</p>
+    </div>
+
+    <!-- ═══════════════════ V4 ═══════════════════ -->
+    <section class="version-section v4">
+        <div class="version-header">
+            <span class="version-badge">V4.0</span>
+            <h2 class="version-title">Design Variants</h2>
+        </div>
+        <div class="version-meta">Mars 2026 &mdash; Exploration de 3 directions artistiques pour la landing page</div>
+        <span class="version-status status-archived">Archivee</span>
+        <div class="version-desc">
+            3 variantes de design testees en A/B : Karukera Gold (or antique + emeraude), Terre-Mer (vert tropical + cyan), Volcanic Tech (orange volcanique + noir). Meme structure de page, palettes differentes.
+        </div>
+
+        <div class="images-grid">
+            <div class="image-card">
+                <img src="preview-karukera.jpg" alt="Variante Karukera Gold">
+                <div class="card-info">
+                    <div class="card-title">Variante A &mdash; Karukera Gold</div>
+                    <div class="card-desc">Or antique + emeraude. Tons chauds, premium. Palette : #c8a85c, #00c896</div>
+                </div>
+            </div>
+            <div class="image-card">
+                <img src="preview-terre-mer.jpg" alt="Variante Terre-Mer">
+                <div class="card-info">
+                    <div class="card-title">Variante B &mdash; Terre-Mer</div>
+                    <div class="card-desc">Vert tropical + cyan. Tons frais, tech. Palette : #00d4aa, #0a0a14</div>
+                </div>
+            </div>
+            <div class="image-card">
+                <img src="preview-volcanic.jpg" alt="Variante Volcanic Tech">
+                <div class="card-info">
+                    <div class="card-title">Variante C &mdash; Volcanic Tech</div>
+                    <div class="card-desc">Orange volcanique + noir profond. Tons audacieux. Palette : #ff6633, #0a0a14</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-list">
+            <span class="feature-tag">Dark theme</span>
+            <span class="feature-tag">Nav: Accueil / Carte / Ref</span>
+            <span class="feature-tag">Hero: Guadeloupe & Martinique</span>
+            <span class="feature-tag">Stats bar</span>
+            <span class="feature-tag">3 problemes clients</span>
+            <span class="feature-tag">CTA: Ouvrir la carte</span>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ V5 ═══════════════════ -->
+    <section class="version-section v5">
+        <div class="version-header">
+            <span class="version-badge">V5.0</span>
+            <h2 class="version-title">Full Rewrite &mdash; Version Complete</h2>
+        </div>
+        <div class="version-meta">20 mars 2026 &mdash; Reecriture complete avec toutes les fonctionnalites</div>
+        <span class="version-status status-archived">Archivee (la "bonne version")</span>
+        <div class="version-desc">
+            La version la plus aboutie du site. Interface carte avec plan topographique interactif, courbes de niveau, multi-styles (Impression, Classique, Topographique), export PNG/SVG/PDF A4, contour parcelle. C'est cette version qui avait la page produit integree.
+        </div>
+
+        <div class="images-grid">
+            <div class="image-card">
+                <img src="screenshots/topo-v5-print.png" alt="V5 - Style Impression">
+                <div class="card-info">
+                    <div class="card-title">Plan Topographique &mdash; Style Impression</div>
+                    <div class="card-desc">Courbes de niveau, parcelle AZ 0331, resolution 2m, export PNG/SVG/PDF A4</div>
+                </div>
+            </div>
+            <div class="image-card">
+                <img src="screenshots/topo-v5-classic.png" alt="V5 - Style Classique">
+                <div class="card-info">
+                    <div class="card-title">Plan Topographique &mdash; Style Classique</div>
+                    <div class="card-desc">Meme parcelle, rendu classique avec courbes majeures/mineures, legende</div>
+                </div>
+            </div>
+            <div class="image-card">
+                <img src="screenshots/topo-v5-topo.png" alt="V5 - Style Topographique">
+                <div class="card-info">
+                    <div class="card-title">Plan Topographique &mdash; Style Topographique</div>
+                    <div class="card-desc">Rendu topographique complet avec altitudes, grille 961x1634, echelle 1:5000</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-list">
+            <span class="feature-tag highlight">Page Produit integree</span>
+            <span class="feature-tag highlight">Plan topo interactif</span>
+            <span class="feature-tag highlight">Multi-styles (3)</span>
+            <span class="feature-tag highlight">Export PNG/SVG/PDF A4</span>
+            <span class="feature-tag">Courbes de niveau</span>
+            <span class="feature-tag">Contour parcelle</span>
+            <span class="feature-tag">Points cotes</span>
+            <span class="feature-tag">Fond couleur</span>
+            <span class="feature-tag">Legende complete</span>
+            <span class="feature-tag">SEO complet</span>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ V6 ═══════════════════ -->
+    <section class="version-section v6">
+        <div class="version-header">
+            <span class="version-badge">V6.0</span>
+            <h2 class="version-title">Reconstruction</h2>
+        </div>
+        <div class="version-meta">21 mars 2026 &mdash; Reconstruction complete (20 fichiers, 9 API, middleware)</div>
+        <span class="version-status status-issues">Deployee avec problemes</span>
+        <div class="version-desc">
+            Reconstruction propre du site avec 5 pages HTML + 9 endpoints API serverless + middleware auth. Architecture Vercel correcte mais perte de la page produit et de certaines features de la V5.
+        </div>
+
+        <div class="v6-pages">
+            <div class="page-card">
+                <h4>Landing Page</h4>
+                <span class="route">/</span>
+                <p>index.html &mdash; Theme clair #fafafa, DM Sans, hero, pricing 4 tiers, FAQ, SEO complet</p>
+            </div>
+            <div class="page-card">
+                <h4>Login</h4>
+                <span class="route">/login</span>
+                <p>login.html &mdash; Glassmorphism, dark theme, particules, auth cookie httpOnly</p>
+            </div>
+            <div class="page-card">
+                <h4>Carte Interactive</h4>
+                <span class="route">/carte</span>
+                <p>carte.html &mdash; MapLibre GL, 14 layers, tabs Guadeloupe/Martinique, export panel</p>
+            </div>
+            <div class="page-card">
+                <h4>Comment ca marche</h4>
+                <span class="route">/comment-ca-marche</span>
+                <p>8 sections detaillees, formats, layers reglementaires, securite</p>
+            </div>
+            <div class="page-card">
+                <h4>References</h4>
+                <span class="route">/references</span>
+                <p>Mentions legales, RGPD, sources, partenaires</p>
+            </div>
+            <div class="page-card" style="border-color: rgba(255,80,80,0.3);">
+                <h4 style="color:#ff6666;">Page Produit</h4>
+                <span class="route" style="background:rgba(255,80,80,0.1);color:#ff6666;">ORPHELINE</span>
+                <p>fiche-produit-maquette.html existait mais n'etait plus liee dans la navigation ni dans vercel.json</p>
+            </div>
+        </div>
+
+        <div class="features-list" style="margin-top:24px;">
+            <span class="feature-tag">Light theme landing</span>
+            <span class="feature-tag">9 API serverless</span>
+            <span class="feature-tag">Middleware auth</span>
+            <span class="feature-tag">Stripe webhook</span>
+            <span class="feature-tag">Resend email</span>
+            <span class="feature-tag">PDF generation</span>
+            <span class="feature-tag missing">Page Produit (perdue)</span>
+            <span class="feature-tag missing">Plan topo interactif (perdu)</span>
+            <span class="feature-tag missing">Multi-styles export (perdu)</span>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ TIMELINE ═══════════════════ -->
+    <section class="version-section">
+        <h2 class="version-title" style="margin-bottom:32px;">Chronologie Complète</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <strong>V1.0</strong> &mdash; Proto Landing <span style="color:rgba(255,255,255,0.3);">| ~15 mars</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">landing-topo3d.html &mdash; Dark, Inter, "Topo3D Guadeloupe", email orders via immoservices971.com</span>
+            </div>
+            <div class="timeline-item">
+                <strong>V2.0</strong> &mdash; Proto App <span style="color:rgba(255,255,255,0.3);">| ~16 mars</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">topo3d-app.html &mdash; Carte interactive, sidebar, tabs, form, camera 3D, layers</span>
+            </div>
+            <div class="timeline-item">
+                <strong>V3.0</strong> &mdash; Pages Produit <span style="color:rgba(255,255,255,0.3);">| ~17 mars</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">fiche-produit-maquette.html, preview-maquette-3d.html, preview-terrain-brut.html</span>
+            </div>
+            <div class="timeline-item">
+                <strong style="color:#ffa500;">V4.0</strong> &mdash; Design Variants <span style="color:rgba(255,255,255,0.3);">| ~18 mars</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">3 variantes : Karukera Gold, Terre-Mer, Volcanic Tech</span>
+            </div>
+            <div class="timeline-item">
+                <strong style="color:#00c896;">V5.0</strong> &mdash; Full Rewrite <span style="color:rgba(255,255,255,0.3);">| 20 mars</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">Version complete avec plan topo interactif, page produit, multi-styles, SEO</span>
+            </div>
+            <div class="timeline-item">
+                <strong style="color:#8888ff;">V6.0</strong> &mdash; Reconstruction <span style="color:rgba(255,255,255,0.3);">| 21 mars</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">5 HTML + 9 API + middleware. Page produit perdue. Carte noire (tile 403).</span>
+            </div>
+            <div class="timeline-item current">
+                <strong style="color:#00c896;">V7.0</strong> &mdash; Restoration <span style="color:rgba(255,255,255,0.3);">| 23 mars (aujourd'hui)</span><br>
+                <span style="color:rgba(255,255,255,0.4);font-size:14px;">Page produit restauree, carte fixee, VERSION.json, versioning numerote</span>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        Topo3D-Antilles &copy; 2026 &mdash; Document interne de versioning &mdash; Genere le 23 mars 2026
+    </footer>
+
+</body>
+</html>

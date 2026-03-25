@@ -1,0 +1,2204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive - Topo3D-Antilles 🏔️</title>
+    <meta name="description" content="Plateforme interactive de topographie 3D LiDAR pour les Antilles — Guadeloupe et Martinique">
+    <meta name="theme-color" content="#0a0a14">
+    <link rel="canonical" href="https://topo3d-antilles.com/carte">
+    <meta property="og:title" content="Carte Interactive - Topo3D-Antilles">
+    <meta property="og:description" content="Topographie 3D LiDAR interactive pour les Antilles">
+    <meta property="og:url" content="https://topo3d-antilles.com/carte">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>🏔️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        *:focus-visible {
+            outline: 2px solid #00d4aa;
+            outline-offset: 2px;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        body {
+            background: #0a0a14;
+            color: #fff;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 200, 150, 0.2);
+            padding: 16px 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-selector {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .tab-btn.active {
+            background: #00c896;
+            color: #0a0a14;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 100, 100, 0.1);
+            border: 1px solid rgba(255, 100, 100, 0.3);
+            color: #ff6464;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 100, 100, 0.2);
+        }
+
+        /* Side Panel */
+        .side-panel {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 340px;
+            height: calc(100vh - 60px);
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(0, 200, 150, 0.2);
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 99;
+            display: none;
+        }
+
+        .side-panel.active {
+            display: block;
+        }
+
+        .panel-section {
+            margin-bottom: 24px;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #00c896;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-info {
+            background: rgba(0, 200, 150, 0.05);
+            border: 1px solid rgba(0, 200, 150, 0.2);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #ddd;
+        }
+
+        .panel-info strong {
+            color: #00c896;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .layer-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layer-toggle {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            min-width: 24px;
+            min-height: 24px;
+        }
+
+        .layer-toggle:checked {
+            background: #00c896;
+            border-color: #00c896;
+        }
+
+        .layer-label {
+            flex: 1;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .export-panel {
+            position: fixed;
+            right: -420px;
+            top: 60px;
+            width: 400px;
+            height: calc(100vh - 60px);
+            background: rgba(10, 10, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(0, 200, 150, 0.2);
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 99;
+            transition: right 0.3s ease;
+        }
+
+        .export-panel.active {
+            right: 0;
+        }
+
+        .export-toggle {
+            position: fixed;
+            right: 20px;
+            top: 80px;
+            background: #00c896;
+            color: #0a0a14;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            z-index: 98;
+            transition: all 0.3s ease;
+        }
+
+        .export-toggle:hover {
+            background: #00d4aa;
+            transform: translateX(-5px);
+        }
+
+        .export-toggle.active {
+            right: 420px;
+            transform: translateX(0);
+        }
+
+        .pricing-tier {
+            background: rgba(0, 200, 150, 0.05);
+            border: 1px solid rgba(0, 200, 150, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-tier:hover {
+            background: rgba(0, 200, 150, 0.1);
+            border-color: rgba(0, 200, 150, 0.4);
+        }
+
+        .pricing-tier.selected {
+            background: rgba(0, 200, 150, 0.15);
+            border-color: #00c896;
+            box-shadow: 0 0 12px rgba(0, 200, 150, 0.2);
+        }
+
+        .tier-name {
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .tier-price {
+            color: #00c896;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+
+        .tier-features {
+            font-size: 12px;
+            color: #ccc;
+            line-height: 1.5;
+        }
+
+        .tier-features li {
+            list-style: none;
+            margin-bottom: 4px;
+        }
+
+        .tier-features li::before {
+            content: "✓ ";
+            color: #00c896;
+            margin-right: 6px;
+        }
+
+        .export-btn {
+            width: 100%;
+            background: #00c896;
+            color: #0a0a14;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
+            margin-bottom: 12px;
+        }
+
+        .export-btn:hover {
+            background: #00d4aa;
+            transform: translateY(-2px);
+        }
+
+        .export-btn:disabled {
+            background: #555;
+            color: #aaa;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .fiche-parcelle-btn {
+            background: rgba(0, 200, 150, 0.1);
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            color: #00c896;
+        }
+
+        .fiche-parcelle-btn:hover {
+            background: rgba(0, 200, 150, 0.2);
+        }
+
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 20, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .loading-content {
+            text-align: center;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 200, 150, 0.2);
+            border-top-color: #00c896;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .loading-message {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 12px;
+        }
+
+        /* Close button */
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: none;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 24px;
+            transition: color 0.3s ease;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        /* Hamburger Menu Button */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 10px;
+        }
+
+        .hamburger-btn.active::before {
+            content: "✕";
+        }
+
+        .hamburger-btn:not(.active)::before {
+            content: "☰";
+        }
+
+        /* Mobile menu */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 10, 20, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 200, 150, 0.2);
+            padding: 15px;
+            z-index: 98;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mobile-nav.active {
+            display: flex;
+        }
+
+        /* Tablet Breakpoint */
+        @media (max-width: 1024px) {
+            .side-panel {
+                width: 300px;
+            }
+
+            .export-panel {
+                width: 350px;
+            }
+
+            header {
+                padding: 12px 15px;
+                gap: 15px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .hamburger-btn {
+                display: block;
+            }
+
+            .tab-selector {
+                display: none;
+            }
+
+            .mobile-nav {
+                display: none;
+            }
+
+            .mobile-nav.active {
+                display: flex;
+            }
+
+            .side-panel {
+                width: 100%;
+                height: calc(100vh - 60px);
+                left: -100%;
+            }
+
+            .side-panel.active {
+                left: 0;
+            }
+
+            .export-panel {
+                right: -100%;
+                width: 100%;
+            }
+
+            .export-panel.active {
+                right: 0;
+            }
+
+            .export-toggle.active {
+                right: auto;
+                left: 20px;
+            }
+
+            header {
+                flex-wrap: nowrap;
+                padding: 12px 15px;
+            }
+
+            .header-left {
+                gap: 10px;
+            }
+
+            .logo {
+                font-size: 18px;
+                gap: 5px;
+            }
+
+            .header-right {
+                gap: 10px;
+            }
+
+            .logout-btn {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /* Basemap Selector */
+        .basemap-selector {
+            position: fixed;
+            right: 60px;
+            bottom: 30px;
+            display: flex;
+            gap: 8px;
+            z-index: 98;
+        }
+        .basemap-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 10px;
+            border: 2px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .basemap-btn:hover {
+            border-color: rgba(0, 200, 150, 0.6);
+            transform: translateY(-2px);
+        }
+        .basemap-btn.active {
+            border-color: #00c896;
+            box-shadow: 0 0 0 2px #00c896, 0 2px 12px rgba(0, 200, 150, 0.4);
+        }
+        .basemap-btn span {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            padding: 3px 2px;
+            font-family: 'DM Sans', sans-serif;
+        }
+        @media (max-width: 768px) {
+            .basemap-selector {
+                right: 10px;
+                bottom: 20px;
+            }
+            .basemap-btn {
+                width: 56px;
+                height: 56px;
+            }
+            .basemap-btn span {
+                font-size: 8px;
+            }
+        }
+
+        /* 3D Toggle Button */
+        .toggle-3d {
+            position: fixed;
+            left: 20px;
+            bottom: 100px;
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 200, 150, 0.4);
+            color: #00c896;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            z-index: 98;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-height: 44px;
+        }
+        .toggle-3d:hover { background: rgba(0, 200, 150, 0.15); }
+        .toggle-3d.active { background: #00c896; color: #0a0a14; }
+
+        /* Layers Toggle Button */
+        .toggle-layers {
+            position: fixed;
+            left: 20px;
+            bottom: 160px;
+            background: rgba(10, 10, 20, 0.9);
+            border: 1px solid rgba(0, 200, 150, 0.4);
+            color: #00c896;
+            padding: 14px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            z-index: 98;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            min-height: 44px;
+        }
+        .toggle-layers:hover { background: rgba(0, 200, 150, 0.15); }
+        .toggle-layers.active { background: #00c896; color: #0a0a14; }
+
+        /* Plan Topo Button */
+        .plan-topo-btn {
+            position: fixed;
+            right: 20px;
+            bottom: 100px;
+            background: #00c896;
+            color: #0a0a14;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            font-family: 'DM Sans', sans-serif;
+            z-index: 98;
+            display: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 200, 150, 0.3);
+        }
+        .plan-topo-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 25px rgba(0, 200, 150, 0.4); }
+        .plan-topo-btn.visible { display: block; }
+
+        /* Plan Topo Modal */
+        .plan-topo-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #0a0a14;
+            z-index: 2000;
+            display: none;
+            flex-direction: column;
+        }
+        .plan-topo-modal.active { display: flex; }
+        .plan-topo-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(10, 10, 20, 0.95);
+            border-bottom: 1px solid rgba(0, 200, 150, 0.2);
+            flex-shrink: 0;
+        }
+        .plan-topo-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .plan-topo-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .style-tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px;
+            border-radius: 8px;
+        }
+        .style-tab {
+            padding: 6px 14px;
+            background: transparent;
+            border: none;
+            color: #aaa;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+        }
+        .style-tab.active { background: #00c896; color: #0a0a14; }
+        .resolution-select {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .export-topo-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .export-topo-btn {
+            padding: 6px 14px;
+            background: rgba(0, 200, 150, 0.1);
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            color: #00c896;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            transition: all 0.2s;
+        }
+        .export-topo-btn:hover { background: rgba(0, 200, 150, 0.2); }
+        .plan-topo-close {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 8px 12px;
+            min-width: 44px;
+            min-height: 44px;
+            transition: color 0.2s;
+        }
+        .plan-topo-close:hover { color: #fff; }
+        .plan-topo-body {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        .plan-topo-canvas {
+            width: 100%;
+            height: 100%;
+        }
+        .plan-topo-info {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(10, 10, 20, 0.85);
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #ddd;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+        .plan-topo-info strong { color: #00c896; display: block; margin-bottom: 2px; }
+        .plan-topo-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 10, 20, 0.85);
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 11px;
+            color: #ddd;
+            backdrop-filter: blur(10px);
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .legend-color { width: 24px; height: 3px; border-radius: 2px; }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1001;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
+        .toast {
+            background: #1a1a2e;
+            border: 1px solid rgba(0, 200, 150, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            color: #fff;
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .toast.error {
+            border-color: rgba(255, 100, 100, 0.3);
+            background: rgba(255, 100, 100, 0.1);
+        }
+
+        .toast.error::before {
+            content: "✕";
+            color: #ff6464;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .toast.success {
+            border-color: rgba(0, 200, 150, 0.3);
+            background: rgba(0, 200, 150, 0.1);
+        }
+
+        .toast.success::before {
+            content: "✓";
+            color: #00c896;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .toast.info {
+            border-color: rgba(100, 150, 255, 0.3);
+            background: rgba(100, 150, 255, 0.1);
+        }
+
+        .toast.info::before {
+            content: "ⓘ";
+            color: #6496ff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.hide {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        @media (max-width: 768px) {
+            .toast-container {
+                left: 20px;
+                right: 20px;
+                max-width: none;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Skip Link -->
+    <a href="#map" style="position: absolute; top: -40px; left: 0; background: #00c896; color: #0a0a14; padding: 8px 16px; text-decoration: none; z-index: 10000; border-radius: 0 0 8px 0; font-weight: 600;">Accéder à la carte</a>
+
+    <header role="banner" aria-label="En-tête principal">
+        <div class="header-left">
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Menu"></button>
+            <a href="/" class="logo">🏔️ Topo3D-Antilles</a>
+            <div class="tab-selector">
+                <button class="tab-btn active" data-region="guadeloupe" aria-current="page">Guadeloupe</button>
+                <button class="tab-btn" data-region="martinique">Martinique</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="logout-btn" id="logoutBtn" aria-label="Se déconnecter">Déconnexion</button>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav" id="mobileNav" aria-label="Navigation mobile">
+        <button class="tab-btn" data-region="guadeloupe" style="text-align: left; padding: 12px 16px;">Guadeloupe</button>
+        <button class="tab-btn" data-region="martinique" style="text-align: left; padding: 12px 16px;">Martinique</button>
+    </nav>
+
+    <main id="map"></main>
+
+    <!-- Side Panel (Layers & Info) -->
+    <aside class="side-panel" id="sidePanel" aria-label="Panneau latéral - Couches et informations">
+        <div style="position: relative;">
+            <button class="close-btn" id="closePanelBtn" aria-label="Fermer">✕</button>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-title">Parcelle Sélectionnée</div>
+            <div class="panel-info" id="parcelleInfo">
+                <p>Cliquez sur la carte pour sélectionner une parcelle</p>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-title">Couches de Base</div>
+            <div class="layer-list">
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-cadastre" data-layer="cadastre" checked>
+                    <label class="layer-label" for="layer-cadastre">Cadastre</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-buildings" data-layer="buildings">
+                    <label class="layer-label" for="layer-buildings">Bâtiments 3D</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-ortho" data-layer="ortho">
+                    <label class="layer-label" for="layer-ortho">Orthophoto</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-hillshade" data-layer="hillshade">
+                    <label class="layer-label" for="layer-hillshade">Hillshade</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-contours" data-layer="contours">
+                    <label class="layer-label" for="layer-contours">Contours</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-hydro" data-layer="hydro">
+                    <label class="layer-label" for="layer-hydro">Hydrographie</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-risks" data-layer="risks">
+                    <label class="layer-label" for="layer-risks">Zones de risque</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-title">Couches Réglementaires (Pro)</div>
+            <div class="layer-list">
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-plu" data-layer="plu" disabled>
+                    <label class="layer-label" for="layer-plu">PLU Zonage</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-natura" data-layer="natura" disabled>
+                    <label class="layer-label" for="layer-natura">Natura 2000</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-znieff" data-layer="znieff" disabled>
+                    <label class="layer-label" for="layer-znieff">ZNIEFF</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-littoral" data-layer="littoral" disabled>
+                    <label class="layer-label" for="layer-littoral">Conservatoire</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-mh" data-layer="mh" disabled>
+                    <label class="layer-label" for="layer-mh">Monuments H.</label>
+                </div>
+                <div class="layer-item">
+                    <input type="checkbox" class="layer-toggle" id="layer-ppr" data-layer="ppr" disabled>
+                    <label class="layer-label" for="layer-ppr">PPR</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <div style="background: rgba(255, 200, 0, 0.1); border: 1px solid rgba(255, 200, 0, 0.3); padding: 12px; border-radius: 8px; font-size: 12px; color: #ffb000;">
+                <strong>💡 Astuce</strong><br>
+                Parcours réglementaire complet? Consultez <a href="https://karukera-conseil.com" target="_blank" style="color: #ffb000; text-decoration: underline;">Karukera Conseil</a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Export Panel -->
+    <aside class="export-panel" id="exportPanel" aria-label="Panneau d'export">
+        <div style="position: relative; margin-bottom: 20px;">
+            <div class="panel-title">Exporter</div>
+            <button class="close-btn" id="closeExportBtn" aria-label="Fermer">✕</button>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-title" style="font-size: 12px;">Sélectionnez un forfait</div>
+            <div class="pricing-tier" data-tier="essentiel">
+                <div class="tier-name">🟢 Essentiel</div>
+                <div class="tier-price">59€</div>
+                <ul class="tier-features">
+                    <li>OBJ (5m) + GeoJSON</li>
+                    <li>Rapport PDF</li>
+                    <li>&lt;24h livraison</li>
+                </ul>
+            </div>
+
+            <div class="pricing-tier" data-tier="complet">
+                <div class="tier-name">🔵 Complet</div>
+                <div class="tier-price">129€</div>
+                <ul class="tier-features">
+                    <li>OBJ LiDAR (2m)</li>
+                    <li>DXF courbes + PDF</li>
+                    <li>Analyse pentes</li>
+                    <li>GeoJSON</li>
+                </ul>
+            </div>
+
+            <div class="pricing-tier" data-tier="premium">
+                <div class="tier-name">⭐ Premium</div>
+                <div class="tier-price">249€</div>
+                <ul class="tier-features">
+                    <li>Tous formats (IFC, DWG, SHP…)</li>
+                    <li>Fiche réglementaire</li>
+                    <li>Révisions illimitées</li>
+                </ul>
+            </div>
+
+            <div class="pricing-tier" data-tier="pro">
+                <div class="tier-name">👑 Pro</div>
+                <div class="tier-price">349€/mois</div>
+                <ul class="tier-features">
+                    <li>Illimité + API REST</li>
+                    <li>Priorité absolue</li>
+                    <li>Support dédié</li>
+                </ul>
+            </div>
+
+            <div style="font-size:10px;color:#aaa;margin-top:8px;text-align:center;line-height:1.4;">
+                Parcelle &gt; 2 ha : +0,005€/m² au-delà<br>
+                Fiche Parcelle seule : 19€
+            </div>
+
+            <button class="export-btn" id="exportBtn" disabled>
+                Procéder au paiement
+            </button>
+
+            <button class="export-btn fiche-parcelle-btn" id="ficheParcellBtn">
+                📋 Fiche Parcelle Réglementaire (19€)
+            </button>
+        </div>
+
+        <div class="panel-section">
+            <p style="font-size: 12px; color: #888;">
+                En mode bêta, les paiements sont ignorés. Sélectionnez un forfait et exportez gratuitement.
+            </p>
+        </div>
+    </aside>
+
+    <!-- Export Toggle Button -->
+    <button class="export-toggle" id="exportToggle" aria-label="Ouvrir le panneau d'export">📤 Exporter</button>
+
+    <!-- Layers Toggle -->
+    <button class="toggle-layers" id="toggleLayers" aria-label="Afficher les couches">🗂️ Couches</button>
+
+    <!-- 3D Toggle -->
+    <button class="toggle-3d" id="toggle3D" aria-label="Activer la vue 3D">🌐 3D</button>
+
+    <!-- Plan Topo Button (visible after parcelle selected) -->
+    <button class="plan-topo-btn" id="planTopoBtn" aria-label="Ouvrir le plan topographique interactif">📐 Plan Topo</button>
+
+    <!-- Plan Topo Modal -->
+    <div class="plan-topo-modal" id="planTopoModal">
+        <div class="plan-topo-header">
+            <div class="plan-topo-title">📐 Plan topographique — Courbes de niveau</div>
+            <div class="plan-topo-controls">
+                <select class="resolution-select" id="topoResolution">
+                    <option value="1">1m</option>
+                    <option value="3" selected>3m</option>
+                    <option value="5">5m</option>
+                </select>
+                <div class="style-tabs">
+                    <button class="style-tab active" data-style="impression">Impression</button>
+                    <button class="style-tab" data-style="classique">Classique</button>
+                    <button class="style-tab" data-style="topographique">Topographique</button>
+                </div>
+                <div class="export-topo-btns">
+                    <button class="export-topo-btn" data-format="png" aria-label="Exporter en PNG">PNG</button>
+                    <button class="export-topo-btn" data-format="svg" aria-label="Exporter en SVG">SVG</button>
+                    <button class="export-topo-btn" data-format="pdf" aria-label="Exporter en image A4">Image A4</button>
+                </div>
+                <button class="plan-topo-close" id="closePlanTopo">✕</button>
+            </div>
+        </div>
+        <div class="plan-topo-body">
+            <svg class="plan-topo-canvas" id="topoCanvas" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div class="plan-topo-info" id="topoInfo"></div>
+            <div class="plan-topo-legend" id="topoLegend"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer" role="status" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- Basemap Selector -->
+    <div class="basemap-selector" id="basemapSelector">
+        <button class="basemap-btn" data-basemap="topo" style="background: linear-gradient(135deg, #0a0a14 0%, #1a3a4a 50%, #00c896 100%);" aria-label="Fond topographique">
+            <span>Topo</span>
+        </button>
+        <button class="basemap-btn active" data-basemap="satellite" style="background: linear-gradient(135deg, #1a3a1a 0%, #2a5a2a 50%, #4a7a4a 100%);" aria-label="Vue satellite Google">
+            <span>Satellite</span>
+        </button>
+        <button class="basemap-btn" data-basemap="ortho" style="background: linear-gradient(135deg, #2a4a3a 0%, #3a6a4a 50%, #5a8a5a 100%);" aria-label="Photo aérienne IGN">
+            <span>Photo IGN</span>
+        </button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Traitement en cours...</div>
+            <div class="loading-message" id="loadingMessage">Récupération des données LiDAR</div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/maplibre-gl@4.1.2/dist/maplibre-gl.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            // State
+            const state = {
+                map: null,
+                currentRegion: 'guadeloupe',
+                selectedParcel: null,
+                selectedTier: null,
+                parcelHighlightLayerId: null,
+                parcelHighlightSourceId: null,
+                cycleMessageInterval: null,
+                regions: {
+                    guadeloupe: { lat: 16.25, lng: -61.55, zoom: 10 },
+                    martinique: { lat: 14.64, lng: -61.02, zoom: 10 }
+                }
+            };
+
+            // Load messages for UI
+            const loadingMessages = [
+                'Récupération des données LiDAR',
+                'Triangulation des points',
+                'Génération de la géométrie 3D',
+                'Optimisation du maillage',
+                'Préparation de l\'export',
+                'Signature numérique des données'
+            ];
+
+            let messageIndex = 0;
+
+            // Toast notification system
+            function showToast(message, type = 'error') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.setAttribute('role', 'alert');
+
+                // Create message span (safely separate from icon)
+                const messageSpan = document.createElement('span');
+                messageSpan.textContent = message;
+                toast.appendChild(messageSpan);
+
+                container.appendChild(toast);
+
+                // Auto-dismiss after 4 seconds
+                setTimeout(() => {
+                    toast.classList.add('hide');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+
+            // Initialize map
+            function initMap() {
+                const regionConfig = state.regions[state.currentRegion];
+
+                state.map = new maplibregl.Map({
+                    container: 'map',
+                    style: {
+                        version: 8,
+                        glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+                        sources: {
+                            'openmaptiles': {
+                                type: 'vector',
+                                url: 'https://tiles.openfreemap.org/planet'
+                            },
+                            'ign-wms': {
+                                type: 'raster',
+                                tiles: ['https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES='],
+                                tileSize: 256
+                            },
+                            'google-satellite': {
+                                type: 'raster',
+                                tiles: ['https://mt0.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', 'https://mt2.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', 'https://mt3.google.com/vt/lyrs=s&x={x}&y={y}&z={z}'],
+                                tileSize: 256,
+                                maxzoom: 20
+                            },
+                            'ign-ortho': {
+                                type: 'raster',
+                                tiles: ['https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg&STYLE=normal'],
+                                tileSize: 256,
+                                maxzoom: 19
+                            }
+                        },
+                        layers: [
+                            {
+                                id: 'background',
+                                type: 'background',
+                                paint: { 'background-color': '#000000' }
+                            },
+                            {
+                                id: 'google-satellite-layer',
+                                type: 'raster',
+                                source: 'google-satellite',
+                                layout: { visibility: 'visible' }
+                            },
+                            {
+                                id: 'ign-ortho-layer',
+                                type: 'raster',
+                                source: 'ign-ortho',
+                                layout: { visibility: 'none' }
+                            },
+                            {
+                                id: 'water',
+                                type: 'fill',
+                                source: 'openmaptiles',
+                                'source-layer': 'water',
+                                paint: { 'fill-color': '#1a4d6d' },
+                                layout: { visibility: 'none' }
+                            },
+                            {
+                                id: 'landuse',
+                                type: 'fill',
+                                source: 'openmaptiles',
+                                'source-layer': 'landuse',
+                                paint: { 'fill-color': 'rgba(20, 40, 30, 0.3)' },
+                                layout: { visibility: 'none' }
+                            },
+                            {
+                                id: 'cadastre',
+                                type: 'raster',
+                                source: 'ign-wms'
+                            },
+                            {
+                                id: 'road',
+                                type: 'line',
+                                source: 'openmaptiles',
+                                'source-layer': 'transportation',
+                                paint: { 'line-color': 'rgba(255,255,255,0.15)', 'line-width': 1 },
+                                layout: { visibility: 'none' }
+                            },
+                            {
+                                id: 'building',
+                                type: 'fill',
+                                source: 'openmaptiles',
+                                'source-layer': 'building',
+                                paint: { 'fill-color': '#2a3a4a', 'fill-opacity': 0.7 },
+                                layout: { visibility: 'none' }
+                            },
+                            {
+                                id: 'place-label',
+                                type: 'symbol',
+                                source: 'openmaptiles',
+                                'source-layer': 'place',
+                                layout: {
+                                    'text-field': '{name}',
+                                    'text-size': 12,
+                                    'text-anchor': 'center',
+                                    visibility: 'none'
+                                },
+                                paint: { 'text-color': 'rgba(255,255,255,0.6)', 'text-halo-color': '#0a0a14', 'text-halo-width': 1 }
+                            }
+                        ]
+                    },
+                    center: [regionConfig.lng, regionConfig.lat],
+                    zoom: regionConfig.zoom,
+                    maxPitch: 85,
+                    maxBounds: [[-63.5, 13.5], [-59.5, 17.5]],
+                    minZoom: 7
+                });
+
+                // Navigation controls with pitch
+                state.map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+                // Error handler
+                state.map.on('error', (e) => {
+                    console.error('MapLibre error:', e.error || e);
+                });
+
+                state.map.on('click', onMapClick);
+
+                // 3D Toggle — adds DEM sources + terrain + hillshade on first activation
+                let is3D = false;
+                let terrainSourcesAdded = false;
+                const toggle3DBtn = document.getElementById('toggle3D');
+
+                function enable3D() {
+                    try {
+                        if (!terrainSourcesAdded) {
+                            state.map.addSource('terrain-dem', {
+                                type: 'raster-dem',
+                                tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+                                tileSize: 256,
+                                encoding: 'terrarium',
+                                maxzoom: 15
+                            });
+                            state.map.addLayer({
+                                id: 'hillshade',
+                                type: 'hillshade',
+                                source: 'terrain-dem',
+                                paint: {
+                                    'hillshade-shadow-color': 'rgba(0,0,0,0.6)',
+                                    'hillshade-highlight-color': 'rgba(255,255,255,0.25)',
+                                    'hillshade-accent-color': '#00c896',
+                                    'hillshade-exaggeration': 0.5,
+                                    'hillshade-illumination-direction': 315
+                                }
+                            }, 'water');
+                            // Upgrade buildings to 3D extrusion
+                            state.map.setPaintProperty('building', 'fill-color', undefined);
+                            state.map.setPaintProperty('building', 'fill-opacity', undefined);
+                            state.map.removeLayer('building');
+                            state.map.addLayer({
+                                id: 'building',
+                                type: 'fill-extrusion',
+                                source: 'openmaptiles',
+                                'source-layer': 'building',
+                                paint: {
+                                    'fill-extrusion-color': '#2a3a4a',
+                                    'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14, 0, 16, 4],
+                                    'fill-extrusion-base': 0,
+                                    'fill-extrusion-opacity': 0.6
+                                }
+                            });
+                            state.map.addLayer({
+                                id: 'sky',
+                                type: 'sky',
+                                paint: {
+                                    'sky-type': 'atmosphere',
+                                    'sky-atmosphere-sun': [0, 45],
+                                    'sky-atmosphere-sun-intensity': 5,
+                                    'sky-atmosphere-color': '#0a1a2a'
+                                }
+                            });
+                            terrainSourcesAdded = true;
+                        }
+                        state.map.setTerrain({ source: 'terrain-dem', exaggeration: 1.5 });
+                        state.map.easeTo({ pitch: 50, bearing: -15, duration: 1000 });
+                    } catch (e) {
+                        console.error('3D activation failed:', e);
+                    }
+                }
+
+                function disable3D() {
+                    try {
+                        state.map.setTerrain(null);
+                        state.map.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
+                    } catch (e) {
+                        console.error('3D deactivation failed:', e);
+                    }
+                }
+
+                toggle3DBtn.addEventListener('click', () => {
+                    is3D = !is3D;
+                    toggle3DBtn.classList.toggle('active', is3D);
+                    toggle3DBtn.textContent = is3D ? '🌐 3D' : '🗺️ 2D';
+                    if (is3D) {
+                        enable3D();
+                    } else {
+                        disable3D();
+                    }
+                });
+
+                // Plan Topo button
+                document.getElementById('planTopoBtn').addEventListener('click', openPlanTopo);
+                document.getElementById('closePlanTopo').addEventListener('click', () => {
+                    document.getElementById('planTopoModal').classList.remove('active');
+                });
+
+                // Style tabs
+                document.querySelectorAll('.style-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.style-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        if (state.topoData) renderTopoSVG(state.topoData, tab.dataset.style);
+                    });
+                });
+
+                // Layers panel toggle
+                const toggleLayersBtn = document.getElementById('toggleLayers');
+                const sidePanel = document.getElementById('sidePanel');
+                toggleLayersBtn.addEventListener('click', () => {
+                    const isActive = sidePanel.classList.toggle('active');
+                    toggleLayersBtn.classList.toggle('active', isActive);
+                    toggleLayersBtn.textContent = isActive ? '✕ Couches' : '🗂️ Couches';
+                });
+
+                // Resolution change
+                document.getElementById('topoResolution').addEventListener('change', () => {
+                    if (state.selectedParcel) openPlanTopo();
+                });
+
+                // Export buttons
+                document.querySelectorAll('.export-topo-btn').forEach(btn => {
+                    btn.addEventListener('click', () => exportTopo(btn.dataset.format));
+                });
+
+                // Hamburger menu toggle
+                const hamburgerBtn = document.getElementById('hamburgerBtn');
+                const mobileNav = document.getElementById('mobileNav');
+                hamburgerBtn.addEventListener('click', () => {
+                    hamburgerBtn.classList.toggle('active');
+                    mobileNav.classList.toggle('active');
+                });
+
+                // Tab switching (desktop + mobile)
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        btn.setAttribute('aria-current', 'page');
+                        document.querySelectorAll('.tab-btn:not(.active)').forEach(b => b.removeAttribute('aria-current'));
+                        state.currentRegion = btn.dataset.region;
+                        const cfg = state.regions[state.currentRegion];
+                        state.map.flyTo({
+                            center: [cfg.lng, cfg.lat],
+                            zoom: cfg.zoom,
+                            duration: 1000
+                        });
+                        // Close mobile menu after selection
+                        hamburgerBtn.classList.remove('active');
+                        mobileNav.classList.remove('active');
+                    });
+                });
+
+                // Layer toggles — control map layer visibility
+                const layerMap = {
+                    'cadastre': 'cadastre',
+                    'buildings': 'building',
+                    'ortho': 'ign-ortho-layer',
+                    'hillshade': 'hillshade',
+                    'contours': 'contours',
+                    'hydro': 'hydro',
+                    'risks': 'risks'
+                };
+                document.querySelectorAll('.layer-toggle').forEach(toggle => {
+                    toggle.addEventListener('change', (e) => {
+                        const layerKey = e.target.dataset.layer;
+                        const mapLayerId = layerMap[layerKey];
+                        if (mapLayerId && state.map.getLayer(mapLayerId)) {
+                            state.map.setLayoutProperty(
+                                mapLayerId,
+                                'visibility',
+                                e.target.checked ? 'visible' : 'none'
+                            );
+                        }
+                    });
+                });
+
+                // Basemap selector
+                const vectorLayerIds = ['water', 'landuse', 'road', 'building', 'place-label'];
+                document.querySelectorAll('.basemap-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.basemap-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        const mode = btn.dataset.basemap;
+
+                        // Toggle satellite layer
+                        if (state.map.getLayer('google-satellite-layer')) {
+                            state.map.setLayoutProperty('google-satellite-layer', 'visibility', mode === 'satellite' ? 'visible' : 'none');
+                        }
+                        // Toggle IGN ortho layer
+                        if (state.map.getLayer('ign-ortho-layer')) {
+                            state.map.setLayoutProperty('ign-ortho-layer', 'visibility', mode === 'ortho' ? 'visible' : 'none');
+                        }
+                        // Toggle vector layers
+                        vectorLayerIds.forEach(id => {
+                            if (state.map.getLayer(id)) {
+                                state.map.setLayoutProperty(id, 'visibility', mode === 'topo' ? 'visible' : 'none');
+                            }
+                        });
+                        // Adjust background
+                        if (state.map.getLayer('background')) {
+                            state.map.setPaintProperty('background', 'background-color', mode === 'topo' ? '#0a0a14' : '#000000');
+                        }
+                    });
+                });
+
+                // Pricing tiers
+                document.querySelectorAll('.pricing-tier').forEach(tier => {
+                    tier.addEventListener('click', () => {
+                        document.querySelectorAll('.pricing-tier').forEach(t => t.classList.remove('selected'));
+                        tier.classList.add('selected');
+                        state.selectedTier = tier.dataset.tier;
+
+                        // Update export button text with tier name and checkmark
+                        const tierName = tier.querySelector('.tier-name').textContent.trim();
+                        const exportBtn = document.getElementById('exportBtn');
+                        exportBtn.textContent = '✓ ' + tierName;
+                        exportBtn.disabled = false;
+                    });
+                });
+
+                // Export button
+                document.getElementById('exportBtn').addEventListener('click', handleExport);
+                document.getElementById('ficheParcellBtn').addEventListener('click', handleFicheParcelle);
+
+                // Panel toggles
+                document.getElementById('exportToggle').addEventListener('click', () => {
+                    const panel = document.getElementById('exportPanel');
+                    const toggle = document.getElementById('exportToggle');
+                    panel.classList.toggle('active');
+                    toggle.classList.toggle('active');
+                });
+
+                document.getElementById('closeExportBtn').addEventListener('click', () => {
+                    document.getElementById('exportPanel').classList.remove('active');
+                    document.getElementById('exportToggle').classList.remove('active');
+                });
+
+                // Logout
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    fetch('/api/logout', { method: 'POST' }).catch(() => {});
+                    window.location.href = '/login.html';
+                });
+
+                // Escape key handler
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        // Close export panel
+                        const exportPanel = document.getElementById('exportPanel');
+                        if (exportPanel.classList.contains('active')) {
+                            exportPanel.classList.remove('active');
+                            document.getElementById('exportToggle').classList.remove('active');
+                        }
+                        // Close side panel
+                        const sidePanel = document.getElementById('sidePanel');
+                        if (sidePanel.classList.contains('active')) {
+                            sidePanel.classList.remove('active');
+                        }
+                        // Close mobile menu
+                        hamburgerBtn.classList.remove('active');
+                        mobileNav.classList.remove('active');
+                    }
+                });
+            }
+
+            // Map click handler
+            function onMapClick(e) {
+                const { lng, lat } = e.lngLat;
+                fetchParcelleInfo(lat, lng);
+            }
+
+            // Fetch parcelle info from API Cadastre
+            async function fetchParcelleInfo(lat, lng) {
+                try {
+                    showLoading('Recherche de la parcelle...');
+
+                    const params = new URLSearchParams({ lat, lon: lng });
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 10000);
+                    const response = await fetch(`/api/contours?${params}`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeout);
+
+                    if (!response.ok) throw new Error('Parcelle non trouvée');
+
+                    const data = await response.json();
+                    // Flatten GeoJSON Feature for easier access
+                    const parcel = {
+                        ...(data.properties || {}),
+                        geometry: data.geometry,
+                        type: data.type
+                    };
+                    state.selectedParcel = parcel;
+
+                    updateParcellePanel(parcel);
+                    showParcelleOnMap(data);
+                    document.getElementById('exportBtn').disabled = false;
+                    document.getElementById('ficheParcellBtn').disabled = false;
+                    document.getElementById('planTopoBtn').classList.add('visible');
+
+                } catch (err) {
+                    console.error('Error:', err);
+                    showToast('Erreur: Parcelle non trouvée. Vérifiez que vous êtes dans une zone couverte.', 'error');
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            // Update side panel with parcelle info (safe DOM creation)
+            function updateParcellePanel(data) {
+                const info = document.getElementById('parcelleInfo');
+                // Clear previous content
+                while (info.firstChild) {
+                    info.removeChild(info.firstChild);
+                }
+
+                // Create elements safely
+                const createField = (label, value) => {
+                    const strong = document.createElement('strong');
+                    strong.textContent = label;
+                    const span = document.createElement('span');
+                    span.textContent = value;
+                    info.appendChild(strong);
+                    info.appendChild(document.createTextNode(' '));
+                    info.appendChild(span);
+                    info.appendChild(document.createElement('br'));
+                };
+
+                createField('Commune:', data.commune || 'N/A');
+                createField('Section:', data.section || 'N/A');
+                createField('Numéro:', data.numero || 'N/A');
+                createField('Surface:', (data.surface ? (data.surface / 10000).toFixed(2) : 'N/A') + ' ha');
+                createField('Adresse:', data.address || 'N/A');
+
+                document.getElementById('sidePanel').classList.add('active');
+            }
+
+            // Show parcelle on map - highlight with GeoJSON
+            function showParcelleOnMap(data) {
+                if (!state.map || !data.geometry) return;
+
+                // Remove previous highlight if exists
+                removeParcelleHighlight();
+
+                // Generate unique IDs
+                const sourceId = 'parcel-highlight-source-' + Date.now();
+                const layerId = 'parcel-highlight-layer-' + Date.now();
+
+                state.parcelHighlightSourceId = sourceId;
+                state.parcelHighlightLayerId = layerId;
+
+                // Create GeoJSON feature
+                const geojsonSource = {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: data.geometry,
+                        properties: {
+                            commune: data.commune,
+                            section: data.section,
+                            numero: data.numero
+                        }
+                    }
+                };
+
+                // Add source
+                state.map.addSource(sourceId, geojsonSource);
+
+                // Add fill layer (semi-transparent green)
+                state.map.addLayer({
+                    id: layerId + '-fill',
+                    type: 'fill',
+                    source: sourceId,
+                    paint: {
+                        'fill-color': '#00c896',
+                        'fill-opacity': 0.2
+                    }
+                });
+
+                // Add outline layer (green border)
+                state.map.addLayer({
+                    id: layerId + '-outline',
+                    type: 'line',
+                    source: sourceId,
+                    paint: {
+                        'line-color': '#00c896',
+                        'line-width': 3
+                    }
+                });
+
+                // Fit map to parcel bounds
+                if (data.geometry.coordinates) {
+                    const bounds = calculateBounds(data.geometry);
+                    if (bounds) {
+                        state.map.fitBounds(bounds, { padding: 50 });
+                    }
+                }
+            }
+
+            // Remove previous parcelle highlight
+            function removeParcelleHighlight() {
+                if (!state.map) return;
+
+                if (state.parcelHighlightLayerId) {
+                    try {
+                        state.map.removeLayer(state.parcelHighlightLayerId + '-fill');
+                        state.map.removeLayer(state.parcelHighlightLayerId + '-outline');
+                    } catch (e) {
+                        // Layer already removed
+                    }
+                }
+
+                if (state.parcelHighlightSourceId) {
+                    try {
+                        state.map.removeSource(state.parcelHighlightSourceId);
+                    } catch (e) {
+                        // Source already removed
+                    }
+                }
+
+                state.parcelHighlightLayerId = null;
+                state.parcelHighlightSourceId = null;
+            }
+
+            // Calculate bounding box from geometry
+            function calculateBounds(geometry) {
+                if (!geometry || !geometry.coordinates) return null;
+
+                let minLng = Infinity, maxLng = -Infinity;
+                let minLat = Infinity, maxLat = -Infinity;
+
+                const processCoord = (coord) => {
+                    if (typeof coord[0] === 'number') {
+                        minLng = Math.min(minLng, coord[0]);
+                        maxLng = Math.max(maxLng, coord[0]);
+                        minLat = Math.min(minLat, coord[1]);
+                        maxLat = Math.max(maxLat, coord[1]);
+                    } else {
+                        coord.forEach(processCoord);
+                    }
+                };
+
+                geometry.coordinates.forEach(processCoord);
+
+                return minLng !== Infinity ? [[minLng, minLat], [maxLng, maxLat]] : null;
+            }
+
+            // Export handler
+            async function handleExport() {
+                if (!state.selectedParcel || !state.selectedTier) {
+                    showToast('Sélectionnez une parcelle et un forfait', 'error');
+                    return;
+                }
+
+                try {
+                    showLoading('Génération des données...');
+                    cycleLoadingMessages();
+
+                    // Determine export format based on tier
+                    const formatMap = {
+                        'decouverte': 'geojson',
+                        'standard': 'obj',
+                        'pro': 'dxf'
+                    };
+                    const format = formatMap[state.selectedTier] || 'geojson';
+                    const endpoint = '/api/generate-' + format;
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            parcel: state.selectedParcel,
+                            tier: state.selectedTier
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error || 'Erreur serveur (' + response.status + ')');
+                    }
+
+                    // Download the generated file
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'topo3d_' + (state.selectedParcel.id || 'parcelle') + '.' + format;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showToast('Export ' + format.toUpperCase() + ' téléchargé avec succès', 'success');
+                    hideLoading();
+
+                } catch (err) {
+                    console.error('Export error:', err);
+                    showToast('Erreur lors de l\'export', 'error');
+                    hideLoading();
+                }
+            }
+
+            // Fiche Parcelle handler
+            async function handleFicheParcelle() {
+                if (!state.selectedParcel) {
+                    showToast('Sélectionnez une parcelle', 'error');
+                    return;
+                }
+
+                try {
+                    showLoading('Génération de la fiche...');
+                    cycleLoadingMessages();
+
+                    const p = state.selectedParcel;
+                    const response = await fetch('/api/fiche-parcelle', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            commune: p.commune,
+                            section: p.section,
+                            numero: p.numero,
+                            lat: p.lat,
+                            lon: p.lon,
+                            surface: p.surface,
+                            codeInsee: p.codeInsee,
+                            geometry: p.geometry
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        throw new Error(errData.error || 'Erreur serveur (' + response.status + ')');
+                    }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'fiche_parcelle_' + (state.selectedParcel.id || 'parcelle') + '.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showToast('Fiche parcelle générée et téléchargée', 'success');
+                    hideLoading();
+
+                } catch (err) {
+                    console.error('Fiche error:', err);
+                    showToast('Erreur lors de la génération', 'error');
+                    hideLoading();
+                }
+            }
+
+            // UI Helpers
+            function showLoading(text = 'Chargement...') {
+                const overlay = document.getElementById('loadingOverlay');
+                document.querySelector('.loading-text').textContent = text;
+                overlay.classList.add('active');
+                messageIndex = 0;
+            }
+
+            function cycleLoadingMessages() {
+                // Clear any existing interval
+                if (state.cycleMessageInterval) {
+                    clearInterval(state.cycleMessageInterval);
+                }
+
+                const messageEl = document.getElementById('loadingMessage');
+                state.cycleMessageInterval = setInterval(() => {
+                    messageEl.textContent = loadingMessages[messageIndex % loadingMessages.length];
+                    messageIndex++;
+                }, 800);
+            }
+
+            function hideLoading() {
+                document.getElementById('loadingOverlay').classList.remove('active');
+                // Clear the message cycling interval
+                if (state.cycleMessageInterval) {
+                    clearInterval(state.cycleMessageInterval);
+                    state.cycleMessageInterval = null;
+                }
+            }
+
+            // Close panel buttons
+            document.getElementById('closePanelBtn').addEventListener('click', () => {
+                document.getElementById('sidePanel').classList.remove('active');
+            });
+
+            // ========== PLAN TOPO ENGINE ==========
+
+            // Generate contour lines from elevation grid using marching squares
+            function generateContours(grid, width, height, interval) {
+                const contours = [];
+                const minElev = Math.min(...grid.filter(v => v !== null));
+                const maxElev = Math.max(...grid.filter(v => v !== null));
+                const startLevel = Math.ceil(minElev / interval) * interval;
+
+                for (let level = startLevel; level <= maxElev; level += interval) {
+                    const paths = [];
+                    for (let y = 0; y < height - 1; y++) {
+                        for (let x = 0; x < width - 1; x++) {
+                            const tl = grid[y * width + x];
+                            const tr = grid[y * width + x + 1];
+                            const br = grid[(y + 1) * width + x + 1];
+                            const bl = grid[(y + 1) * width + x];
+                            if (tl === null || tr === null || br === null || bl === null) continue;
+
+                            const config = (tl >= level ? 8 : 0) | (tr >= level ? 4 : 0) | (br >= level ? 2 : 0) | (bl >= level ? 1 : 0);
+                            if (config === 0 || config === 15) continue;
+
+                            const lerp = (a, b) => a === b ? 0.5 : (level - a) / (b - a);
+                            const segments = getMarchingSegments(config, x, y, tl, tr, br, bl, lerp);
+                            paths.push(...segments);
+                        }
+                    }
+                    if (paths.length > 0) {
+                        contours.push({ level, paths, isMajor: level % (interval * 5) === 0 });
+                    }
+                }
+                return { contours, minElev, maxElev };
+            }
+
+            function getMarchingSegments(config, x, y, tl, tr, br, bl, lerp) {
+                const t = { x: x + lerp(tl, tr), y: y };
+                const r = { x: x + 1, y: y + lerp(tr, br) };
+                const b = { x: x + lerp(bl, br), y: y + 1 };
+                const l = { x: x, y: y + lerp(tl, bl) };
+
+                const segmentMap = {
+                    1: [[l, b]], 2: [[b, r]], 3: [[l, r]], 4: [[t, r]],
+                    5: [[t, l], [b, r]], 6: [[t, b]], 7: [[t, l]], 8: [[t, l]],
+                    9: [[t, b]], 10: [[t, r], [l, b]], 11: [[t, r]], 12: [[l, r]],
+                    13: [[b, r]], 14: [[l, b]]
+                };
+                return segmentMap[config] || [];
+            }
+
+            function elevToColor(elev, minE, maxE, style) {
+                const t = maxE === minE ? 0.5 : (elev - minE) / (maxE - minE);
+                if (style === 'impression') {
+                    const g = Math.round(60 + t * 80);
+                    return `rgb(${g}, ${g + 10}, ${g})`;
+                } else if (style === 'topographique') {
+                    if (t < 0.25) return `rgb(${80 + t * 400}, ${140 + t * 200}, ${60})`;
+                    if (t < 0.5) return `rgb(${180 + (t - 0.25) * 300}, ${180 - (t - 0.25) * 200}, ${60})`;
+                    if (t < 0.75) return `rgb(${200}, ${120 - (t - 0.5) * 200}, ${60 + (t - 0.5) * 200})`;
+                    return `rgb(${200 + (t - 0.75) * 220}, ${200 + (t - 0.75) * 220}, ${220 + (t - 0.75) * 140})`;
+                } else { // classique
+                    if (t < 0.3) return `rgb(${40 + t * 200}, ${140 + t * 100}, ${80})`;
+                    if (t < 0.6) return `rgb(${160 + (t - 0.3) * 200}, ${140 - (t - 0.3) * 100}, ${50})`;
+                    return `rgb(${220}, ${100 - (t - 0.6) * 150}, ${50 + (t - 0.6) * 200})`;
+                }
+            }
+
+            function renderTopoSVG(data, style) {
+                const svg = document.getElementById('topoCanvas');
+                const { contours, grid, width, height, bbox, parcel, minElev, maxElev } = data;
+                const svgW = svg.clientWidth || 1200;
+                const svgH = svg.clientHeight || 800;
+                const pad = 40;
+
+                // Scale
+                const scaleX = (svgW - pad * 2) / width;
+                const scaleY = (svgH - pad * 2) / height;
+                const scale = Math.min(scaleX, scaleY);
+                const offX = (svgW - width * scale) / 2;
+                const offY = (svgH - height * scale) / 2;
+
+                // Backgrounds per style
+                const bgColors = { impression: '#fafafa', classique: '#1a1a2a', topographique: '#0a0a14' };
+                const bg = bgColors[style] || '#0a0a14';
+
+                let svgContent = `<rect width="${svgW}" height="${svgH}" fill="${bg}"/>`;
+
+                // Grid cells background (optional tint for classique/topo)
+                if (style !== 'impression') {
+                    for (let y = 0; y < height - 1; y++) {
+                        for (let x = 0; x < width - 1; x++) {
+                            const e = grid[y * width + x];
+                            if (e === null) continue;
+                            const c = elevToColor(e, minElev, maxElev, style);
+                            svgContent += `<rect x="${offX + x * scale}" y="${offY + y * scale}" width="${scale + 1}" height="${scale + 1}" fill="${c}" opacity="0.15"/>`;
+                        }
+                    }
+                }
+
+                // Contour lines
+                contours.forEach(c => {
+                    const color = style === 'impression'
+                        ? (c.isMajor ? '#555' : '#aaa')
+                        : elevToColor(c.level, minElev, maxElev, style);
+                    const sw = c.isMajor ? 2 : 0.8;
+
+                    c.paths.forEach(seg => {
+                        const x1 = offX + seg[0].x * scale, y1 = offY + seg[0].y * scale;
+                        const x2 = offX + seg[1].x * scale, y2 = offY + seg[1].y * scale;
+                        svgContent += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/>`;
+                    });
+
+                    // Label major contours
+                    if (c.isMajor && c.paths.length > 0) {
+                        const mid = c.paths[Math.floor(c.paths.length / 2)];
+                        const lx = offX + (mid[0].x + mid[1].x) / 2 * scale;
+                        const ly = offY + (mid[0].y + mid[1].y) / 2 * scale;
+                        const txtColor = style === 'impression' ? '#333' : '#fff';
+                        svgContent += `<text x="${lx}" y="${ly}" fill="${txtColor}" font-size="10" font-family="DM Sans" text-anchor="middle" dy="-3">${c.level.toFixed(0)}m</text>`;
+                    }
+                });
+
+                // Parcelle boundary
+                if (parcel && parcel.length > 0) {
+                    const bboxW = bbox[2] - bbox[0], bboxH = bbox[3] - bbox[1];
+                    const pts = parcel.map(([lng, lat]) => {
+                        const px = offX + ((lng - bbox[0]) / bboxW) * width * scale;
+                        const py = offY + ((bbox[3] - lat) / bboxH) * height * scale;
+                        return `${px},${py}`;
+                    }).join(' ');
+                    svgContent += `<polyline points="${pts}" fill="none" stroke="#00c896" stroke-width="2.5" stroke-linejoin="round"/>`;
+                }
+
+                svg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+                svg.innerHTML = svgContent;
+
+                // Update legend
+                const legend = document.getElementById('topoLegend');
+                legend.innerHTML = `
+                    <div style="font-weight:600;margin-bottom:6px;color:#00c896;">Légende</div>
+                    <div class="legend-item"><div class="legend-color" style="background:#00c896;height:2.5px;"></div> Limite parcelle</div>
+                    <div class="legend-item"><div class="legend-color" style="background:${style === 'impression' ? '#555' : '#fff'};height:2px;"></div> Courbe majeure</div>
+                    <div class="legend-item"><div class="legend-color" style="background:${style === 'impression' ? '#aaa' : '#888'};height:1px;"></div> Courbe mineure</div>
+                    <div style="margin-top:6px;font-size:10px;color:#888;">Alt: ${minElev.toFixed(0)}m – ${maxElev.toFixed(0)}m</div>
+                `;
+            }
+
+            async function openPlanTopo() {
+                if (!state.selectedParcel) {
+                    showToast('Sélectionnez une parcelle d\'abord', 'error');
+                    return;
+                }
+
+                const modal = document.getElementById('planTopoModal');
+                modal.classList.add('active');
+
+                const p = state.selectedParcel;
+                const resolution = parseInt(document.getElementById('topoResolution').value);
+                const activeStyle = document.querySelector('.style-tab.active').dataset.style;
+
+                // Update info box
+                document.getElementById('topoInfo').innerHTML = `
+                    <strong>Parcelle sélectionnée</strong>
+                    Commune: ${p.commune || 'N/A'}<br>
+                    Section: ${p.section || 'N/A'}<br>
+                    Numéro: ${p.numero || 'N/A'}<br>
+                    Surface: ${p.surface ? (p.surface / 10000).toFixed(2) + ' ha' : 'N/A'}<br>
+                    <span style="color:#00c896;font-size:11px;">Résolution: ${resolution}m</span>
+                `;
+
+                // Get parcelle bbox
+                const bounds = calculateBounds(p.geometry);
+                if (!bounds) { showToast('Géométrie invalide', 'error'); return; }
+
+                const bbox = [bounds[0][0], bounds[0][1], bounds[1][0], bounds[1][1]];
+                const bboxW = bbox[2] - bbox[0], bboxH = bbox[3] - bbox[1];
+
+                // Generate grid points
+                const gridRes = resolution * 0.00001; // approx deg per meter
+                const cols = Math.min(80, Math.max(20, Math.ceil(bboxW / gridRes)));
+                const rows = Math.min(80, Math.max(20, Math.ceil(bboxH / gridRes)));
+
+                // Fetch elevation for grid
+                const grid = [];
+                const batchSize = 20;
+                const points = [];
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const lng = bbox[0] + (c / (cols - 1)) * bboxW;
+                        const lat = bbox[1] + (r / (rows - 1)) * bboxH;
+                        points.push({ lng, lat });
+                    }
+                }
+
+                // Batch fetch elevations
+                showLoading('Chargement des élévations...');
+                try {
+                    const elevations = [];
+                    for (let i = 0; i < points.length; i += batchSize) {
+                        const batch = points.slice(i, i + batchSize);
+                        const promises = batch.map(pt => {
+                            const elevParams = new URLSearchParams({ lat: pt.lat, lon: pt.lng });
+                            return fetch(`/api/elevation?${elevParams}`)
+                                .then(r => r.ok ? r.json() : { elevation: null })
+                                .then(d => d.elevation)
+                                .catch(() => null);
+                        });
+                        const results = await Promise.all(promises);
+                        elevations.push(...results);
+                    }
+
+                    // Fill nulls with interpolation
+                    for (let i = 0; i < elevations.length; i++) {
+                        if (elevations[i] === null) {
+                            const nearby = elevations.filter(e => e !== null);
+                            elevations[i] = nearby.length > 0 ? nearby.reduce((a, b) => a + b) / nearby.length : 100;
+                        }
+                    }
+
+                    const interval = resolution <= 1 ? 1 : (resolution <= 3 ? 2 : 5);
+                    const contourData = generateContours(elevations, cols, rows, interval);
+
+                    // Get parcelle outline coords
+                    let parcelCoords = [];
+                    if (p.geometry && p.geometry.coordinates) {
+                        const coords = p.geometry.type === 'MultiPolygon' ? p.geometry.coordinates[0][0] : p.geometry.coordinates[0];
+                        parcelCoords = coords;
+                    }
+
+                    state.topoData = {
+                        ...contourData,
+                        grid: elevations,
+                        width: cols,
+                        height: rows,
+                        bbox,
+                        parcel: parcelCoords
+                    };
+
+                    renderTopoSVG(state.topoData, activeStyle);
+                    hideLoading();
+                } catch (err) {
+                    console.error('Plan topo error:', err);
+                    showToast('Erreur lors de la génération du plan topo', 'error');
+                    hideLoading();
+                }
+            }
+
+            // Export topo as PNG/SVG/PDF
+            async function exportTopo(format) {
+                const svg = document.getElementById('topoCanvas');
+                const svgData = new XMLSerializer().serializeToString(svg);
+
+                if (format === 'svg') {
+                    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                    downloadBlob(blob, 'plan-topo.svg');
+                } else if (format === 'png') {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 2400; canvas.height = 1600;
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, 2400, 1600);
+                        canvas.toBlob(blob => downloadBlob(blob, 'plan-topo.png'), 'image/png');
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(Array.from(new TextEncoder().encode(svgData), b => String.fromCharCode(b)).join(''));
+                } else if (format === 'pdf') {
+                    // Generate A4 PDF with SVG embedded
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 2480; canvas.height = 3508; // A4 @ 300dpi
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, 2480, 3508);
+                    // Title
+                    ctx.fillStyle = '#111';
+                    ctx.font = 'bold 48px DM Sans, sans-serif';
+                    ctx.fillText('Plan Topographique — Topo3D-Antilles', 100, 120);
+                    ctx.font = '28px DM Sans, sans-serif';
+                    ctx.fillStyle = '#666';
+                    const p = state.selectedParcel;
+                    ctx.fillText(`${p.commune || ''} — Section ${p.section || ''} N°${p.numero || ''}`, 100, 180);
+                    // SVG content
+                    const img = new Image();
+                    img.onload = () => {
+                        ctx.drawImage(img, 100, 250, 2280, 1520);
+                        canvas.toBlob(blob => downloadBlob(blob, 'plan-topo-A4.png'), 'image/png');
+                        showToast('Image A4 exportée (PNG haute résolution)', 'success');
+                    };
+                    img.src = 'data:image/svg+xml;base64,' + btoa(Array.from(new TextEncoder().encode(svgData), b => String.fromCharCode(b)).join(''));
+                }
+            }
+
+            function downloadBlob(blob, filename) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = filename;
+                document.body.appendChild(a); a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast(`${filename} téléchargé`, 'success');
+            }
+
+            // Initialize on load
+            document.addEventListener('DOMContentLoaded', initMap);
+
+        })();
+    </script>
+</body>
+</html>

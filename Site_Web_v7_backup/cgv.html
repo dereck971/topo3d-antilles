@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Conditions Générales de Vente - Topo3D Antilles. Services de topographie 3D LiDAR pour les Antilles.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://topo3d-antilles.com/cgv.html">
+  <title>Conditions Générales de Vente - Topo3D Antilles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #fafafa;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    /* Navigation */
+    nav {
+      background: white;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .nav-logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #00c896;
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: #333;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #00c896;
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        gap: 0.5rem;
+        text-align: center;
+      }
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #00c896 0%, #00a876 100%);
+      color: white;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      opacity: 0.95;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        padding: 2rem 1rem;
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .header p {
+        font-size: 1rem;
+      }
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      background: white;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .article {
+      margin-bottom: 3rem;
+    }
+
+    .article h2 {
+      color: #00c896;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid #e5e5e5;
+      padding-bottom: 0.5rem;
+    }
+
+    .article p {
+      margin-bottom: 1rem;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .article ul {
+      margin-left: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .article li {
+      margin-bottom: 0.5rem;
+      color: #555;
+    }
+
+    .article strong {
+      color: #333;
+    }
+
+    /* Table */
+    .pricing-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+    }
+
+    .pricing-table th {
+      background-color: #f5f5f5;
+      color: #00c896;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #00c896;
+    }
+
+    .pricing-table td {
+      padding: 1rem;
+      border-bottom: 1px solid #e5e5e5;
+      color: #555;
+    }
+
+    .pricing-table tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    /* Highlight */
+    .highlight {
+      background-color: #f0faf6;
+      border-left: 4px solid #00c896;
+      padding: 1rem;
+      margin: 1.5rem 0;
+      border-radius: 4px;
+    }
+
+    .highlight p {
+      color: #333;
+    }
+
+    /* Footer */
+    footer {
+      background: #333;
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .footer-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: #00c896;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: opacity 0.3s;
+    }
+
+    .footer-links a:hover {
+      opacity: 0.8;
+    }
+
+    .footer-copyright {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      border-top: 1px solid #555;
+      padding-top: 1.5rem;
+    }
+
+    .footer-contact {
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        padding: 1.5rem;
+      }
+
+      .article h2 {
+        font-size: 1.2rem;
+      }
+
+      .pricing-table {
+        font-size: 0.9rem;
+      }
+
+      .pricing-table th,
+      .pricing-table td {
+        padding: 0.75rem;
+      }
+
+      .footer-links {
+        gap: 1rem;
+      }
+    }
+
+    /* Back to top link */
+    .back-to-top {
+      display: inline-block;
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      background-color: #00c896;
+      color: white;
+      text-decoration: none;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+
+    .back-to-top:hover {
+      background-color: #00a876;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <a href="/" class="nav-logo">Topo3D</a>
+    <ul class="nav-links">
+      <li><a href="/">Accueil</a></li>
+      <li><a href="/#services">Services</a></li>
+      <li><a href="/#pricing">Tarifs</a></li>
+      <li><a href="/#contact">Contact</a></li>
+      <li><a href="/cgv" style="color: #00c896;">CGV</a></li>
+    </ul>
+  </nav>
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Conditions Générales de Vente</h1>
+    <p>Topographie 3D LiDAR pour les Antilles</p>
+  </div>
+
+  <!-- Main Content -->
+  <div class="container">
+    <div class="article">
+      <h2>Article 1 - Objet</h2>
+      <p>
+        Topo3D Antilles met à disposition des utilisateurs un service de topographie 3D basé sur la technologie LiDAR (Light Detection and Ranging). Ce service permet d'obtenir des relevés précis du terrain et des structures des Antilles françaises (Guadeloupe, Martinique, Saint-Martin, Saint-Barthélemy).
+      </p>
+      <p>
+        Les présentes conditions générales régissent les relations contractuelles entre Topo3D Antilles et tout utilisateur du service.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 2 - Prix et Offres</h2>
+      <p>Les tarifs proposés sont les suivants :</p>
+      <table class="pricing-table">
+        <thead>
+          <tr>
+            <th>Offre</th>
+            <th>Prix</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Essentiel</strong></td>
+            <td>59€</td>
+            <td>OBJ (5m) + GeoJSON + rapport technique</td>
+          </tr>
+          <tr>
+            <td><strong>Complet</strong></td>
+            <td>129€</td>
+            <td>OBJ LiDAR (2m) + DXF courbes + analyse pentes + rapport PDF</td>
+          </tr>
+          <tr>
+            <td><strong>Premium</strong></td>
+            <td>249€</td>
+            <td>Tous formats : IFC (Revit), DWG (bâtiments), SHP, STL, KML</td>
+          </tr>
+          <tr>
+            <td><strong>Pro</strong></td>
+            <td>349€/mois</td>
+            <td>Illimité, tous formats, API REST, support dédié</td>
+          </tr>
+          <tr>
+            <td><strong>Fiche Parcelle</strong></td>
+            <td>19€</td>
+            <td>Rapport détaillé pour une parcelle cadastrale unique</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        Les prix sont affichés toutes taxes comprises (TTC). Topo3D Antilles se réserve le droit de modifier les prix avec un préavis de 30 jours.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 3 - Commande et Paiement</h2>
+      <p>
+        Le paiement des services se fait en ligne via la plateforme sécurisée Stripe. Les moyens de paiement acceptés incluent :
+      </p>
+      <ul>
+        <li>Cartes bancaires (Visa, Mastercard, American Express)</li>
+        <li>Portefeuilles numériques (Apple Pay, Google Pay)</li>
+        <li>Virements bancaires (SEPA)</li>
+      </ul>
+      <p>
+        La transaction est sécurisée par le protocole SSL/TLS. L'utilisateur est responsable de la confidentialité de ses identifiants de paiement.
+      </p>
+      <div class="highlight">
+        <p><strong>Sécurité :</strong> Aucune donnée bancaire sensible n'est stockée sur nos serveurs. Topo3D Antilles ne traite les paiements que via Stripe.</p>
+      </div>
+    </div>
+
+    <div class="article">
+      <h2>Article 4 - Livraison et Accès aux Services</h2>
+      <p>
+        Les fichiers et données sont livrés numériquement. L'accès au service est fourni immédiatement après paiement confirmé, dans un délai inférieur à 24h.
+      </p>
+      <p>
+        Les formats de fichiers disponibles incluent :
+      </p>
+      <ul>
+        <li>Nuages de points LAS/LAZ</li>
+        <li>Modèles numériques d'élévation (MNE)</li>
+        <li>Orthophographies</li>
+        <li>Cartes interactives</li>
+        <li>Rapports PDF personnalisés</li>
+      </ul>
+      <p>
+        Topo3D Antilles ne peut être responsable des délais de téléchargement liés à la connexion internet de l'utilisateur.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 5 - Droit de Rétractation</h2>
+      <p>
+        Conformément à la loi française, l'utilisateur dispose d'un délai de 14 jours à compter de la date d'achat pour exercer son droit de rétractation.
+      </p>
+      <div class="highlight">
+        <p><strong>Exception :</strong> Le droit de rétractation ne s'applique pas aux contenus numériques (données, fichiers) qui ont été téléchargés avec le consentement explicite de l'utilisateur.</p>
+      </div>
+      <p>
+        Pour exercer ce droit, l'utilisateur doit contacter le support à l'adresse support@topo3d-antilles.com dans le délai imparti.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 6 - Données et Précision</h2>
+      <p>
+        <strong>Source des données :</strong> Les données fournies proviennent principalement de l'Institut Géographique National (IGN) et sont mises à jour régulièrement.
+      </p>
+      <p>
+        <strong>Précision :</strong> La précision horizontale et verticale est garantie à ±0.2 mètres en conditions optimales. Cette précision peut varier selon les conditions topographiques, la couverture végétale et les conditions atmosphériques.
+      </p>
+      <p>
+        <strong>Licence :</strong> Les données brutes sont fournies sous la licence Etalab 2.0, permettant une utilisation libre à titre gratuit ou payant.
+      </p>
+      <div class="highlight">
+        <p><strong>Limitation :</strong> Topo3D Antilles ne garantit pas l'absence d'erreurs ou l'adéquation absolue des données à tous les usages. Les données ne doivent pas être utilisées sans vérification préalable pour les projets critiques de sécurité.</p>
+      </div>
+    </div>
+
+    <div class="article">
+      <h2>Article 7 - Responsabilité</h2>
+      <p>
+        <strong>Limitation :</strong> La responsabilité de Topo3D Antilles est limitée au prix payé pour le service acheté. En aucun cas, Topo3D Antilles ne peut être tenue responsable des dommages indirects, perte de profits, ou conséquences dommageables liées à l'utilisation des données.
+      </p>
+      <p>
+        <strong>Non-substitution :</strong> Le service Topo3D Antilles ne se substitue pas à un géomètre-expert. Pour les projets nécessitant une certification légale ou officielle, l'utilisateur doit consulter un professionnel agréé.
+      </p>
+      <p>
+        Topo3D Antilles n'est pas responsable des interruptions temporaires du service dues à des maintenances, mises à jour logicielles ou force majeure.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 8 - Propriété Intellectuelle</h2>
+      <p>
+        <strong>Données brutes :</strong> Les données brutes (nuages de points LiDAR, MNE, orthophographies) restituées à l'utilisateur lui appartiennent pleinement après paiement.
+      </p>
+      <p>
+        <strong>Logiciel et plateforme :</strong> Le logiciel, l'interface web et tous les éléments de la plateforme Topo3D Antilles restent la propriété exclusive de Topo3D Antilles et sont protégés par les lois sur les droits d'auteur.
+      </p>
+      <p>
+        L'utilisateur s'engage à ne pas reproduire, modifier ou distribuer le logiciel sans autorisation écrite.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 9 - Protection des Données Personnelles</h2>
+      <p>
+        Topo3D Antilles traite les données personnelles des utilisateurs conformément au Règlement Général sur la Protection des Données (RGPD).
+      </p>
+      <p>
+        Les données collectées (nom, email, adresse, informations de paiement) sont utilisées uniquement pour :
+      </p>
+      <ul>
+        <li>Traiter les commandes et paiements</li>
+        <li>Envoyer les contenus achetés</li>
+        <li>Assurer le support client</li>
+        <li>Respecter les obligations légales</li>
+      </ul>
+      <p>
+        Pour plus de détails, veuillez consulter notre <a href="/confidentialite" style="color: #00c896; text-decoration: underline;">Politique de Confidentialité</a>.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 10 - Droit Applicable et Compétence</h2>
+      <p>
+        Les présentes conditions générales de vente sont régies par le droit français.
+      </p>
+      <p>
+        En cas de litige, l'utilisateur et Topo3D Antilles s'engagent en première intention à résoudre le différend à l'amiable.
+      </p>
+      <p>
+        À défaut de solution amiable, le litige sera soumis à la compétence exclusive des tribunaux du ressort de la Guadeloupe.
+      </p>
+    </div>
+
+    <div class="article">
+      <h2>Article 11 - Contact et Support</h2>
+      <p>
+        Pour toute question, demande d'assistance ou exercice de droits, l'utilisateur peut contacter Topo3D Antilles à :
+      </p>
+      <div class="highlight">
+        <p>
+          <strong>Email :</strong> support@topo3d-antilles.com<br>
+          <strong>Réponse :</strong> Sous 48 heures ouvrables
+        </p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 3rem;">
+      <p style="font-size: 0.9rem; color: #999;">
+        Dernière mise à jour : 2026<br>
+        Ces conditions générales peuvent être modifiées à tout moment. Les modifications entrent en vigueur dès leur publication sur le site.
+      </p>
+      <a href="/" class="back-to-top">Retour à l'accueil</a>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="/">Accueil</a>
+        <a href="/cgv">CGV</a>
+        <a href="/confidentialite">Confidentialité</a>
+        <a href="/#contact">Contact</a>
+      </div>
+      <div class="footer-contact">
+        support@topo3d-antilles.com
+      </div>
+      <div class="footer-copyright">
+        &copy; 2026 Topo3D Antilles. Tous droits réservés.<br>
+        Services de topographie 3D LiDAR pour la Guadeloupe, Martinique et îles voisines.
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>DÉMO — Types de rendus possibles | Skill masse-batiment-3d</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#080810;color:#fff;overflow-x:hidden}
+.hero{background:linear-gradient(135deg,#0f0f23 0%,#1a1a3e 50%,#0f1a2e 100%);padding:50px 60px;text-align:center;border-bottom:3px solid #e6a817}
+.hero h1{font-size:36px;font-weight:800;background:linear-gradient(90deg,#e6a817,#f0c040,#e6a817);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px}
+.hero p{color:#888;font-size:15px;max-width:700px;margin:0 auto}
+.badge{display:inline-block;background:#e6a817;color:#000;padding:5px 16px;border-radius:20px;font-size:12px;font-weight:700;margin-top:15px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.card{position:relative;border:1px solid #1a1a2e;overflow:hidden;min-height:500px}
+.card canvas{width:100%;height:400px;display:block;background:#0a0a14}
+.card-info{padding:20px 25px;background:#111}
+.card-info h3{font-size:16px;font-weight:700;color:#e6a817;margin-bottom:6px}
+.card-info p{font-size:12px;color:#999;line-height:1.6}
+.card-tag{position:absolute;top:15px;left:15px;background:rgba(0,0,0,0.8);padding:4px 12px;border-radius:4px;font-size:10px;font-weight:600;color:#e6a817;border:1px solid #e6a817;z-index:10}
+.card-export{position:absolute;top:15px;right:15px;background:rgba(0,0,0,0.8);padding:4px 10px;border-radius:4px;font-size:9px;color:#4ade80;border:1px solid #333;z-index:10}
+.section-title{grid-column:1/-1;padding:30px 40px 15px;background:#0d0d1a;border-top:1px solid #222}
+.section-title h2{font-size:20px;font-weight:700;color:#fff}
+.section-title p{font-size:12px;color:#666;margin-top:4px}
+.footer{background:#0a0a14;padding:30px 40px;text-align:center;border-top:1px solid #222}
+.footer h3{color:#e6a817;font-size:18px;margin-bottom:10px}
+.footer p{color:#666;font-size:12px;max-width:600px;margin:0 auto;line-height:1.8}
+.pipeline{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap}
+.pipe-step{background:#1a1a2e;padding:8px 16px;border-radius:6px;font-size:11px;color:#fff;border:1px solid #333}
+.pipe-step.active{border-color:#e6a817;color:#e6a817}
+.pipe-arrow{color:#555;font-size:16px}
+.controls-hint{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,0.7);padding:6px 10px;border-radius:4px;font-size:9px;color:#666;z-index:10}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Aperçu des rendus possibles</h1>
+  <p>Voici les 4 types de rendus que le skill "masse-batiment-3d" pourrait générer pour les rapports KCI et les livrables clients.</p>
+  <span class="badge">DÉMO TECHNIQUE — Bungalow T2 40m² · Le Gosier · Zone UB</span>
+</div>
+
+<div class="grid">
+
+  <!-- RENDU 1: Architectural réaliste -->
+  <div class="card">
+    <span class="card-tag">RENDU 1 — RÉALISTE</span>
+    <span class="card-export">Export: PNG, PDF</span>
+    <canvas id="c1"></canvas>
+    <div class="controls-hint">Clic + glisser = rotation</div>
+    <div class="card-info">
+      <h3>Vue perspective architecturale</h3>
+      <p>Rendu semi-réaliste avec matériaux (bois, béton, tôle), ombres portées, végétation tropicale. Idéal pour le rapport KCI Premium 299€ — section "Simulation volumétrique". Le client voit son projet comme s'il était déjà construit.</p>
+    </div>
+  </div>
+
+  <!-- RENDU 2: Diagramme isométrique -->
+  <div class="card">
+    <span class="card-tag">RENDU 2 — ISOMÉTRIQUE</span>
+    <span class="card-export">Export: PNG, SVG, PDF</span>
+    <canvas id="c2"></canvas>
+    <div class="controls-hint">Clic + glisser = rotation</div>
+    <div class="card-info">
+      <h3>Vue isométrique technique</h3>
+      <p>Style diagramme avec code couleur par fonction (séjour, chambre, SdB). Montrer les reculs PLU en pointillés. Parfait pour l'offre Complète 129€ — lisible, technique, pro. Les archis adorent ce style.</p>
+    </div>
+  </div>
+
+  <!-- RENDU 3: Plan de masse 2D -->
+  <div class="card">
+    <span class="card-tag">RENDU 3 — PLAN DE MASSE</span>
+    <span class="card-export">Export: PNG, SVG, DXF, PDF</span>
+    <canvas id="c3"></canvas>
+    <div class="card-info">
+      <h3>Plan de masse 2D annoté</h3>
+      <p>Vue de dessus avec cotations, reculs PLU, emprise au sol, zones constructibles. Exportable en DXF pour AutoCAD. C'est le livrable technique de base — celui qui va dans les dossiers permis de construire et que les BET utilisent.</p>
+    </div>
+  </div>
+
+  <!-- RENDU 4: Terrain topo + bâtiment -->
+  <div class="card">
+    <span class="card-tag">RENDU 4 — TOPO + BÂTIMENT</span>
+    <span class="card-export">Export: OBJ, glTF, HTML</span>
+    <canvas id="c4"></canvas>
+    <div class="controls-hint">Clic + glisser = rotation</div>
+    <div class="card-info">
+      <h3>Intégration terrain topographique</h3>
+      <p>Fusion du MNT (skill topo-3d-parcelle) avec la masse bâtiment. Le client voit son bâtiment posé sur le vrai relief de sa parcelle avec courbes de niveau. C'est le rendu le plus impressionnant — exclusif offre Premium.</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <h3>Pipeline d'intégration dans l'écosystème KCI</h3>
+  <div class="pipeline">
+    <div class="pipe-step">Parcelle cadastrale</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step active">topo-3d-parcelle</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step active">masse-batiment-3d</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step active">kci-rapport</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">PDF Client</div>
+  </div>
+  <p style="margin-top:20px">Chaque rendu est généré automatiquement à partir des contraintes PLU de la base de données.<br>Le skill lit la fiche commune JSON, applique les règles (hauteur, CES, reculs, toiture) et produit les visuels.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ==================== SHARED UTILITIES ====================
+function addOrbit(canvas, cam, tgt, rad){
+  let drag=false,px,py,th=Math.PI/4,ph=Math.PI/4,r=rad;
+  function upd(){cam.position.set(tgt.x+r*Math.sin(ph)*Math.cos(th),tgt.y+r*Math.cos(ph),tgt.z+r*Math.sin(ph)*Math.sin(th));cam.lookAt(tgt)}
+  canvas.addEventListener('mousedown',e=>{drag=true;px=e.clientX;py=e.clientY});
+  canvas.addEventListener('mousemove',e=>{if(!drag)return;th-=(e.clientX-px)*0.005;ph=Math.max(0.1,Math.min(1.5,ph-(e.clientY-py)*0.005));upd();px=e.clientX;py=e.clientY});
+  canvas.addEventListener('mouseup',()=>drag=false);
+  canvas.addEventListener('wheel',e=>{r=Math.max(5,Math.min(50,r+e.deltaY*0.03));upd()});
+  canvas.addEventListener('contextmenu',e=>e.preventDefault());
+  upd(); return upd;
+}
+
+function makeScene(canvasId){
+  const c=document.getElementById(canvasId);
+  const s=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(45,c.clientWidth/c.clientHeight,0.1,300);
+  const r=new THREE.WebGLRenderer({canvas:c,antialias:true,alpha:true});
+  r.setSize(c.clientWidth,c.clientHeight);r.shadowMap.enabled=true;
+  r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  return {canvas:c,scene:s,camera:cam,renderer:r};
+}
+
+function addLights(scene, intensity){
+  scene.add(new THREE.AmbientLight(0xffffff,0.35*intensity));
+  const d=new THREE.DirectionalLight(0xffffff,0.7*intensity);
+  d.position.set(20,30,15);d.castShadow=true;scene.add(d);
+  scene.add(new THREE.HemisphereLight(0x87ceeb,0x2d4a1a,0.25*intensity));
+}
+
+// ==================== RENDU 1: RÉALISTE ====================
+(function(){
+  const {canvas,scene,camera,renderer}=makeScene('c1');
+  scene.background=new THREE.Color(0x1a2a3a);
+  scene.fog=new THREE.FogExp2(0x1a2a3a,0.012);
+  addLights(scene,1.2);
+
+  // Ground with grass texture feel
+  const gnd=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({color:0x2d5a1a,roughness:0.9}));
+  gnd.rotation.x=-Math.PI/2;gnd.receiveShadow=true;scene.add(gnd);
+
+  // Bungalow walls - concrete/wood look
+  const wallMat=new THREE.MeshStandardMaterial({color:0xe8dcc8,roughness:0.7,metalness:0.05});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(8,2.8,6),wallMat);
+  body.position.set(0,1.4,0);body.castShadow=true;body.receiveShadow=true;scene.add(body);
+
+  // Accent wall (wood)
+  const woodMat=new THREE.MeshStandardMaterial({color:0x8B6914,roughness:0.8});
+  const accent=new THREE.Mesh(new THREE.BoxGeometry(0.08,2.8,6),woodMat);
+  accent.position.set(4.04,1.4,0);scene.add(accent);
+
+  // Roof - red corrugated
+  const roofMat=new THREE.MeshStandardMaterial({color:0xb91c1c,roughness:0.5,metalness:0.3});
+  const roofShape=new THREE.Shape();
+  roofShape.moveTo(-5,0);roofShape.lineTo(0,2.5);roofShape.lineTo(5,0);roofShape.lineTo(-5,0);
+  const roofGeo=new THREE.ExtrudeGeometry(roofShape,{depth:7.5,bevelEnabled:false});
+  const roof=new THREE.Mesh(roofGeo,roofMat);
+  roof.rotation.x=-Math.PI/2;roof.position.set(0,2.8,-3.75);roof.castShadow=true;scene.add(roof);
+
+  // Terrasse deck (dark wood)
+  const deckMat=new THREE.MeshStandardMaterial({color:0x5c3a1e,roughness:0.85});
+  const deck=new THREE.Mesh(new THREE.BoxGeometry(10,0.12,4),deckMat);
+  deck.position.set(0,0.06,5);deck.receiveShadow=true;scene.add(deck);
+
+  // Pergola beams
+  const beamMat=new THREE.MeshStandardMaterial({color:0x4a2c0a,roughness:0.7});
+  for(let x=-4;x<=4;x+=2){
+    const beam=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.15,5),beamMat);
+    beam.position.set(x,2.6,5);beam.castShadow=true;scene.add(beam);
+  }
+  // Pergola pillars
+  for(let x of [-4,4]){for(let z of [3,7]){
+    const p=new THREE.Mesh(new THREE.BoxGeometry(0.15,2.6,0.15),beamMat);
+    p.position.set(x,1.3,z);p.castShadow=true;scene.add(p);
+  }}
+
+  // Windows
+  const winMat=new THREE.MeshStandardMaterial({color:0x6fb4d4,roughness:0.1,metalness:0.5,transparent:true,opacity:0.6});
+  // Front windows
+  for(let x of [-2.5,0,2.5]){
+    const win=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.4,0.05),winMat);
+    win.position.set(x,1.8,3.01);scene.add(win);
+    // Window frame
+    scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1.3,1.5,0.06)),new THREE.LineBasicMaterial({color:0x333})).translateX(x).translateY(1.8).translateZ(3.01));
+  }
+
+  // Tropical trees
+  function addPalm(x,z,h){
+    const trunk=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.12,h,8),new THREE.MeshStandardMaterial({color:0x6b4226,roughness:0.9}));
+    trunk.position.set(x,h/2,z);scene.add(trunk);
+    for(let i=0;i<6;i++){
+      const leaf=new THREE.Mesh(new THREE.ConeGeometry(0.15,2.5,4),new THREE.MeshStandardMaterial({color:0x228b22,roughness:0.8}));
+      leaf.position.set(x+Math.cos(i*Math.PI/3)*0.8,h+0.5,z+Math.sin(i*Math.PI/3)*0.8);
+      leaf.rotation.z=Math.PI/4*(Math.cos(i));leaf.rotation.x=Math.PI/6*(Math.sin(i));
+      scene.add(leaf);
+    }
+    const crown=new THREE.Mesh(new THREE.SphereGeometry(1.2,8,6),new THREE.MeshStandardMaterial({color:0x1a6b1a,roughness:0.8,transparent:true,opacity:0.7}));
+    crown.position.set(x,h+0.3,z);crown.scale.y=0.6;scene.add(crown);
+  }
+  addPalm(-8,2,5);addPalm(9,-3,4.5);addPalm(-6,-7,5.5);addPalm(7,8,4);
+
+  // Shrubs
+  for(let i=0;i<12;i++){
+    const s=new THREE.Mesh(new THREE.SphereGeometry(0.3+Math.random()*0.3,6,6),new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(0.3,0.5+Math.random()*0.3,0.2+Math.random()*0.15),roughness:0.9}));
+    const a=Math.random()*Math.PI*2,d=5+Math.random()*7;
+    s.position.set(Math.cos(a)*d,0.3,Math.sin(a)*d);scene.add(s);
+  }
+
+  camera.position.set(15,10,15);
+  const upd=addOrbit(canvas,camera,new THREE.Vector3(0,2,1),22);
+  (function a(){requestAnimationFrame(a);renderer.render(scene,camera)})();
+})();
+
+// ==================== RENDU 2: ISOMÉTRIQUE ====================
+(function(){
+  const {canvas,scene,camera,renderer}=makeScene('c2');
+  scene.background=new THREE.Color(0x0d1020);
+  addLights(scene,1);
+
+  // Parcelle outline
+  const parcel=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(24,0.02,25)),new THREE.LineBasicMaterial({color:0x22c55e}));
+  scene.add(parcel);
+
+  // PLU recul zones (dashed)
+  const reculMat=new THREE.LineDashedMaterial({color:0xff4444,dashSize:0.5,gapSize:0.3});
+  const reculGeo=new THREE.EdgesGeometry(new THREE.BoxGeometry(18,0.02,19));
+  const recul=new THREE.LineSegments(reculGeo,reculMat);recul.computeLineDistances();
+  recul.position.set(0,0.03,-1);scene.add(recul);
+
+  // Color-coded rooms
+  const rooms=[
+    {w:4.5,d:4,h:2.8,x:-1.75,z:-1,color:0x4ade80,name:'Séjour/Cuisine'},
+    {w:3.5,d:3.5,h:2.8,x:2.25,z:-1.25,color:0x60a5fa,name:'Chambre'},
+    {w:2.5,d:2,h:2.8,x:-1.75,z:2,color:0xc084fc,name:'SdB'},
+    {w:1.5,d:2,h:2.8,x:2.25,z:2,color:0xf472b6,name:'WC'},
+  ];
+
+  rooms.forEach(r=>{
+    const mesh=new THREE.Mesh(new THREE.BoxGeometry(r.w,r.h,r.d),new THREE.MeshStandardMaterial({color:r.color,transparent:true,opacity:0.55}));
+    mesh.position.set(r.x,r.h/2,r.z);mesh.castShadow=true;scene.add(mesh);
+    scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(r.w,r.h,r.d)),new THREE.LineBasicMaterial({color:r.color})).translateX(r.x).translateY(r.h/2).translateZ(r.z));
+  });
+
+  // Terrasse
+  const terr=new THREE.Mesh(new THREE.BoxGeometry(8,0.1,3),new THREE.MeshStandardMaterial({color:0x94a3b8,transparent:true,opacity:0.3}));
+  terr.position.set(0,0.05,5);scene.add(terr);
+  scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(8,0.1,3)),new THREE.LineBasicMaterial({color:0x94a3b8})).translateY(0.05).translateZ(5));
+
+  // Roof wireframe
+  const roofShape=new THREE.Shape();
+  roofShape.moveTo(-5,0);roofShape.lineTo(0,2);roofShape.lineTo(5,0);roofShape.lineTo(-5,0);
+  const roofGeo=new THREE.ExtrudeGeometry(roofShape,{depth:6,bevelEnabled:false});
+  const roofWire=new THREE.LineSegments(new THREE.EdgesGeometry(roofGeo),new THREE.LineBasicMaterial({color:0xe6a817}));
+  roofWire.rotation.x=-Math.PI/2;roofWire.position.set(0,2.8,-3);scene.add(roofWire);
+
+  // Height markers
+  const hLine=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(7,0,-5),new THREE.Vector3(7,9,-5)]);
+  const hMark=new THREE.Line(hLine,new THREE.LineDashedMaterial({color:0xe6a817,dashSize:0.2,gapSize:0.1}));
+  hMark.computeLineDistances();scene.add(hMark);
+
+  // Max height plane
+  const maxH=new THREE.Mesh(new THREE.PlaneGeometry(24,25),new THREE.MeshBasicMaterial({color:0xe6a817,transparent:true,opacity:0.03,side:THREE.DoubleSide}));
+  maxH.rotation.x=-Math.PI/2;maxH.position.y=9;scene.add(maxH);
+
+  // Grid
+  scene.add(new THREE.GridHelper(30,30,0x222233,0x181828).translateY(-0.02));
+
+  camera.position.set(18,14,18);
+  addOrbit(canvas,camera,new THREE.Vector3(0,2,0),24);
+  (function a(){requestAnimationFrame(a);renderer.render(scene,camera)})();
+})();
+
+// ==================== RENDU 3: PLAN DE MASSE 2D ====================
+(function(){
+  const c=document.getElementById('c3');
+  const ctx=c.getContext('2d');
+  c.width=c.clientWidth*2;c.height=400*2;
+  ctx.scale(2,2);
+  const W=c.clientWidth,H=400;
+  const scale=12; // 1m = 12px
+  const ox=W/2,oy=H/2;
+
+  // Background
+  ctx.fillStyle='#0a0a14';ctx.fillRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle='#1a1a2a';ctx.lineWidth=0.5;
+  for(let x=-15;x<=15;x++){ctx.beginPath();ctx.moveTo(ox+x*scale,0);ctx.lineTo(ox+x*scale,H);ctx.stroke()}
+  for(let y=-15;y<=15;y++){ctx.beginPath();ctx.moveTo(0,oy+y*scale);ctx.lineTo(W,oy+y*scale);ctx.stroke()}
+
+  // Parcelle 24x25m
+  ctx.strokeStyle='#22c55e';ctx.lineWidth=2;ctx.setLineDash([]);
+  ctx.strokeRect(ox-12*scale,oy-12.5*scale,24*scale,25*scale);
+  ctx.fillStyle='rgba(34,197,94,0.05)';ctx.fillRect(ox-12*scale,oy-12.5*scale,24*scale,25*scale);
+
+  // PLU reculs
+  ctx.strokeStyle='#ff4444';ctx.lineWidth=1;ctx.setLineDash([6,4]);
+  ctx.strokeRect(ox-9*scale,oy-9.5*scale,18*scale,19*scale);
+
+  // Labels reculs
+  ctx.fillStyle='#ff4444';ctx.font='9px Inter,sans-serif';
+  ctx.fillText('Recul voie: 5m',ox-8.5*scale,oy-10*scale);
+  ctx.fillText('Recul limites: 3m',ox+5*scale,oy-2*scale);
+
+  // Bâtiment
+  const rooms=[
+    {x:-2,y:-2,w:4.5,h:4,color:'#4ade80',label:'Séjour/Cuisine\n18 m²'},
+    {x:2.5,y:-2,w:3.5,h:3.5,color:'#60a5fa',label:'Chambre\n12 m²'},
+    {x:-2,y:2,w:2.5,h:2,color:'#c084fc',label:'SdB 5m²'},
+    {x:2.5,y:2,w:1.5,h:2,color:'#f472b6',label:'WC 2m²'},
+    {x:0.5,y:2,w:2,h:2,color:'#78716c',label:'Rang. 3m²'},
+  ];
+
+  ctx.setLineDash([]);
+  rooms.forEach(r=>{
+    ctx.fillStyle=r.color+'40';ctx.fillRect(ox+r.x*scale,oy+r.y*scale,r.w*scale,r.h*scale);
+    ctx.strokeStyle=r.color;ctx.lineWidth=1.5;ctx.strokeRect(ox+r.x*scale,oy+r.y*scale,r.w*scale,r.h*scale);
+    ctx.fillStyle=r.color;ctx.font='bold 9px Inter';
+    const lines=r.label.split('\n');
+    lines.forEach((l,i)=>{ctx.fillText(l,ox+(r.x+0.2)*scale,oy+(r.y+0.8+i*0.9)*scale)});
+  });
+
+  // Terrasse
+  ctx.fillStyle='rgba(148,163,184,0.15)';ctx.fillRect(ox-4*scale,oy+4.5*scale,8*scale,3*scale);
+  ctx.strokeStyle='#94a3b8';ctx.lineWidth=1;ctx.setLineDash([4,3]);
+  ctx.strokeRect(ox-4*scale,oy+4.5*scale,8*scale,3*scale);
+  ctx.fillStyle='#94a3b8';ctx.font='9px Inter';ctx.fillText('Terrasse 15m²',ox-3*scale,oy+6*scale);
+
+  // Piscine
+  ctx.fillStyle='rgba(56,189,248,0.2)';ctx.fillRect(ox-2*scale,oy+8.5*scale,4*scale,2.5*scale);
+  ctx.strokeStyle='#38bdf8';ctx.setLineDash([]);ctx.lineWidth=1;
+  ctx.strokeRect(ox-2*scale,oy+8.5*scale,4*scale,2.5*scale);
+  ctx.fillStyle='#38bdf8';ctx.fillText('Piscine',ox-1*scale,oy+10*scale);
+
+  // Parking
+  ctx.fillStyle='rgba(100,100,100,0.2)';ctx.fillRect(ox+7*scale,oy-10*scale,3*scale,5*scale);
+  ctx.strokeStyle='#666';ctx.lineWidth=1;ctx.strokeRect(ox+7*scale,oy-10*scale,3*scale,5*scale);
+  ctx.fillStyle='#888';ctx.fillText('Parking',ox+7.3*scale,oy-7.5*scale);
+  ctx.fillText('1 place',ox+7.3*scale,oy-6.5*scale);
+
+  // Cotations
+  ctx.strokeStyle='#e6a817';ctx.lineWidth=0.8;ctx.setLineDash([]);
+  // Width
+  ctx.beginPath();ctx.moveTo(ox-2*scale,oy-3.5*scale);ctx.lineTo(ox+6*scale,oy-3.5*scale);ctx.stroke();
+  ctx.fillStyle='#e6a817';ctx.font='bold 10px Inter';ctx.fillText('8.00 m',ox+0.5*scale,oy-3.8*scale);
+  // Height
+  ctx.beginPath();ctx.moveTo(ox-3.5*scale,oy-2*scale);ctx.lineTo(ox-3.5*scale,oy+4*scale);ctx.stroke();
+  ctx.fillText('6.00 m',ox-5.5*scale,oy+1*scale);
+
+  // North arrow
+  ctx.fillStyle='#e6a817';ctx.beginPath();
+  ctx.moveTo(W-60,50);ctx.lineTo(W-55,70);ctx.lineTo(W-65,70);ctx.fill();
+  ctx.font='bold 11px Inter';ctx.fillText('N',W-62,45);
+
+  // Title block
+  ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(10,H-55,250,45);
+  ctx.strokeStyle='#e6a817';ctx.lineWidth=1;ctx.strokeRect(10,H-55,250,45);
+  ctx.fillStyle='#e6a817';ctx.font='bold 11px Inter';ctx.fillText('Plan de masse — Bungalow T2 40m²',18,H-38);
+  ctx.fillStyle='#888';ctx.font='9px Inter';ctx.fillText('Le Gosier · Zone UB · PLU 2021 · Parcelle 600m²',18,H-22);
+
+  // Scale bar
+  ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(W-130,H-25);ctx.lineTo(W-130+5*scale,H-25);ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='9px Inter';ctx.fillText('5 m',W-100,H-30);
+  // Ticks
+  ctx.beginPath();ctx.moveTo(W-130,H-28);ctx.lineTo(W-130,H-22);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W-130+5*scale,H-28);ctx.lineTo(W-130+5*scale,H-22);ctx.stroke();
+
+  // Emprise info
+  ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(W-200,10,190,50);
+  ctx.fillStyle='#e6a817';ctx.font='bold 10px Inter';ctx.fillText('Emprise au sol: 48 m²',W-190,28);
+  ctx.fillStyle='#4ade80';ctx.fillText('CES: 8% (max PLU: 50%)',W-190,42);
+  ctx.fillStyle='#888';ctx.font='9px Inter';ctx.fillText('Marge constructible: +252 m²',W-190,54);
+})();
+
+// ==================== RENDU 4: TOPO + BÂTIMENT ====================
+(function(){
+  const {canvas,scene,camera,renderer}=makeScene('c4');
+  scene.background=new THREE.Color(0x0a1520);
+  scene.fog=new THREE.FogExp2(0x0a1520,0.008);
+  addLights(scene,1.1);
+
+  // Generate terrain with realistic bumps
+  const terrainGeo=new THREE.PlaneGeometry(30,30,60,60);
+  const verts=terrainGeo.attributes.position.array;
+  for(let i=0;i<verts.length;i+=3){
+    const x=verts[i],y=verts[i+1];
+    verts[i+2]=Math.sin(x*0.3)*Math.cos(y*0.2)*1.5+Math.sin(x*0.7+y*0.5)*0.4+Math.cos(y*0.4)*0.8;
+  }
+  terrainGeo.computeVertexNormals();
+
+  // Terrain with gradient color
+  const terrainMat=new THREE.MeshStandardMaterial({color:0x2d6b1a,roughness:0.95,wireframe:false,flatShading:true});
+  const terrain=new THREE.Mesh(terrainGeo,terrainMat);
+  terrain.rotation.x=-Math.PI/2;terrain.receiveShadow=true;scene.add(terrain);
+
+  // Contour lines (wireframe overlay)
+  const wireGeo=terrainGeo.clone();
+  const wireMat=new THREE.MeshBasicMaterial({color:0x4ade80,wireframe:true,transparent:true,opacity:0.08});
+  const wireframe=new THREE.Mesh(wireGeo,wireMat);
+  wireframe.rotation.x=-Math.PI/2;wireframe.position.y=0.05;scene.add(wireframe);
+
+  // Building on terrain
+  const bH=2.8;
+  // Compute terrain height at building position
+  const buildY=Math.sin(0)*Math.cos(0)*1.5+Math.sin(0)*0.4+Math.cos(0)*0.8;
+
+  const wallMat=new THREE.MeshStandardMaterial({color:0xe8dcc8,roughness:0.6});
+  const body=new THREE.Mesh(new THREE.BoxGeometry(8,bH,6),wallMat);
+  body.position.set(0,buildY+bH/2+0.1,0);body.castShadow=true;scene.add(body);
+  scene.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(8,bH,6)),new THREE.LineBasicMaterial({color:0x333})).translateY(buildY+bH/2+0.1));
+
+  // Roof
+  const roofShape=new THREE.Shape();
+  roofShape.moveTo(-5,0);roofShape.lineTo(0,2.2);roofShape.lineTo(5,0);
+  const roofGeo=new THREE.ExtrudeGeometry(roofShape,{depth:7,bevelEnabled:false});
+  const roof=new THREE.Mesh(roofGeo,new THREE.MeshStandardMaterial({color:0xb91c1c,roughness:0.5,metalness:0.2}));
+  roof.rotation.x=-Math.PI/2;roof.position.set(0,buildY+bH+0.1,-3.5);roof.castShadow=true;scene.add(roof);
+
+  // Terrasse/deck adapted to terrain
+  const deckMat=new THREE.MeshStandardMaterial({color:0x5c3a1e,roughness:0.8});
+  const deck=new THREE.Mesh(new THREE.BoxGeometry(9,0.15,3.5),deckMat);
+  const deckY=Math.sin(0)*Math.cos(1.5)*1.5+0.4;
+  deck.position.set(0,deckY+0.1,5);scene.add(deck);
+
+  // Stilts for deck (adapting to terrain)
+  for(let x of [-3.5,0,3.5]){for(let z of [3.5,6.5]){
+    const tH=deckY-Math.sin(x*0.3)*Math.cos(z*0.2)*1.5+1;
+    if(tH>0){
+      const stilt=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.08,tH,6),new THREE.MeshStandardMaterial({color:0x4a2c0a}));
+      const baseY=Math.sin(x*0.3)*Math.cos(z*0.2)*1.5+Math.sin(x*0.7+z*0.5)*0.4;
+      stilt.position.set(x,baseY+tH/2,z);scene.add(stilt);
+    }
+  }}
+
+  // Tropical vegetation on terrain
+  for(let i=0;i<15;i++){
+    const a=Math.random()*Math.PI*2,d=6+Math.random()*8;
+    const tx=Math.cos(a)*d,tz=Math.sin(a)*d;
+    const ty=Math.sin(tx*0.3)*Math.cos(tz*0.2)*1.5+Math.sin(tx*0.7+tz*0.5)*0.4+Math.cos(tz*0.4)*0.8;
+    const r=0.4+Math.random()*0.6;
+    const tree=new THREE.Mesh(new THREE.SphereGeometry(r,6,5),new THREE.MeshStandardMaterial({color:new THREE.Color().setHSL(0.28+Math.random()*0.08,0.6,0.15+Math.random()*0.1),roughness:0.9}));
+    tree.position.set(tx,ty+r*0.8,tz);scene.add(tree);
+  }
+
+  // Parcelle boundary on terrain
+  const parcPts=[];
+  for(let i=0;i<=40;i++){
+    const t=i/40;const x=-12+24*t;
+    const z1=-12.5;const y1=Math.sin(x*0.3)*Math.cos(z1*0.2)*1.5+0.3;
+    parcPts.push(new THREE.Vector3(x,y1,z1));
+  }
+  for(let i=0;i<=40;i++){
+    const t=i/40;const z=-12.5+25*t;
+    const x1=12;const y1=Math.sin(x1*0.3)*Math.cos(z*0.2)*1.5+0.3;
+    parcPts.push(new THREE.Vector3(x1,y1,z));
+  }
+  const parcLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(parcPts),new THREE.LineBasicMaterial({color:0x22c55e}));
+  scene.add(parcLine);
+
+  camera.position.set(20,15,20);
+  addOrbit(canvas,camera,new THREE.Vector3(0,2,0),26);
+  (function a(){requestAnimationFrame(a);renderer.render(scene,camera)})();
+})();
+</script>
+</body>
+</html>

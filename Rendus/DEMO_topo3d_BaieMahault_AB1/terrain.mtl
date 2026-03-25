@@ -1,0 +1,7 @@
+# Matériau terrain
+newmtl terrain_mat
+Ka 0.3 0.25 0.2
+Kd 0.6 0.55 0.4
+Ks 0.1 0.1 0.1
+Ns 10.0
+d 1.0

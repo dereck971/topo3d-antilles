@@ -1,0 +1,78 @@
+{
+  "current": "7.0.0",
+  "name": "Topo3D-Antilles",
+  "updated": "2026-03-23",
+  "history": [
+    {
+      "version": "1.0.0",
+      "date": "2026-03-15",
+      "codename": "Proto Landing",
+      "description": "Premier prototype landing page. Dark theme, Inter, 'Topo3D Guadeloupe', commandes par email via immoservices971.com.",
+      "file": "landing-topo3d.html",
+      "pages": ["landing-topo3d.html"],
+      "status": "archived"
+    },
+    {
+      "version": "2.0.0",
+      "date": "2026-03-16",
+      "codename": "Proto App",
+      "description": "Application carte interactive avec sidebar, tabs Guadeloupe/Martinique, formulaire, layers, camera 3D.",
+      "file": "topo3d-app.html",
+      "pages": ["topo3d-app.html"],
+      "status": "archived"
+    },
+    {
+      "version": "3.0.0",
+      "date": "2026-03-17",
+      "codename": "Page Produit",
+      "description": "Ajout de la page produit (fiche-produit-maquette.html), previews 3D, rendus maquette blanche.",
+      "pages": ["fiche-produit-maquette.html", "preview-maquette-3d.html", "preview-terrain-brut.html"],
+      "status": "archived"
+    },
+    {
+      "version": "4.0.0",
+      "date": "2026-03-18",
+      "codename": "Design Variants",
+      "description": "Exploration de 3 variantes design (Terre-Mer, Volcanic Tech, Karukera Gold). A/B testing.",
+      "pages": ["preview-terre-mer.jpg", "preview-volcanic.jpg", "preview-karukera.jpg"],
+      "status": "archived"
+    },
+    {
+      "version": "5.0.0",
+      "date": "2026-03-20",
+      "codename": "V5 Full Rewrite",
+      "description": "Réécriture complète. Version aboutie avec toutes les fonctionnalités, page produit intégrée, SEO complet, pricing finalisé.",
+      "pages": ["index.html", "login.html", "carte.html", "comment-ca-marche.html", "references.html", "fiche-produit-maquette.html"],
+      "status": "archived",
+      "screenshots": ["screenshots/topo-v5-print.png", "screenshots/topo-v5-classic.png", "screenshots/topo-v5-topo.png"]
+    },
+    {
+      "version": "6.0.0",
+      "date": "2026-03-21",
+      "codename": "Reconstruction",
+      "description": "Reconstruction complète du site. 5 HTML + 9 API + middleware. PROBLÈME : page produit perdue (non liée dans la navigation).",
+      "pages": ["index.html", "login.html", "carte.html", "comment-ca-marche.html", "references.html", "cgv.html", "confidentialite.html", "success.html"],
+      "api": ["login.js", "elevation.js", "contours.js", "generate-obj.js", "generate-dxf.js", "generate-geojson.js", "fiche-parcelle.js", "email.js", "webhook.js"],
+      "status": "deployed-with-issues",
+      "issues": ["Page produit orpheline", "Carte noire (tile URL 403)", "Glyphs manquants MapLibre", "CSP bloquant demotiles.maplibre.org", "DNS non configuré"]
+    },
+    {
+      "version": "7.0.0",
+      "date": "2026-03-23",
+      "codename": "Restoration",
+      "description": "Restauration de la page produit + corrections carte + versioning numéroté. Page produit réintégrée dans navigation et vercel.json. Images corrigées (webp). 6 bugs de la V6 corrigés.",
+      "pages": ["index.html", "login.html", "carte.html", "comment-ca-marche.html", "references.html", "cgv.html", "confidentialite.html", "success.html", "fiche-produit-maquette.html", "preview-maquette-3d.html"],
+      "api": ["login.js", "elevation.js", "contours.js", "generate-obj.js", "generate-dxf.js", "generate-geojson.js", "fiche-parcelle.js", "email.js", "webhook.js"],
+      "status": "ready-to-deploy",
+      "fixes": [
+        "Page produit réintégrée (nav + vercel.json rewrite /produit)",
+        "Images corrigées (.png → .webp)",
+        "Navigation ajoutée dans fiche-produit-maquette.html",
+        "Lien Produit dans footer index.html",
+        "Tile URL carte corrigée (openfreemap 403 fix)",
+        "Glyphs MapLibre ajoutés",
+        "CSP mise à jour pour demotiles.maplibre.org"
+      ]
+    }
+  ]
+}

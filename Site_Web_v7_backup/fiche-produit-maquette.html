@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maquette Topographique 3D — Topo3D-Antilles</title>
+    <meta name="description" content="Visualisez votre terrain en 3D avant d'investir. Modele topographique interactif, donnees IGN haute resolution. Guadeloupe & Martinique.">
+    <link rel="canonical" href="https://topo3d-antilles.com/fiche-produit-maquette">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #fafafa;
+            color: #111;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-on-scroll { opacity: 0; animation: fadeInUp 0.8s ease-out forwards; }
+
+        /* Header */
+        header {
+            position: sticky; top: 0;
+            background: rgba(250, 250, 250, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+            z-index: 100;
+        }
+        .header-content {
+            max-width: 1200px; margin: 0 auto; padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; color: #111; }
+        .logo-accent { color: #00c896; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #0a1628 0%, #132842 50%, #0d3b2e 100%);
+            padding: 100px 20px 80px;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 30% 50%, rgba(0,200,150,0.1) 0%, transparent 60%);
+        }
+        .hero-content { max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+        .badge {
+            display: inline-block; background: rgba(0,200,150,0.15); color: #00c896;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+            padding: 8px 16px; border-radius: 20px; margin-bottom: 24px;
+            text-transform: uppercase; border: 1px solid rgba(0,200,150,0.3);
+        }
+        .hero h1 { font-size: 56px; font-weight: 700; line-height: 1.1; margin-bottom: 20px; letter-spacing: -1px; }
+        .hero p { font-size: 20px; color: rgba(255,255,255,0.7); font-weight: 400; line-height: 1.5; max-width: 700px; margin: 0 auto 40px; }
+        .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            display: inline-block; padding: 16px 36px; background: #00c896; color: #fff;
+            border-radius: 12px; text-decoration: none; font-size: 16px; font-weight: 700;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0,200,150,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,200,150,0.4); }
+        .btn-secondary {
+            display: inline-block; padding: 16px 36px; background: rgba(255,255,255,0.1);
+            color: #fff; border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 12px; text-decoration: none; font-size: 16px; font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.18); }
+
+        /* 3D Preview Section */
+        .preview-3d {
+            background: #0a1628;
+            padding: 0 20px 80px;
+            text-align: center;
+        }
+        .preview-3d .section-title { color: white; }
+        .preview-3d .section-subtitle { color: rgba(255,255,255,0.6); }
+        .preview-container {
+            max-width: 1000px; margin: 0 auto;
+            background: #111827;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 20px 80px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        #three-canvas {
+            width: 100%; height: 550px;
+            display: block; cursor: grab;
+        }
+        #three-canvas:active { cursor: grabbing; }
+        .preview-controls {
+            position: absolute; bottom: 16px; left: 50%;
+            transform: translateX(-50%);
+            display: flex; gap: 8px; z-index: 10;
+        }
+        .preview-btn {
+            padding: 8px 16px; border-radius: 8px;
+            background: rgba(0,0,0,0.6); color: white;
+            border: 1px solid rgba(255,255,255,0.15);
+            font-size: 13px; font-weight: 500; cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: background 0.2s;
+        }
+        .preview-btn:hover { background: rgba(0,200,150,0.3); }
+        .preview-btn.active { background: #00c896; border-color: #00c896; }
+        .preview-hint {
+            position: absolute; top: 16px; right: 16px;
+            padding: 8px 14px; border-radius: 8px;
+            background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.6);
+            font-size: 12px; backdrop-filter: blur(10px);
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .preview-loading {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: #111827; color: rgba(255,255,255,0.5); font-size: 16px;
+            z-index: 20;
+        }
+
+        /* Section Base */
+        .section { padding: 100px 20px; }
+        .section-container { max-width: 1200px; margin: 0 auto; }
+        .section-title { font-size: 44px; font-weight: 700; margin-bottom: 16px; text-align: center; letter-spacing: -0.5px; }
+        .section-subtitle { font-size: 18px; color: #666; text-align: center; margin-bottom: 50px; font-weight: 400; }
+
+        /* Product Images */
+        .product-images { background: white; }
+        .images-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; margin-bottom: 60px; }
+        .images-grid:last-child { margin-bottom: 0; }
+        .product-image {
+            border-radius: 20px; overflow: hidden; background: #f5f5f5;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 400px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        }
+        .product-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .image-label { font-size: 15px; color: #666; font-weight: 500; margin-top: 16px; text-align: center; }
+
+        /* Color Render Hero */
+        .color-render-section { background: #f5f5f5; }
+        .color-render-container {
+            max-width: 1000px; margin: 0 auto;
+            display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; align-items: center;
+        }
+        .color-render-img {
+            border-radius: 20px; overflow: hidden;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.12);
+        }
+        .color-render-img img { width: 100%; display: block; }
+        .color-render-text h3 { font-size: 32px; font-weight: 700; margin-bottom: 16px; }
+        .color-render-text p { font-size: 16px; color: #666; line-height: 1.7; margin-bottom: 24px; }
+
+        /* Specs */
+        .specs { background: #fafafa; }
+        .specs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; }
+        .spec-item { padding: 0; }
+        .spec-label { font-size: 13px; color: #999; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+        .spec-value { font-size: 28px; font-weight: 700; color: #111; line-height: 1.2; }
+        .spec-unit { font-size: 16px; color: #666; font-weight: 400; }
+
+        /* Deliverables */
+        .deliverables { background: white; }
+        .deliverables-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; margin-top: 40px; }
+        .deliverable-item {
+            padding: 30px; background: #f9f9f9; border-radius: 16px;
+            border: 1px solid #f0f0f0; transition: all 0.3s ease;
+        }
+        .deliverable-item:hover { border-color: #e0e0e0; background: #fafafa; }
+        .deliverable-icon { font-size: 32px; margin-bottom: 12px; }
+        .deliverable-name { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 8px; }
+        .deliverable-desc { font-size: 14px; color: #666; line-height: 1.5; }
+
+        /* CTA Banner */
+        .cta-banner {
+            background: linear-gradient(135deg, #0a1628 0%, #132842 60%, #0d3b2e 100%);
+            padding: 80px 20px; text-align: center; color: white;
+        }
+        .cta-banner h2 { font-size: 40px; font-weight: 700; margin-bottom: 16px; }
+        .cta-banner p { font-size: 18px; color: rgba(255,255,255,0.7); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .cta-banner .btn-primary { font-size: 18px; padding: 18px 44px; }
+
+        /* Footer */
+        footer {
+            background: white; border-top: 1px solid #f0f0f0;
+            padding: 60px 20px; text-align: center;
+        }
+        .footer-content { max-width: 600px; margin: 0 auto; }
+        .footer-text { font-size: 14px; color: #666; line-height: 1.8; margin-bottom: 20px; }
+        .footer-contact { font-size: 14px; color: #00c896; font-weight: 600; text-decoration: none; }
+        .footer-contact:hover { text-decoration: underline; }
+        .footer-links { margin-top: 16px; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .footer-links a { font-size: 13px; color: #999; text-decoration: none; }
+        .footer-links a:hover { color: #00c896; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 38px; }
+            .hero p { font-size: 17px; }
+            .section-title { font-size: 32px; }
+            .section { padding: 60px 20px; }
+            .images-grid { grid-template-columns: 1fr; gap: 30px; }
+            .product-image { min-height: 300px; }
+            .color-render-container { grid-template-columns: 1fr; gap: 30px; }
+            #three-canvas { height: 400px; }
+            .specs-grid { gap: 30px; }
+            .spec-value { font-size: 22px; }
+            .deliverables-list { grid-template-columns: 1fr; }
+            .cta-banner h2 { font-size: 30px; }
+        }
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 30px; }
+            .hero p { font-size: 15px; margin-bottom: 30px; }
+            .hero { padding: 80px 16px 60px; }
+            .section-title { font-size: 26px; }
+            .spec-value { font-size: 20px; }
+            #three-canvas { height: 280px; }
+            .preview-controls { flex-wrap: wrap; justify-content: center; }
+        }
+
+        /* Mobile nav */
+        .mobile-nav-toggle { display: none; background: none; border: none; cursor: pointer; padding: 10px 12px; }
+        .mobile-nav-toggle span { display: block; width: 22px; height: 2px; background: #333; margin: 5px 0; transition: 0.3s; }
+        .nav-desktop { display: flex; gap: 24px; align-items: center; }
+        @media (max-width: 768px) {
+            .nav-desktop { display: none; position: absolute; top: 60px; left: 0; right: 0; background: #fff; flex-direction: column; padding: 20px; gap: 16px; border-bottom: 1px solid #eee; box-shadow: 0 4px 12px rgba(0,0,0,0.08); z-index: 200; }
+            .nav-desktop.open { display: flex; }
+            .mobile-nav-toggle { display: block; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/" style="text-decoration:none;"><div class="logo">&#127956;&#65039; Topo<span class="logo-accent">3D</span>-Antilles</div></a>
+            <button class="mobile-nav-toggle" id="mobileNavBtn" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-desktop" id="navMenu">
+                <a href="/comment-ca-marche" style="color:#666;text-decoration:none;font-size:14px;font-weight:500;">Comment &ccedil;a marche</a>
+                <a href="/references" style="color:#666;text-decoration:none;font-size:14px;font-weight:500;">Exemples</a>
+                <a href="/carte" class="btn-primary" style="padding:10px 20px;font-size:14px;border-radius:10px;">Acc&eacute;der &agrave; la Carte</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge">Exemple de livrable</div>
+            <h1>Votre Terrain en 3D,<br>en Quelques Clics</h1>
+            <p>S&eacute;lectionnez une parcelle, visualisez le relief, recevez vos fichiers 3D. Donn&eacute;es IGN haute r&eacute;solution pour la Guadeloupe et la Martinique.</p>
+            <div class="hero-ctas">
+                <a href="/carte" class="btn-primary">S&eacute;lectionner votre parcelle</a>
+                <a href="#preview" class="btn-secondary">Voir le preview 3D &#9660;</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive 3D Preview -->
+    <section class="preview-3d" id="preview">
+        <div class="section-container">
+            <h2 class="section-title" style="margin-bottom: 8px;">Preview 3D Interactive</h2>
+            <p class="section-subtitle">Faites tourner le terrain avec votre souris. Voil&agrave; ce que vous recevrez.</p>
+            <div class="preview-container">
+                <div class="preview-loading" id="loading-overlay">Chargement du terrain 3D...</div>
+                <canvas id="three-canvas"></canvas>
+                <div class="preview-hint" id="hint">&#128270; Cliquez et faites glisser pour tourner</div>
+                <div class="preview-controls">
+                    <button class="preview-btn active" onclick="setColorMode('elevation')">Altim&eacute;trie</button>
+                    <button class="preview-btn" onclick="setColorMode('white')">Maquette blanche</button>
+                    <button class="preview-btn" onclick="setColorMode('slope')">Pentes</button>
+                    <button class="preview-btn" onclick="resetCamera()">&#8635; Reset vue</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Color Render Section -->
+    <section class="section color-render-section">
+        <div class="section-container">
+            <div class="color-render-container">
+                <div class="color-render-img">
+                    <img src="assets/topo-trois-rivieres-couleur.webp" alt="Carte topographique en couleurs altimetriques" loading="lazy">
+                </div>
+                <div class="color-render-text">
+                    <h3>Carte Altim&eacute;trique Color&eacute;e</h3>
+                    <p>Chaque couleur repr&eacute;sente une tranche d'altitude. Identifiez en un clin d'&#339;il les zones planes, les pentes et les d&eacute;nivel&eacute;s de votre terrain.</p>
+                    <p>Id&eacute;al pour positionner vos constructions, planifier l'assainissement ou pr&eacute;senter un projet &agrave; un client.</p>
+                    <a href="/carte" class="btn-primary" style="display:inline-block;">Commander pour votre parcelle</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Images Section -->
+    <section class="section product-images">
+        <div class="section-container">
+            <h2 class="section-title">Rendus Inclus dans votre Commande</h2>
+            <p class="section-subtitle">Plusieurs repr&eacute;sentations du m&ecirc;me terrain, pour diff&eacute;rents usages.</p>
+
+            <div class="images-grid">
+                <div>
+                    <div class="product-image">
+                        <img src="assets/topo-trois-rivieres-3d.webp" alt="Vue 3D du terrain de Trois-Rivieres" loading="lazy">
+                    </div>
+                    <div class="image-label">Vue 3D du relief</div>
+                </div>
+                <div>
+                    <div class="product-image">
+                        <img src="assets/rendu-maquette-blanche.webp" alt="Maquette topographique blanche" loading="lazy">
+                    </div>
+                    <div class="image-label">Maquette blanche (contours)</div>
+                </div>
+            </div>
+
+            <div class="images-grid" style="margin-top: 60px;">
+                <div>
+                    <div class="product-image">
+                        <img src="assets/rendu-photorealiste.webp" alt="Rendu photorealiste du terrain" loading="lazy">
+                    </div>
+                    <div class="image-label">Rendu photor&eacute;aliste</div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: left; padding: 20px;">
+                        <h3 style="font-size: 28px; font-weight: 700; margin-bottom: 16px;">4 rendus, 1 commande</h3>
+                        <p style="font-size: 16px; color: #666; line-height: 1.7; margin-bottom: 24px;">Chaque commande inclut la vue 3D, la carte altim&eacute;trique, la maquette blanche et le rendu photor&eacute;aliste. Plus les fichiers .OBJ et .DXF pour vos logiciels.</p>
+                        <a href="/carte" class="btn-primary" style="display:inline-block;">Commencer &rarr;</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specs -->
+    <section class="section specs">
+        <div class="section-container">
+            <h2 class="section-title">Caract&eacute;ristiques de cet Exemple</h2>
+            <p class="section-subtitle">Parcelle AM 0332 &mdash; Trois-Rivi&egrave;res, Guadeloupe</p>
+            <div class="specs-grid">
+                <div class="spec-item">
+                    <div class="spec-label">Surface</div>
+                    <div class="spec-value">23 360 <span class="spec-unit">m&sup2;</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Altitude Min.</div>
+                    <div class="spec-value">109.1 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Altitude Max.</div>
+                    <div class="spec-value">158.4 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">D&eacute;nivel&eacute;</div>
+                    <div class="spec-value">49.3 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Pente Moyenne</div>
+                    <div class="spec-value">20.1 <span class="spec-unit">%</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Points d'Altitude</div>
+                    <div class="spec-value">2 332</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">R&eacute;solution Grille</div>
+                    <div class="spec-value">5 <span class="spec-unit">m</span></div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Source</div>
+                    <div class="spec-value">IGN RGE ALTI</div>
+                </div>
+                <div class="spec-item">
+                    <div class="spec-label">Formats Livr&eacute;s</div>
+                    <div class="spec-value">.OBJ .DXF .PNG</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deliverables -->
+    <section class="section deliverables">
+        <div class="section-container">
+            <h2 class="section-title">Ce que Vous Recevez</h2>
+            <div class="deliverables-list">
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">&#128230;</div>
+                    <div class="deliverable-name">Mod&egrave;le 3D</div>
+                    <div class="deliverable-desc">Fichiers .OBJ et .DXF pour SketchUp, Revit, AutoCAD, Blender et tous vos logiciels de mod&eacute;lisation.</div>
+                </div>
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">&#128506;&#65039;</div>
+                    <div class="deliverable-name">Cartes Topographiques</div>
+                    <div class="deliverable-desc">4 rendus haute r&eacute;solution : contours, 3D, altim&eacute;trie color&eacute;e et photor&eacute;aliste.</div>
+                </div>
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">&#128202;</div>
+                    <div class="deliverable-name">Donn&eacute;es Altim&eacute;triques</div>
+                    <div class="deliverable-desc">Points d'altitude et mesh triangul&eacute; pour vos analyses de terrain et &eacute;tudes de faisabilit&eacute;.</div>
+                </div>
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">&#128196;</div>
+                    <div class="deliverable-name">Rapport Technique</div>
+                    <div class="deliverable-desc">Synth&egrave;se compl&egrave;te : pentes, d&eacute;nivel&eacute;, surfaces, et recommandations pour votre projet.</div>
+                </div>
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">&#128640;</div>
+                    <div class="deliverable-name">Livraison Instantan&eacute;e</div>
+                    <div class="deliverable-desc">G&eacute;n&eacute;ration automatique d&egrave;s le paiement. Vos fichiers arrivent en quelques minutes par email.</div>
+                </div>
+                <div class="deliverable-item">
+                    <div class="deliverable-icon">&#128736;&#65039;</div>
+                    <div class="deliverable-name">Support Technique</div>
+                    <div class="deliverable-desc">Assistance pour l'int&eacute;gration dans vos logiciels et l'utilisation optimale de vos fichiers.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="cta-banner">
+        <h2>Pr&ecirc;t &agrave; Visualiser Votre Terrain ?</h2>
+        <p>S&eacute;lectionnez votre parcelle sur la carte, choisissez votre offre, recevez vos fichiers en quelques minutes.</p>
+        <a href="/carte" class="btn-primary">S&eacute;lectionner ma parcelle &rarr;</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-text">
+                <strong>Topo3D-Antilles</strong><br>
+                Mod&eacute;lisation 3D de terrain &mdash; Guadeloupe &amp; Martinique
+            </div>
+            <a href="mailto:contact@topo3d-antilles.com" class="footer-contact">contact@topo3d-antilles.com</a>
+            <div class="footer-links">
+                <a href="/comment-ca-marche">Comment &ccedil;a marche</a>
+                <a href="/cgv">CGV</a>
+                <a href="/confidentialite">Confidentialit&eacute;</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="assets/terrain_data.js"></script>
+    <script>
+    (function() {
+        'use strict';
+        const canvas = document.getElementById('three-canvas');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const hint = document.getElementById('hint');
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x111827);
+        scene.fog = new THREE.FogExp2(0x111827, 0.04);
+
+        const aspect = canvas.clientWidth / canvas.clientHeight;
+        const camera = new THREE.PerspectiveCamera(45, aspect, 0.1, 100);
+        camera.position.set(8, 6, 10);
+        camera.lookAt(0, 0.5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        scene.add(dirLight);
+        const fillLight = new THREE.DirectionalLight(0x8ecae6, 0.3);
+        fillLight.position.set(-5, 3, -5);
+        scene.add(fillLight);
+
+        // Build terrain mesh
+        const data = TERRAIN_DATA;
+        const verts = data.vertices;
+        const faces = data.faces;
+        const meta = data.meta;
+
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(verts.length);
+        const colors = new Float32Array(verts.length);
+
+        // Copy positions
+        for (let i = 0; i < verts.length; i++) positions[i] = verts[i];
+
+        // Build index
+        const indices = [];
+        for (let i = 0; i < faces.length; i++) {
+            indices.push(faces[i][0], faces[i][1], faces[i][2]);
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setIndex(indices);
+        geometry.computeVertexNormals();
+
+        // Color modes
+        const minY = 0, maxY = meta.max_alt * meta.h_scale - meta.min_alt * meta.h_scale;
+
+        function colorElevation() {
+            for (let i = 0; i < positions.length; i += 3) {
+                const y = positions[i + 1];
+                const t = Math.max(0, Math.min(1, y / maxY));
+                // Green -> Yellow -> Orange -> Red
+                if (t < 0.25) {
+                    colors[i] = 0.1 + t * 2; colors[i+1] = 0.5 + t * 1.5; colors[i+2] = 0.2;
+                } else if (t < 0.5) {
+                    const s = (t - 0.25) * 4;
+                    colors[i] = 0.6 + s * 0.4; colors[i+1] = 0.8 - s * 0.1; colors[i+2] = 0.15;
+                } else if (t < 0.75) {
+                    const s = (t - 0.5) * 4;
+                    colors[i] = 0.9; colors[i+1] = 0.7 - s * 0.35; colors[i+2] = 0.1;
+                } else {
+                    const s = (t - 0.75) * 4;
+                    colors[i] = 0.85 - s * 0.1; colors[i+1] = 0.25 - s * 0.1; colors[i+2] = 0.1 + s * 0.15;
+                }
+            }
+            geometry.attributes.color.needsUpdate = true;
+        }
+
+        function colorWhite() {
+            for (let i = 0; i < positions.length; i += 3) {
+                const y = positions[i + 1];
+                const t = Math.max(0, Math.min(1, y / maxY));
+                const v = 0.85 + t * 0.15;
+                colors[i] = v; colors[i+1] = v; colors[i+2] = v;
+            }
+            geometry.attributes.color.needsUpdate = true;
+        }
+
+        function colorSlope() {
+            // Compute per-vertex slope from normals
+            const normals = geometry.attributes.normal.array;
+            for (let i = 0; i < positions.length; i += 3) {
+                const ny = Math.abs(normals[i + 1]);
+                const slope = Math.acos(Math.min(1, ny)) * 180 / Math.PI;
+                const t = Math.min(1, slope / 45);
+                // Blue (flat) -> Yellow -> Red (steep)
+                if (t < 0.5) {
+                    const s = t * 2;
+                    colors[i] = 0.2 + s * 0.8; colors[i+1] = 0.4 + s * 0.5; colors[i+2] = 0.8 - s * 0.6;
+                } else {
+                    const s = (t - 0.5) * 2;
+                    colors[i] = 0.9; colors[i+1] = 0.8 - s * 0.6; colors[i+2] = 0.2 - s * 0.15;
+                }
+            }
+            geometry.attributes.color.needsUpdate = true;
+        }
+
+        // Default: elevation
+        colorElevation();
+
+        const material = new THREE.MeshPhongMaterial({
+            vertexColors: true,
+            side: THREE.DoubleSide,
+            shininess: 15,
+            flatShading: false
+        });
+        const terrainMesh = new THREE.Mesh(geometry, material);
+        scene.add(terrainMesh);
+
+        // Parcel outline
+        if (data.parcel && data.parcel.length > 1) {
+            const parcelPts = [];
+            for (let i = 0; i < data.parcel.length; i++) {
+                const px = data.parcel[i][0];
+                const pz = data.parcel[i][1];
+                // Find approximate Y at this XZ
+                parcelPts.push(new THREE.Vector3(px, 0.05, -pz));
+            }
+            // Close the loop
+            if (parcelPts.length > 0) parcelPts.push(parcelPts[0].clone());
+            const parcelGeo = new THREE.BufferGeometry().setFromPoints(parcelPts);
+            const parcelLine = new THREE.Line(parcelGeo, new THREE.LineBasicMaterial({ color: 0x00c896, linewidth: 2 }));
+            scene.add(parcelLine);
+        }
+
+        // Contour lines
+        if (data.contours) {
+            const contourMat = new THREE.LineBasicMaterial({ color: 0xffffff, opacity: 0.15, transparent: true });
+            for (const c of data.contours) {
+                if (!c.points && c.y !== undefined) continue;
+                // Skip contours without explicit point data
+            }
+        }
+
+        // Grid helper (subtle)
+        const gridHelper = new THREE.GridHelper(12, 24, 0x1a2744, 0x1a2744);
+        gridHelper.position.y = -0.01;
+        scene.add(gridHelper);
+
+        // Hide loading
+        loadingOverlay.style.display = 'none';
+
+        // Orbit controls (manual implementation)
+        let isDragging = false;
+        let prevX = 0, prevY = 0;
+        let theta = 0.8, phi = 0.6, radius = 14;
+        const target = new THREE.Vector3(0, 0.8, 0);
+
+        function updateCameraFromOrbit() {
+            camera.position.x = target.x + radius * Math.sin(phi) * Math.cos(theta);
+            camera.position.y = target.y + radius * Math.cos(phi);
+            camera.position.z = target.z + radius * Math.sin(phi) * Math.sin(theta);
+            camera.lookAt(target);
+        }
+        updateCameraFromOrbit();
+
+        canvas.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            prevX = e.clientX;
+            prevY = e.clientY;
+            hint.style.opacity = '0';
+        });
+        window.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const dx = e.clientX - prevX;
+            const dy = e.clientY - prevY;
+            theta -= dx * 0.005;
+            phi = Math.max(0.2, Math.min(1.4, phi + dy * 0.005));
+            prevX = e.clientX;
+            prevY = e.clientY;
+            updateCameraFromOrbit();
+        });
+        window.addEventListener('pointerup', () => { isDragging = false; });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            radius = Math.max(5, Math.min(25, radius + e.deltaY * 0.01));
+            updateCameraFromOrbit();
+        }, { passive: false });
+
+        // Touch support
+        let lastTouchDist = 0;
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                prevX = e.touches[0].clientX;
+                prevY = e.touches[0].clientY;
+                hint.style.opacity = '0';
+            } else if (e.touches.length === 2) {
+                lastTouchDist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+            }
+        }, { passive: true });
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 1 && isDragging) {
+                const dx = e.touches[0].clientX - prevX;
+                const dy = e.touches[0].clientY - prevY;
+                theta -= dx * 0.005;
+                phi = Math.max(0.2, Math.min(1.4, phi + dy * 0.005));
+                prevX = e.touches[0].clientX;
+                prevY = e.touches[0].clientY;
+                updateCameraFromOrbit();
+            } else if (e.touches.length === 2) {
+                const dist = Math.hypot(
+                    e.touches[0].clientX - e.touches[1].clientX,
+                    e.touches[0].clientY - e.touches[1].clientY
+                );
+                radius = Math.max(5, Math.min(25, radius - (dist - lastTouchDist) * 0.03));
+                lastTouchDist = dist;
+                updateCameraFromOrbit();
+            }
+        }, { passive: false });
+        canvas.addEventListener('touchend', () => { isDragging = false; });
+
+        // Animation loop
+        let autoRotate = true;
+        let lastInteraction = 0;
+
+        canvas.addEventListener('pointerdown', () => { autoRotate = false; lastInteraction = Date.now(); });
+        canvas.addEventListener('wheel', () => { autoRotate = false; lastInteraction = Date.now(); }, { passive: true });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            // Resume auto-rotate after 5s inactivity
+            if (!isDragging && Date.now() - lastInteraction > 5000) {
+                autoRotate = true;
+            }
+            if (autoRotate) {
+                theta += 0.002;
+                updateCameraFromOrbit();
+            }
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            const w = canvas.clientWidth;
+            const h = canvas.clientHeight;
+            renderer.setSize(w, h);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        });
+
+        // Expose global functions for buttons
+        window.setColorMode = function(mode) {
+            document.querySelectorAll('.preview-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            if (mode === 'elevation') colorElevation();
+            else if (mode === 'white') colorWhite();
+            else if (mode === 'slope') colorSlope();
+        };
+
+        window.resetCamera = function() {
+            theta = 0.8; phi = 0.6; radius = 14;
+            autoRotate = true;
+            lastInteraction = 0;
+            updateCameraFromOrbit();
+        };
+    })();
+    </script>
+
+    <!-- Scroll animations -->
+    <script>
+    (function() {
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in-on-scroll');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -80px 0px' });
+        document.querySelectorAll('.section, .images-grid, .spec-item, .deliverable-item, .color-render-container').forEach(el => observer.observe(el));
+        // Mobile nav toggle
+        document.getElementById('mobileNavBtn').addEventListener('click', function() {
+            document.getElementById('navMenu').classList.toggle('open');
+        });
+    })();
+    </script>
+</body>
+</html>
