@@ -55,7 +55,8 @@ export default async function handler(req, res) {
 
     try {
       // Use URLSearchParams for safe parameter encoding
-      const params = new URLSearchParams({ lon: longitude, lat: latitude });
+      // resource=ign_rge_alti_wld is REQUIRED since ~2026-01 (API returns 405 without it)
+      const params = new URLSearchParams({ lon: longitude, lat: latitude, resource: 'ign_rge_alti_wld' });
       const url = `https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?${params}`;
 
       const response = await fetch(url, {
@@ -73,12 +74,15 @@ export default async function handler(req, res) {
 
       const data = await response.json();
 
+      // API returns {elevations: [{lon, lat, z, acc}]} format
+      const elev = data.elevations?.[0]?.z ?? data.elevation ?? 0;
+
       return res.status(200).json({
-        elevation: data.elevation || 0,
+        elevation: elev,
         lat: latitude,
         lon: longitude,
-        resolution: data.resolution || 5,
-        source: 'IGN MNT'
+        resolution: data.elevations?.[0]?.acc || 'Variable',
+        source: 'IGN RGE ALTI'
       });
 
     } catch (err) {
