@@ -1,0 +1,218 @@
+/* ============================================================================
+   TOPO3D-Antilles v8 - Secondary Pages Styles
+   Requires: /css/design-system.css
+   Shared by: cgv, comment-ca-marche, confidentialite, references, login, success
+   ============================================================================ */
+
+:root {
+  --color-text-secondary-light: #A8ACB1;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* ---- SHARED NAVIGATION ---- */
+.page-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  background: rgba(15, 25, 35, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 1000;
+  padding: 14px 20px;
+}
+
+.page-nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-nav-logo {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-nav-logo::before {
+  content: '\25B3';
+  font-size: 20px;
+  color: var(--color-accent);
+}
+
+.page-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  list-style: none;
+}
+
+.page-nav-links a {
+  color: var(--color-text-secondary-light);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.page-nav-links a:hover {
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .page-nav-links {
+    gap: 16px;
+  }
+  .page-nav-links a {
+    font-size: 12px;
+  }
+}
+
+/* ---- ARTICLE CONTAINER ---- */
+.article-container {
+  max-width: 900px;
+  margin: 80px auto 40px;
+  padding: 40px 24px;
+}
+
+.article-container h1 {
+  font-size: 2rem;
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.article-container h2 {
+  font-size: 1.5rem;
+  margin-top: 40px;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.article-container h3 {
+  font-size: 1.2rem;
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.article-container p {
+  color: var(--color-text-secondary-light);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.article-container a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.article-container a:hover {
+  text-decoration: underline;
+}
+
+.article-container ul, .article-container ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.article-container li {
+  color: var(--color-text-secondary-light);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+/* ---- TABLES ---- */
+.article-container table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 13px;
+}
+
+.article-container th {
+  background: var(--color-bg-secondary);
+  color: var(--color-accent);
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 11px;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.article-container td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-secondary-light);
+}
+
+.article-container tr:hover td {
+  background: rgba(46, 204, 113, 0.03);
+}
+
+/* ---- SHARED FOOTER ---- */
+.page-footer {
+  background: var(--color-bg-primary);
+  border-top: 1px solid var(--color-border);
+  padding: 30px 20px;
+  text-align: center;
+  color: var(--color-text-secondary-light);
+  font-size: 12px;
+  margin-top: 60px;
+}
+
+.page-footer a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.page-footer a:hover {
+  text-decoration: underline;
+}
+
+/* ---- BREADCRUMB ---- */
+.breadcrumb {
+  max-width: 900px;
+  margin: 70px auto 0;
+  padding: 16px 24px;
+  font-size: 12px;
+  color: var(--color-text-secondary-light);
+}
+
+.breadcrumb a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* ---- ARTICLE SECTIONS (for existing cgv structure) ---- */
+.article {
+  margin-bottom: 32px;
+}
+
+.article h2 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.article p {
+  color: var(--color-text-secondary-light);
+  font-size: 14px;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}

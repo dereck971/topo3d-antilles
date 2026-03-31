@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /carte
+Disallow: /carte.html
+Disallow: /login
+Disallow: /login.html
+Sitemap: https://topo3d-antilles.com/sitemap.xml
