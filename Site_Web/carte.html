@@ -66,12 +66,19 @@
         <div class="panel-section">
             <div class="panel-title">Rechercher une parcelle</div>
             <div style="display:flex;flex-direction:column;gap:8px;">
-                <input type="text" id="searchAddr" placeholder="Adresse (ex: Rue Victor Hugo, Pointe-a-Pitre)" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:6px;color:#E8ECF1;font-size:13px;font-family:var(--font-body);">
+                <div style="position:relative;">
+                    <input type="text" id="searchAddr" placeholder="Adresse (ex: Rue Victor Hugo, Pointe-a-Pitre)" autocomplete="off" style="width:100%;padding:8px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:6px;color:#E8ECF1;font-size:13px;font-family:var(--font-body);">
+                    <ul id="addrSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;margin:2px 0 0;padding:0;list-style:none;background:#1a2332;border:1px solid rgba(46,204,113,0.3);border-radius:6px;max-height:200px;overflow-y:auto;z-index:9999;"></ul>
+                </div>
                 <div style="display:flex;gap:6px;">
-                    <input type="text" id="searchCommune" placeholder="Code INSEE" style="flex:1;padding:8px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:6px;color:#E8ECF1;font-size:12px;font-family:var(--font-body);">
+                    <div style="position:relative;flex:1;">
+                        <input type="text" id="searchCommune" placeholder="Commune ou code postal" autocomplete="off" style="width:100%;padding:8px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:6px;color:#E8ECF1;font-size:12px;font-family:var(--font-body);">
+                        <ul id="communeSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;margin:2px 0 0;padding:0;list-style:none;background:#1a2332;border:1px solid rgba(46,204,113,0.3);border-radius:6px;max-height:180px;overflow-y:auto;z-index:9999;"></ul>
+                    </div>
                     <input type="text" id="searchSection" placeholder="Section" style="width:60px;padding:8px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:6px;color:#E8ECF1;font-size:12px;font-family:var(--font-body);">
                     <input type="text" id="searchNumero" placeholder="N°" style="width:60px;padding:8px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:6px;color:#E8ECF1;font-size:12px;font-family:var(--font-body);">
                 </div>
+                <input type="hidden" id="searchCommuneInsee" value="">
                 <div style="display:flex;gap:6px;">
                     <button id="btnSearchAddr" style="flex:1;padding:8px;background:var(--color-accent,#2ECC71);color:#0F1923;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;">Chercher adresse</button>
                     <button id="btnSearchRef" style="flex:1;padding:8px;background:rgba(46,204,113,0.15);color:#2ECC71;border:1px solid rgba(46,204,113,0.3);border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;">Chercher ref</button>
@@ -1935,11 +1942,11 @@
 
             // Search by cadastral reference (code_insee + section + numero)
             document.getElementById('btnSearchRef').addEventListener('click', async function() {
-                const codeInsee = document.getElementById('searchCommune').value.trim();
+                const codeInsee = document.getElementById('searchCommuneInsee').value.trim() || document.getElementById('searchCommune').value.trim();
                 const section = document.getElementById('searchSection').value.trim().toUpperCase();
                 const numero = document.getElementById('searchNumero').value.trim().padStart(4, '0');
                 if (!codeInsee || !section || !numero) {
-                    showToast('Remplissez code INSEE, section et numéro', 'error'); return;
+                    showToast('Remplissez commune, section et numéro', 'error'); return;
                 }
                 try {
                     showLoading('Recherche de la parcelle...');
@@ -1991,6 +1998,126 @@
                     showToast('Erreur: ' + (e.message || 'recherche échouée'), 'error');
                 }
             });
+
+            // ─── AUTOCOMPLETE ADDRESS ─────────────────────────────
+            (function() {
+                var addrTimer = null;
+                var addrInput = document.getElementById('searchAddr');
+                var addrList = document.getElementById('addrSuggestions');
+                var suggStyle = 'padding:8px 12px;font-size:12px;color:#E8ECF1;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);';
+
+                addrInput.addEventListener('input', function() {
+                    clearTimeout(addrTimer);
+                    var q = addrInput.value.trim();
+                    if (q.length < 3) { addrList.style.display = 'none'; return; }
+                    addrTimer = setTimeout(function() {
+                        fetch('https://data.geopf.fr/geocodage/search/?q=' + encodeURIComponent(q) + '&limit=5')
+                            .then(function(r) { return r.json(); })
+                            .then(function(d) {
+                                addrList.innerHTML = '';
+                                if (!d.features || d.features.length === 0) { addrList.style.display = 'none'; return; }
+                                d.features.forEach(function(f) {
+                                    var li = document.createElement('li');
+                                    li.style.cssText = suggStyle;
+                                    li.textContent = f.properties.label || f.properties.name || '';
+                                    li.addEventListener('mouseenter', function() { li.style.background = 'rgba(46,204,113,0.15)'; });
+                                    li.addEventListener('mouseleave', function() { li.style.background = 'transparent'; });
+                                    li.addEventListener('click', function() {
+                                        addrInput.value = f.properties.label || f.properties.name || '';
+                                        addrList.style.display = 'none';
+                                        document.getElementById('btnSearchAddr').click();
+                                    });
+                                    addrList.appendChild(li);
+                                });
+                                addrList.style.display = 'block';
+                            })
+                            .catch(function() { addrList.style.display = 'none'; });
+                    }, 300);
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!addrInput.contains(e.target) && !addrList.contains(e.target)) addrList.style.display = 'none';
+                });
+            })();
+
+            // ─── AUTOCOMPLETE COMMUNE (code postal ou nom) ───────────
+            (function() {
+                var COMMUNES = [
+                    {nom:'Les Abymes',cp:'97139',insee:'97101'},{nom:'Anse-Bertrand',cp:'97121',insee:'97102'},
+                    {nom:'Baie-Mahault',cp:'97122',insee:'97103'},{nom:'Baillif',cp:'97123',insee:'97104'},
+                    {nom:'Basse-Terre',cp:'97100',insee:'97105'},{nom:'Bouillante',cp:'97125',insee:'97106'},
+                    {nom:'Capesterre-Belle-Eau',cp:'97130',insee:'97107'},{nom:'Capesterre-de-Marie-Galante',cp:'97140',insee:'97108'},
+                    {nom:'Deshaies',cp:'97126',insee:'97109'},{nom:'Gourbeyre',cp:'97113',insee:'97110'},
+                    {nom:'Goyave',cp:'97128',insee:'97111'},{nom:'Grand-Bourg',cp:'97112',insee:'97112'},
+                    {nom:'Lamentin',cp:'97129',insee:'97113'},{nom:'Le Gosier',cp:'97190',insee:'97114'},
+                    {nom:'Le Moule',cp:'97160',insee:'97115'},{nom:'Morne-a-l\'Eau',cp:'97111',insee:'97116'},
+                    {nom:'Petit-Bourg',cp:'97170',insee:'97117'},{nom:'Petit-Canal',cp:'97131',insee:'97118'},
+                    {nom:'Pointe-Noire',cp:'97116',insee:'97119'},{nom:'Pointe-a-Pitre',cp:'97110',insee:'97120'},
+                    {nom:'Port-Louis',cp:'97117',insee:'97121'},{nom:'Saint-Claude',cp:'97120',insee:'97122'},
+                    {nom:'Saint-Francois',cp:'97118',insee:'97123'},{nom:'Saint-Louis',cp:'97134',insee:'97124'},
+                    {nom:'Sainte-Anne',cp:'97180',insee:'97125'},{nom:'Sainte-Rose',cp:'97115',insee:'97126'},
+                    {nom:'Terre-de-Bas',cp:'97136',insee:'97127'},{nom:'Terre-de-Haut',cp:'97137',insee:'97128'},
+                    {nom:'Trois-Rivieres',cp:'97114',insee:'97129'},{nom:'Vieux-Fort',cp:'97141',insee:'97130'},
+                    {nom:'Vieux-Habitants',cp:'97119',insee:'97131'},
+                    {nom:'Fort-de-France',cp:'97200',insee:'97209'},{nom:'Le Lamentin',cp:'97232',insee:'97213'},
+                    {nom:'Le Robert',cp:'97231',insee:'97223'},{nom:'Schoelcher',cp:'97233',insee:'97229'},
+                    {nom:'Sainte-Marie',cp:'97230',insee:'97228'},{nom:'Le Francois',cp:'97240',insee:'97210'},
+                    {nom:'Ducos',cp:'97224',insee:'97208'},{nom:'Le Marin',cp:'97290',insee:'97217'},
+                    {nom:'Riviere-Salee',cp:'97215',insee:'97222'},{nom:'Saint-Joseph',cp:'97212',insee:'97225'},
+                    {nom:'Trinite',cp:'97220',insee:'97231'},{nom:'Sainte-Luce',cp:'97228',insee:'97227'},
+                    {nom:'Le Vauclin',cp:'97280',insee:'97233'},{nom:'Riviere-Pilote',cp:'97211',insee:'97221'},
+                    {nom:'Saint-Esprit',cp:'97270',insee:'97224'},{nom:'Gros-Morne',cp:'97213',insee:'97212'},
+                    {nom:'Le Diamant',cp:'97223',insee:'97207'},{nom:'Les Anses-d\'Arlet',cp:'97217',insee:'97202'},
+                    {nom:'Les Trois-Ilets',cp:'97229',insee:'97232'},{nom:'Le Carbet',cp:'97221',insee:'97205'},
+                    {nom:'Saint-Pierre',cp:'97250',insee:'97226'},{nom:'Le Precheur',cp:'97250',insee:'97220'},
+                    {nom:'Case-Pilote',cp:'97222',insee:'97206'},{nom:'Bellefontaine',cp:'97222',insee:'97204'},
+                    {nom:'Le Morne-Rouge',cp:'97260',insee:'97218'},{nom:'Le Lorrain',cp:'97214',insee:'97214'},
+                    {nom:'Basse-Pointe',cp:'97218',insee:'97203'},{nom:'Le Marigot',cp:'97225',insee:'97216'},
+                    {nom:'Grand\'Riviere',cp:'97218',insee:'97211'},{nom:'Macouba',cp:'97218',insee:'97215'},
+                    {nom:'Le Morne-Vert',cp:'97226',insee:'97219'},
+                    {nom:'Cayenne',cp:'97300',insee:'97302'},{nom:'Kourou',cp:'97310',insee:'97304'},
+                    {nom:'Saint-Laurent-du-Maroni',cp:'97320',insee:'97311'},{nom:'Matoury',cp:'97351',insee:'97307'},
+                    {nom:'Remire-Montjoly',cp:'97354',insee:'97309'},
+                    {nom:'Saint-Denis',cp:'97400',insee:'97411'},{nom:'Saint-Paul',cp:'97460',insee:'97415'},
+                    {nom:'Saint-Pierre',cp:'97410',insee:'97416'},{nom:'Le Tampon',cp:'97430',insee:'97422'},
+                    {nom:'Saint-Andre',cp:'97440',insee:'97409'},{nom:'Saint-Louis',cp:'97450',insee:'97414'}
+                ];
+
+                var communeInput = document.getElementById('searchCommune');
+                var communeList = document.getElementById('communeSuggestions');
+                var inseeHidden = document.getElementById('searchCommuneInsee');
+                var suggStyle = 'padding:8px 12px;font-size:12px;color:#E8ECF1;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);';
+
+                communeInput.addEventListener('input', function() {
+                    var q = communeInput.value.trim().toLowerCase();
+                    inseeHidden.value = '';
+                    if (q.length < 2) { communeList.style.display = 'none'; return; }
+                    var matches = COMMUNES.filter(function(c) {
+                        return c.nom.toLowerCase().indexOf(q) !== -1 || c.cp.indexOf(q) !== -1 || c.insee.indexOf(q) !== -1;
+                    }).slice(0, 8);
+                    communeList.innerHTML = '';
+                    if (matches.length === 0) { communeList.style.display = 'none'; return; }
+                    matches.forEach(function(c) {
+                        var li = document.createElement('li');
+                        li.style.cssText = suggStyle;
+                        li.innerHTML = '<span style="color:#fff;">' + c.nom + '</span> <span style="color:#9CA3AF;font-size:11px;">' + c.cp + ' — ' + c.insee + '</span>';
+                        li.addEventListener('mouseenter', function() { li.style.background = 'rgba(46,204,113,0.15)'; });
+                        li.addEventListener('mouseleave', function() { li.style.background = 'transparent'; });
+                        li.addEventListener('click', function() {
+                            communeInput.value = c.nom + ' (' + c.cp + ')';
+                            inseeHidden.value = c.insee;
+                            communeList.style.display = 'none';
+                            document.getElementById('searchSection').focus();
+                        });
+                        communeList.appendChild(li);
+                    });
+                    communeList.style.display = 'block';
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (!communeInput.contains(e.target) && !communeList.contains(e.target)) communeList.style.display = 'none';
+                });
+            })();
 
             // Enter key on search fields
             ['searchAddr'].forEach(function(id) {
