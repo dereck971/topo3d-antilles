@@ -23,7 +23,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { commune, section, numero, lat, lon } = req.body;
+    const { commune, section, numero, lat, lon, tier = 'parcelle' } = req.body;
+    const isLight = tier === 'light';
 
     if (!commune || !section || !numero || lat === undefined || lon === undefined) {
       return res.status(400).json({ error: 'Missing parcel information' });
@@ -57,17 +58,29 @@ export default async function handler(req, res) {
     const codeInsee = cadastreData?.code_insee || '';
 
     // Phase 2: Fetch risks by code INSEE (requires cadastre result)
-    const risks = await fetchRisksData(codeInsee).catch(() => null);
+    // + Light tier extras (PLU, extended profile, ruissellement)
+    const phase2 = [fetchRisksData(codeInsee)];
+    if (isLight) {
+      phase2.push(fetchPLUData(latitude, longitude));
+      phase2.push(fetchExtendedProfile(latitude, longitude));
+    }
+    const phase2Results = await Promise.allSettled(phase2);
+    const risks = phase2Results[0].status === 'fulfilled' ? phase2Results[0].value : null;
+    const pluData = isLight && phase2Results[1]?.status === 'fulfilled' ? phase2Results[1].value : null;
+    const profileData = isLight && phase2Results[2]?.status === 'fulfilled' ? phase2Results[2].value : null;
 
     // Extract denivele
     const deniveleData = denivele.status === 'fulfilled' ? denivele.value : null;
 
     // Quality validator — check mandatory data before generating PDF
     const pdfData = {
+      tier,
       commune, section, numero,
       lat: latitude, lon: longitude,
       surface, idu, codeInsee,
       denivele: deniveleData,
+      plu: pluData,
+      profile: profileData,
       mnt: mnt.status === 'fulfilled' ? mnt.value : null,
       risks: risks || null,
       natura: natura.status === 'fulfilled' ? natura.value : null,
@@ -183,7 +196,8 @@ async function generateFicheParcellePDF(data) {
   let yPosition = height - 50;
 
   // Title
-  page.drawText('FICHE PARCELLE REGLEMENTAIRE', {
+  const titleText = data.tier === 'light' ? 'FICHE PARCELLE LIGHT' : 'FICHE PARCELLE REGLEMENTAIRE';
+  page.drawText(titleText, {
     x: 50, y: yPosition, size: 22, font: boldFont, color: primaryColor
   });
   yPosition -= 35;
@@ -273,8 +287,95 @@ async function generateFicheParcellePDF(data) {
   yPosition -= 8;
   drawLine('Source: INPN (inpn.mnhn.fr) et Ministere de la Culture', { spacing: 16 });
 
-  // Footer
-  page.drawText('Fiche generee par Topo3D-Antilles | Donnees IGN | Licence Etalab 2.0', {
+  // --- LIGHT TIER SECTIONS (29€) ---
+  if (data.tier === 'light') {
+    // Section 5: Zonage PLU
+    const r5 = checkPageBreak(pdfDoc, page, yPosition, 150);
+    page = r5.page; yPosition = r5.yPosition;
+    page.drawText('5. ZONAGE PLU', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
+    yPosition -= 25;
+
+    if (data.plu && data.plu.available) {
+      drawLine(`Zone: ${data.plu.typezone} - ${data.plu.libelle}`, { spacing: 16 });
+      if (data.plu.destdomi) drawLine(`Destination dominante: ${data.plu.destdomi}`, { spacing: 16 });
+      drawLine('Source: Geoportail de l\'Urbanisme (GPU)', { spacing: 16 });
+    } else {
+      drawLine('PLU non numerise sur le Geoportail de l\'Urbanisme', { spacing: 16 });
+      drawLine('Antilles: consulter le service urbanisme de la mairie', { spacing: 16 });
+      if (data.codeInsee) drawLine(`Mairie de ${data.commune} (INSEE: ${data.codeInsee})`, { spacing: 16 });
+      drawLine('Demander: zonage PLU, reglement de zone, COS/CES, hauteur max', { spacing: 16 });
+    }
+
+    // Section 6: Profil altimetrique
+    if (data.profile) {
+      const r6 = checkPageBreak(pdfDoc, page, yPosition, 200);
+      page = r6.page; yPosition = r6.yPosition;
+      page.drawText('6. PROFIL ALTIMETRIQUE (42 points)', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
+      yPosition -= 25;
+
+      if (data.profile.ns) {
+        drawLine(`Transect Nord-Sud: ${data.profile.ns.min}m -> ${data.profile.ns.max}m (pente ${data.profile.ns.slope} deg)`, { spacing: 16 });
+        // Mini ASCII profile
+        const nsVals = data.profile.ns.values;
+        if (nsVals && nsVals.length > 0) {
+          const nMin = Math.min(...nsVals);
+          const nMax = Math.max(...nsVals);
+          const range = nMax - nMin || 1;
+          const barChars = nsVals.map(v => {
+            const h = Math.round(((v - nMin) / range) * 8);
+            return ['_', '.', '-', '=', '+', '#', 'A', 'M', 'W'][h] || '#';
+          });
+          drawLine(`  S [${barChars.join('')}] N`, { spacing: 16 });
+        }
+      }
+      if (data.profile.ew) {
+        drawLine(`Transect Est-Ouest: ${data.profile.ew.min}m -> ${data.profile.ew.max}m (pente ${data.profile.ew.slope} deg)`, { spacing: 16 });
+        const ewVals = data.profile.ew.values;
+        if (ewVals && ewVals.length > 0) {
+          const eMin = Math.min(...ewVals);
+          const eMax = Math.max(...ewVals);
+          const range = eMax - eMin || 1;
+          const barChars = ewVals.map(v => {
+            const h = Math.round(((v - eMin) / range) * 8);
+            return ['_', '.', '-', '=', '+', '#', 'A', 'M', 'W'][h] || '#';
+          });
+          drawLine(`  O [${barChars.join('')}] E`, { spacing: 16 });
+        }
+      }
+      drawLine(`Total: ${data.profile.totalPoints} points echantillonnes`, { spacing: 16 });
+    }
+
+    // Section 7: Ruissellement
+    const r7 = checkPageBreak(pdfDoc, page, yPosition, 120);
+    page = r7.page; yPosition = r7.yPosition;
+    page.drawText('7. ANALYSE RUISSELLEMENT', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
+    yPosition -= 25;
+
+    if (data.profile?.ruissellement) {
+      drawLine(`Niveau de ruissellement: ${data.profile.ruissellement}`, { spacing: 16 });
+    } else {
+      drawLine('Donnees insuffisantes pour l\'analyse', { spacing: 16 });
+    }
+    drawLine('Methode: analyse des pentes sur transects N-S et E-O', { spacing: 16 });
+    drawLine('Recommandation: etude hydrogeologique si pente > 5 deg', { spacing: 16 });
+
+    // Section 8: Infos complementaires
+    const r8 = checkPageBreak(pdfDoc, page, yPosition, 180);
+    page = r8.page; yPosition = r8.yPosition;
+    page.drawText('8. INFORMATIONS COMPLEMENTAIRES', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
+    yPosition -= 25;
+
+    drawLine('Servitudes: consulter le certificat d\'urbanisme (CU)', { spacing: 16 });
+    drawLine('Perimetre ABF: verifier monuments historiques a 500m', { spacing: 16 });
+    drawLine('Raccordements: contacter EDF, eau (SIAEAG/SME), assainissement', { spacing: 16 });
+    drawLine('Taxe d\'amenagement: taux variable par commune (3-5% en Guadeloupe)', { spacing: 16 });
+    drawLine('', { spacing: 8 });
+    drawLine('Pour aller plus loin: forfait Essentiel (59e) avec maquette 3D', { spacing: 16 });
+  }
+
+  // Footer on last page
+  const lastPage = pdfDoc.getPages()[pdfDoc.getPageCount() - 1];
+  lastPage.drawText(`Fiche generee par Topo3D-Antilles | ${data.tier === 'light' ? 'Forfait Light 29e' : 'Forfait Parcelle 19e'} | Donnees IGN | Licence Etalab 2.0`, {
     x: 50, y: 30, size: 8, font, color: rgb(150 / 255, 150 / 255, 150 / 255)
   });
 
@@ -401,6 +502,91 @@ async function fetchDenivele(lat, lon) {
     const min = Math.min(...zValues);
     const max = Math.max(...zValues);
     return { min: Math.round(min * 100) / 100, max: Math.round(max * 100) / 100, delta: Math.round((max - min) * 100) / 100, points: zValues.length };
+  } catch (e) {
+    return null;
+  }
+}
+
+// --- LIGHT TIER FUNCTIONS ---
+
+async function fetchPLUData(lat, lon) {
+  // GPU (Geoportail de l'Urbanisme) API — zone-urba
+  // Note: does not cover all DOM-TOM yet
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch('https://apicarto.ign.fr/api/gpu/zone-urba', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ geom: { type: 'Point', coordinates: [lon, lat] } })
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data.features || data.features.length === 0) {
+      return { available: false, message: 'PLU non numerise sur le GPU — consulter la mairie' };
+    }
+    const zone = data.features[0].properties;
+    return {
+      available: true,
+      libelle: zone.libelle || zone.libelong || '',
+      typezone: zone.typezone || '',
+      destdomi: zone.destdomi || '',
+      partition: zone.partition || '',
+      nomfic: zone.nomfic || ''
+    };
+  } catch (e) {
+    clearTimeout(timeout);
+    return null;
+  }
+}
+
+async function fetchExtendedProfile(lat, lon) {
+  // 21 points along N-S and E-W transects through parcel center
+  const span = 0.002; // ~220m each direction
+  const steps = 10;
+  const nsPoints = [];
+  const ewPoints = [];
+  for (let i = -steps; i <= steps; i++) {
+    const frac = i / steps;
+    nsPoints.push([lon, lat + frac * span]);
+    ewPoints.push([lon + frac * span, lat]);
+  }
+  const allPoints = [...nsPoints, ...ewPoints];
+  const lonStr = allPoints.map(p => p[0]).join('|');
+  const latStr = allPoints.map(p => p[1]).join('|');
+  const params = new URLSearchParams({ lon: lonStr, lat: latStr, resource: 'ign_rge_alti_wld', zonly: 'true' });
+  try {
+    const data = await fetchWithRetry(
+      `https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?${params}`
+    );
+    if (!data?.elevations) return null;
+    const all = data.elevations.map(e => e.z ?? e).filter(z => typeof z === 'number' && !isNaN(z));
+    const nsZ = all.slice(0, 21);
+    const ewZ = all.slice(21, 42);
+
+    const analyze = (arr) => {
+      if (arr.length === 0) return null;
+      const min = Math.min(...arr);
+      const max = Math.max(...arr);
+      // Pente moyenne (degrees) = atan(denivele / distance)
+      const distM = span * 2 * 111320; // approx meters for N-S
+      const slope = Math.atan((max - min) / distM) * (180 / Math.PI);
+      return { values: arr.map(v => Math.round(v * 10) / 10), min: Math.round(min * 100) / 100, max: Math.round(max * 100) / 100, slope: Math.round(slope * 10) / 10 };
+    };
+
+    const nsProfile = analyze(nsZ);
+    const ewProfile = analyze(ewZ);
+
+    // Ruissellement simplifie: direction de pente dominante
+    let ruissellement = 'Plat (pente < 2 deg)';
+    const maxSlope = Math.max(nsProfile?.slope || 0, ewProfile?.slope || 0);
+    if (maxSlope >= 15) ruissellement = 'Fort (pente > 15 deg) — risque erosion';
+    else if (maxSlope >= 5) ruissellement = 'Modere (pente 5-15 deg)';
+    else if (maxSlope >= 2) ruissellement = 'Faible (pente 2-5 deg)';
+
+    return { ns: nsProfile, ew: ewProfile, ruissellement, totalPoints: all.length };
   } catch (e) {
     return null;
   }
