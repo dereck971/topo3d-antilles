@@ -755,7 +755,7 @@
                             terrainSourcesAdded = true;
                         }
                         // terrain-dem + hillshade already in initial style
-                        state.map.setTerrain({ source: 'terrain-dem', exaggeration: 1.2 });
+                        state.map.setTerrain({ source: 'terrain-dem', exaggeration: 1.0 });
                         state.map.easeTo({ pitch: 50, bearing: -15, duration: 1000 });
                     } catch (e) {
                         console.error('3D activation failed:', e);
