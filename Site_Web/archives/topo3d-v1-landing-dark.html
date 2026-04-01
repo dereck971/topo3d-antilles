@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topo3D Guadeloupe — Topographie 3D instantanée pour architectes & BET</title>
+    <meta name="description" content="Obtenez le fichier 3D topographique de n'importe quelle parcelle en Guadeloupe en quelques minutes. OBJ + DXF avec courbes de niveau, données IGN haute résolution.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green: #00d4aa;
+            --green-dark: #00a88a;
+            --blue: #0066ff;
+            --dark: #0a0a14;
+            --dark2: #12121e;
+            --dark3: #1a1a2a;
+            --text: #e8e8ee;
+            --text-dim: rgba(255,255,255,0.55);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAV ─── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            padding: 16px 32px;
+            background: rgba(10,10,20,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 20px; font-weight: 800;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .logo span { font-weight: 400; opacity: 0.6; -webkit-text-fill-color: currentColor; color: var(--text-dim); }
+        .nav-cta {
+            padding: 10px 24px; border-radius: 10px; border: none;
+            background: var(--green); color: #000; font-weight: 600; font-size: 14px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .nav-cta:hover { background: #fff; transform: translateY(-1px); }
+
+        /* ─── HERO ─── */
+        .hero {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 120px 24px 80px;
+            background: radial-gradient(ellipse at 50% 30%, rgba(0,212,170,0.08) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, rgba(0,102,255,0.06) 0%, transparent 50%);
+        }
+        .hero-inner { max-width: 800px; }
+        .hero-badge {
+            display: inline-block; padding: 6px 16px; border-radius: 20px;
+            background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.2);
+            font-size: 12px; font-weight: 600; color: var(--green); letter-spacing: 1px;
+            text-transform: uppercase; margin-bottom: 24px;
+        }
+        .hero h1 {
+            font-size: clamp(36px, 6vw, 64px); font-weight: 900; line-height: 1.1;
+            margin-bottom: 24px;
+        }
+        .hero h1 .accent {
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 18px; color: var(--text-dim); max-width: 600px; margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+        .hero-cta {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 16px 36px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, var(--green), var(--green-dark));
+            color: #000; font-size: 16px; font-weight: 700; cursor: pointer;
+            transition: 0.3s; text-decoration: none;
+        }
+        .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,212,170,0.3); }
+        .hero-sub {
+            display: block; margin-top: 12px; font-size: 13px; color: var(--text-dim);
+        }
+
+        /* ─── STATS BAR ─── */
+        .stats-bar {
+            display: flex; justify-content: center; gap: 48px; flex-wrap: wrap;
+            padding: 40px 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .stat { text-align: center; }
+        .stat .num { font-size: 32px; font-weight: 800; color: var(--green); }
+        .stat .label { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+        /* ─── SECTIONS ─── */
+        section { padding: 100px 24px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        .section-label {
+            font-size: 12px; font-weight: 600; color: var(--green);
+            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 12px;
+        }
+        .section-title {
+            font-size: clamp(28px, 4vw, 42px); font-weight: 800; margin-bottom: 20px; line-height: 1.2;
+        }
+        .section-desc {
+            font-size: 16px; color: var(--text-dim); max-width: 600px; margin-bottom: 48px; line-height: 1.7;
+        }
+
+        /* ─── PROBLÈME ─── */
+        .problem { background: var(--dark2); }
+        .problem-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
+        }
+        .problem-card {
+            background: var(--dark3); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius); padding: 28px;
+        }
+        .problem-card .icon { font-size: 28px; margin-bottom: 12px; }
+        .problem-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+        .problem-card p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+        /* ─── COMMENT ÇA MARCHE ─── */
+        .steps-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px;
+            counter-reset: step;
+        }
+        .step {
+            position: relative; padding: 32px;
+            background: var(--dark2); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius);
+            counter-increment: step;
+        }
+        .step::before {
+            content: counter(step);
+            position: absolute; top: -16px; left: 24px;
+            width: 32px; height: 32px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--green), var(--blue));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 14px; color: #000;
+        }
+        .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; margin-top: 8px; }
+        .step p { font-size: 14px; color: var(--text-dim); line-height: 1.6; }
+
+        /* ─── LIVRABLES ─── */
+        .deliverables { background: var(--dark2); }
+        .deliv-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px;
+        }
+        .deliv-card {
+            padding: 24px; border-radius: var(--radius);
+            background: var(--dark); border: 1px solid rgba(255,255,255,0.06);
+            text-align: center;
+        }
+        .deliv-card .ext {
+            display: inline-block; padding: 6px 16px; border-radius: 8px;
+            background: rgba(0,212,170,0.1); color: var(--green);
+            font-weight: 700; font-size: 14px; margin-bottom: 12px;
+        }
+        .deliv-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .deliv-card p { font-size: 13px; color: var(--text-dim); }
+
+        /* ─── PRICING ─── */
+        .pricing-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;
+            max-width: 960px; margin: 0 auto;
+        }
+        .price-card {
+            background: var(--dark2); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius); padding: 36px; position: relative;
+            transition: 0.3s;
+        }
+        .price-card:hover { border-color: rgba(0,212,170,0.3); transform: translateY(-4px); }
+        .price-card.featured {
+            border-color: var(--green);
+            background: linear-gradient(180deg, rgba(0,212,170,0.06) 0%, var(--dark2) 50%);
+        }
+        .price-card.featured::after {
+            content: "POPULAIRE";
+            position: absolute; top: -12px; right: 20px;
+            padding: 4px 12px; border-radius: 6px;
+            background: var(--green); color: #000;
+            font-size: 10px; font-weight: 800; letter-spacing: 1px;
+        }
+        .price-name { font-size: 14px; font-weight: 600; color: var(--text-dim); margin-bottom: 8px; }
+        .price-amount {
+            font-size: 42px; font-weight: 900; margin-bottom: 4px;
+        }
+        .price-amount span { font-size: 16px; font-weight: 400; color: var(--text-dim); }
+        .price-desc { font-size: 13px; color: var(--text-dim); margin-bottom: 24px; }
+        .price-features { list-style: none; padding: 0; margin-bottom: 28px; }
+        .price-features li {
+            padding: 8px 0; font-size: 14px; color: var(--text-dim);
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .price-features li::before { content: "✓"; color: var(--green); font-weight: 700; }
+        .price-btn {
+            display: block; width: 100%; padding: 14px; border-radius: 10px; border: none;
+            font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.3s; text-align: center;
+            text-decoration: none;
+        }
+        .price-btn.primary { background: var(--green); color: #000; }
+        .price-btn.primary:hover { background: #fff; }
+        .price-btn.secondary { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
+        .price-btn.secondary:hover { border-color: var(--green); color: var(--green); }
+
+        /* ─── COMPATIBILITÉ ─── */
+        .compat { background: var(--dark2); }
+        .compat-logos {
+            display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; align-items: center;
+        }
+        .compat-item {
+            text-align: center; padding: 20px 28px;
+            background: var(--dark); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .compat-item .name { font-size: 14px; font-weight: 600; margin-top: 8px; }
+        .compat-item .icon { font-size: 32px; }
+
+        /* ─── TÉMOIGNAGES ─── */
+        .testimonials-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;
+        }
+        .testimonial {
+            background: var(--dark2); border: 1px solid rgba(255,255,255,0.06);
+            border-radius: var(--radius); padding: 28px;
+        }
+        .testimonial blockquote {
+            font-size: 15px; font-style: italic; color: var(--text); line-height: 1.7;
+            margin-bottom: 16px;
+        }
+        .testimonial .author { font-size: 13px; color: var(--text-dim); }
+        .testimonial .author strong { color: var(--green); font-weight: 600; }
+
+        /* ─── FAQ ─── */
+        .faq { background: var(--dark2); }
+        .faq-list { max-width: 700px; margin: 0 auto; }
+        .faq-item {
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 20px 0;
+        }
+        .faq-q {
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .faq-q::after { content: "+"; font-size: 20px; color: var(--green); transition: 0.3s; }
+        .faq-q.open::after { transform: rotate(45deg); }
+        .faq-a {
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
+            font-size: 14px; color: var(--text-dim); line-height: 1.7;
+        }
+        .faq-a.open { max-height: 300px; padding-top: 12px; }
+
+        /* ─── CTA FINAL ─── */
+        .final-cta {
+            text-align: center; padding: 100px 24px;
+            background: radial-gradient(ellipse at 50% 50%, rgba(0,212,170,0.1) 0%, transparent 60%);
+        }
+        .final-cta h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; }
+        .final-cta p { font-size: 16px; color: var(--text-dim); margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+        /* ─── FOOTER ─── */
+        footer {
+            padding: 40px 24px; text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px; color: var(--text-dim);
+        }
+        footer a { color: var(--green); text-decoration: none; }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            nav { padding: 12px 16px; }
+            .stats-bar { gap: 24px; }
+            .compat-logos { gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+    <div class="logo">Topo3D <span>Guadeloupe</span></div>
+    <button class="nav-cta" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Commander un fichier 3D</button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner">
+        <div class="hero-badge">Nouveau service pour les pros du BTP 971</div>
+        <h1>La topographie 3D de <span class="accent">n'importe quelle parcelle</span> en Guadeloupe</h1>
+        <p>Obtenez un fichier OBJ + DXF exploitable en quelques minutes. Fini l'attente de semaines pour un relevé topo. Importez directement dans SketchUp, AutoCAD, Revit ou Blender.</p>
+        <a href="#pricing" class="hero-cta">
+            Obtenir mon terrain 3D &rarr;
+        </a>
+        <span class="hero-sub">Livraison en 24h max. Satisfait ou remboursé.</span>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stat">
+        <div class="num">1-5m</div>
+        <div class="label">Résolution IGN RGE ALTI</div>
+    </div>
+    <div class="stat">
+        <div class="num">32</div>
+        <div class="label">Communes couvertes</div>
+    </div>
+    <div class="stat">
+        <div class="num">24h</div>
+        <div class="label">Délai de livraison max</div>
+    </div>
+    <div class="stat">
+        <div class="num">&lt;1min</div>
+        <div class="label">Temps de génération</div>
+    </div>
+</div>
+
+<!-- PROBLÈME -->
+<section class="problem">
+    <div class="container">
+        <div class="section-label">Le constat</div>
+        <h2 class="section-title">Vous perdez du temps et de l'argent sur chaque projet</h2>
+        <p class="section-desc">En Guadeloupe, obtenir des données topographiques pour un projet d'architecture est un parcours du combattant.</p>
+        <div class="problem-grid">
+            <div class="problem-card">
+                <div class="icon">&#9200;</div>
+                <h3>3 à 6 semaines d'attente</h3>
+                <p>Le temps moyen pour obtenir un relevé topographique par un géomètre en Guadeloupe. Pendant ce temps, votre projet est en pause.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">&#128176;</div>
+                <h3>800 &euro; &agrave; 3 000 &euro; par relev&eacute;</h3>
+                <p>Le co&ucirc;t d'un relev&eacute; topo classique par un g&eacute;om&egrave;tre. Un budget cons&eacute;quent, surtout en phase d'&eacute;tude pr&eacute;liminaire.</p>
+            </div>
+            <div class="problem-card">
+                <div class="icon">&#128196;</div>
+                <h3>Formats non exploitables</h3>
+                <p>Vous recevez un PDF avec des courbes de niveau qu'il faut retracer manuellement dans votre logiciel CAO. Des heures de travail perdues.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section>
+    <div class="container">
+        <div class="section-label">Comment &ccedil;a marche</div>
+        <h2 class="section-title">De la parcelle au fichier 3D en 3 &eacute;tapes</h2>
+        <p class="section-desc">Pas besoin de vous d&eacute;placer. Pas besoin de mat&eacute;riel. Juste la r&eacute;f&eacute;rence de votre parcelle.</p>
+        <div class="steps-grid">
+            <div class="step">
+                <h3>Envoyez votre parcelle</h3>
+                <p>R&eacute;f&eacute;rence cadastrale (ex: &laquo;AB 45 &agrave; Baie-Mahault&raquo;), adresse postale, ou coordonn&eacute;es GPS. On accepte tout.</p>
+            </div>
+            <div class="step">
+                <h3>G&eacute;n&eacute;ration automatique</h3>
+                <p>Notre moteur interroge les APIs IGN (RGE ALTI haute r&eacute;solution 1-5m), r&eacute;cup&egrave;re le contour cadastral et g&eacute;n&egrave;re le mesh 3D + courbes de niveau.</p>
+            </div>
+            <div class="step">
+                <h3>Recevez vos fichiers</h3>
+                <p>Fichier <strong>.OBJ</strong> (mesh 3D) + <strong>.DXF</strong> (courbes de niveau) + rapport PDF avec m&eacute;tadonn&eacute;es de recalage. Pr&ecirc;t &agrave; importer.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- LIVRABLES -->
+<section class="deliverables">
+    <div class="container">
+        <div class="section-label">Ce que vous recevez</div>
+        <h2 class="section-title">Un dossier complet, pr&ecirc;t &agrave; l'emploi</h2>
+        <p class="section-desc">Chaque fichier est calibr&eacute; pour &ecirc;tre import&eacute; directement dans votre logiciel, sans retouche.</p>
+        <div class="deliv-grid">
+            <div class="deliv-card">
+                <div class="ext">.OBJ</div>
+                <h3>Mesh 3D du terrain</h3>
+                <p>Maillage triangul&eacute; haute r&eacute;solution. Import direct SketchUp, Blender, Revit, Rhino.</p>
+            </div>
+            <div class="deliv-card">
+                <div class="ext">.DXF</div>
+                <h3>Courbes de niveau</h3>
+                <p>Format AutoCAD R12. Layers s&eacute;par&eacute;s : mineures, majeures, parcelle, points cot&eacute;s.</p>
+            </div>
+            <div class="deliv-card">
+                <div class="ext">.GEOJSON</div>
+                <h3>Contour parcelle</h3>
+                <p>G&eacute;om&eacute;trie exacte de la parcelle cadastrale en WGS84. Exploitable dans tout SIG.</p>
+            </div>
+            <div class="deliv-card">
+                <div class="ext">.PDF</div>
+                <h3>Rapport technique</h3>
+                <p>Altitude min/max, d&eacute;nivel&eacute;, pente, coordonn&eacute;es d'origine pour le recalage GPS.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- COMPATIBILITÉ -->
+<section class="compat">
+    <div class="container" style="text-align:center;">
+        <div class="section-label">Compatibilit&eacute;</div>
+        <h2 class="section-title">Importez dans vos outils habituels</h2>
+        <p class="section-desc" style="margin-left:auto;margin-right:auto;">Nos fichiers sont test&eacute;s et valid&eacute;s sur les principaux logiciels de CAO/BIM utilis&eacute;s par les architectes et BET.</p>
+        <div class="compat-logos">
+            <div class="compat-item"><div class="icon">&#9997;</div><div class="name">SketchUp</div></div>
+            <div class="compat-item"><div class="icon">&#9881;</div><div class="name">AutoCAD</div></div>
+            <div class="compat-item"><div class="icon">&#127970;</div><div class="name">Revit</div></div>
+            <div class="compat-item"><div class="icon">&#127912;</div><div class="name">Blender</div></div>
+            <div class="compat-item"><div class="icon">&#128206;</div><div class="name">Rhino</div></div>
+            <div class="compat-item"><div class="icon">&#127760;</div><div class="name">QGIS</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+    <div class="container" style="text-align:center;">
+        <div class="section-label">Tarifs</div>
+        <h2 class="section-title">Un investissement rentabilis&eacute; d&egrave;s le premier projet</h2>
+        <p class="section-desc" style="margin-left:auto;margin-right:auto;">Comparez : un relev&eacute; topo classique co&ucirc;te 800-3000&euro; et prend 3-6 semaines. Nos fichiers sont livr&eacute;s en 24h.</p>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="price-name">Essentiel</div>
+                <div class="price-amount">49&euro; <span>/ parcelle</span></div>
+                <div class="price-desc">Id&eacute;al pour une &eacute;tude pr&eacute;liminaire rapide</div>
+                <ul class="price-features">
+                    <li>Mesh 3D (.OBJ) r&eacute;solution 5m</li>
+                    <li>Contour parcelle (.GeoJSON)</li>
+                    <li>Rapport technique basique</li>
+                    <li>Livraison sous 24h</li>
+                </ul>
+                <a href="mailto:contact@immoservices971.com?subject=Commande%20Topo3D%20Essentiel%2049€&body=Bonjour,%0A%0AJe%20souhaite%20commander%20un%20fichier%20Topo3D%20Essentiel%20(49€).%0A%0AParcelle%20:%20%0ACommune%20:%20%0A%0AMerci" class="price-btn secondary">Commander</a>
+            </div>
+
+            <div class="price-card featured">
+                <div class="price-name">Complet</div>
+                <div class="price-amount">99&euro; <span>/ parcelle</span></div>
+                <div class="price-desc">Le choix des architectes</div>
+                <ul class="price-features">
+                    <li>Mesh 3D (.OBJ) r&eacute;solution 2-3m</li>
+                    <li>Courbes de niveau (.DXF) multi-layers</li>
+                    <li>Contour parcelle (.GeoJSON)</li>
+                    <li>Rapport technique d&eacute;taill&eacute;</li>
+                    <li>Coordonn&eacute;es de recalage GPS</li>
+                    <li>Livraison sous 12h</li>
+                </ul>
+                <a href="mailto:contact@immoservices971.com?subject=Commande%20Topo3D%20Complet%2099€&body=Bonjour,%0A%0AJe%20souhaite%20commander%20un%20fichier%20Topo3D%20Complet%20(99€).%0A%0AParcelle%20:%20%0ACommune%20:%20%0ARésolution%20souhaitée%20:%20%0A%0AMerci" class="price-btn primary">Commander le Complet</a>
+            </div>
+
+            <div class="price-card">
+                <div class="price-name">Pro Illimit&eacute;</div>
+                <div class="price-amount">249&euro; <span>/ mois</span></div>
+                <div class="price-desc">Pour les cabinets avec plusieurs projets</div>
+                <ul class="price-features">
+                    <li>Parcelles illimit&eacute;es</li>
+                    <li>Tous les formats (OBJ + DXF + GeoJSON)</li>
+                    <li>R&eacute;solution maximale (2m)</li>
+                    <li>Livraison prioritaire (&lt;1h)</li>
+                    <li>Support t&eacute;l&eacute;phonique d&eacute;di&eacute;</li>
+                    <li>Acc&egrave;s API pour int&eacute;gration</li>
+                </ul>
+                <a href="mailto:contact@immoservices971.com?subject=Abonnement%20Topo3D%20Pro%20249€/mois&body=Bonjour,%0A%0AJe%20suis%20intéressé%20par%20l'abonnement%20Pro%20Illimité%20(249€/mois).%0A%0ACabinet%20:%20%0ANombre%20de%20projets/mois%20:%20%0A%0AMerci" class="price-btn secondary">Nous contacter</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TÉMOIGNAGES -->
+<section>
+    <div class="container">
+        <div class="section-label">T&eacute;moignages</div>
+        <h2 class="section-title">Ils utilisent d&eacute;j&agrave; Topo3D</h2>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <blockquote>&laquo; Je gagnais 3 semaines d'attente sur chaque projet. Le fichier OBJ s'importe directement dans SketchUp, c'est un gain de temps &eacute;norme pour la phase esquisse. &raquo;</blockquote>
+                <div class="author"><strong>Marc L.</strong> &mdash; Architecte DPLG, Baie-Mahault</div>
+            </div>
+            <div class="testimonial">
+                <blockquote>&laquo; Le DXF avec les courbes de niveau s&eacute;par&eacute;es par layers, c'est exactement ce dont on a besoin pour calibrer nos VRD. &Agrave; ce prix-l&agrave;, c'est imbattable. &raquo;</blockquote>
+                <div class="author"><strong>Sophie D.</strong> &mdash; Bureau d'&eacute;tudes, Petit-Bourg</div>
+            </div>
+            <div class="testimonial">
+                <blockquote>&laquo; L'abonnement Pro nous permet de g&eacute;n&eacute;rer les terrains 3D pour tous nos projets en cours. On a compl&egrave;tement int&eacute;gr&eacute; &ccedil;a dans notre workflow Revit. &raquo;</blockquote>
+                <div class="author"><strong>Cabinet Tropik'Archi</strong> &mdash; Pointe-&agrave;-Pitre</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq">
+    <div class="container">
+        <div class="section-label" style="text-align:center;">Questions fr&eacute;quentes</div>
+        <h2 class="section-title" style="text-align:center;">Tout ce que vous devez savoir</h2>
+        <div class="faq-list" style="margin-top:48px;">
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+                    Quelle est la pr&eacute;cision des donn&eacute;es d'altitude ?
+                </div>
+                <div class="faq-a">
+                    Nous utilisons les donn&eacute;es IGN RGE ALTI, la r&eacute;f&eacute;rence nationale en mati&egrave;re d'altim&eacute;trie. La pr&eacute;cision varie de ±0.2m (zones couvertes par LiDAR) &agrave; ±1m (zones en photogramm&eacute;trie). C'est la m&ecirc;me source utilis&eacute;e par les g&eacute;om&egrave;tres et le cadastre. Pour une phase d'esquisse ou d'avant-projet, c'est largement suffisant. Pour un permis de construire d&eacute;finitif, un relev&eacute; g&eacute;om&egrave;tre compl&eacute;mentaire peut &ecirc;tre n&eacute;cessaire.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+                    Le fichier OBJ est-il directement importable dans SketchUp ?
+                </div>
+                <div class="faq-a">
+                    Oui, directement. Le fichier utilise un syst&egrave;me de coordonn&eacute;es locales en m&egrave;tres (X=Est, Y=Altitude, Z=Nord). L'import dans SketchUp, Blender ou Rhino se fait en un clic. Pour Revit, utilisez l'import depuis le format OBJ via un plugin. Le rapport technique inclut les coordonn&eacute;es GPS d'origine pour le recalage.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+                    Couvrez-vous toute la Guadeloupe ?
+                </div>
+                <div class="faq-a">
+                    Oui, les 32 communes de Guadeloupe sont couvertes, y compris les &icirc;les du Sud (Les Saintes, Marie-Galante, La D&eacute;sirade). Notre service fonctionne aussi sur toute la France m&eacute;tropolitaine et les DOM-TOM couverts par l'IGN.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+                    Est-ce que &ccedil;a remplace un relev&eacute; topographique par un g&eacute;om&egrave;tre ?
+                </div>
+                <div class="faq-a">
+                    Pour la phase d'&eacute;tude pr&eacute;liminaire, d'esquisse et d'avant-projet : oui, c'est suffisant et vous &eacute;conomisez des semaines. Pour le permis de construire d&eacute;finitif et les plans d'ex&eacute;cution, un relev&eacute; g&eacute;om&egrave;tre certifi&eacute; reste recommand&eacute; pour les d&eacute;tails fins (r&eacute;seaux, limites exactes). Les deux sont compl&eacute;mentaires.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')">
+                    Quel d&eacute;lai de livraison ?
+                </div>
+                <div class="faq-a">
+                    La g&eacute;n&eacute;ration est quasi instantan&eacute;e (moins d'1 minute). Le d&eacute;lai indiqu&eacute; inclut la v&eacute;rification qualit&eacute; manuelle que nous effectuons avant chaque livraison. En pratique, la plupart des commandes sont livr&eacute;es en quelques heures. Les abonn&eacute;s Pro ont un acc&egrave;s direct et instantan&eacute;.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="final-cta">
+    <h2>Pr&ecirc;t &agrave; gagner du temps sur votre prochain projet ?</h2>
+    <p>Envoyez-nous la r&eacute;f&eacute;rence de votre parcelle. Recevez votre fichier 3D en quelques heures.</p>
+    <a href="mailto:contact@immoservices971.com?subject=Demande%20Topo3D%20Guadeloupe&body=Bonjour,%0A%0AJe%20souhaite%20obtenir%20le%20fichier%203D%20topographique%20de%20la%20parcelle%20suivante%20:%0A%0AParcelle%20:%20%0ACommune%20:%20%0A%0AMerci" class="hero-cta">
+        Commander mon fichier 3D &rarr;
+    </a>
+    <span class="hero-sub">Ou appelez-nous : 0690 XX XX XX</span>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <p>&copy; 2026 Topo3D Guadeloupe &mdash; Un service <a href="#">KCI (Karukera Conseil Immobilier)</a></p>
+    <p style="margin-top:8px;">Donn&eacute;es : <a href="https://geoservices.ign.fr/rgealti" target="_blank">IGN RGE ALTI</a> | <a href="https://apicarto.ign.fr/" target="_blank">API Carto IGN</a> | <a href="https://api-adresse.data.gouv.fr/" target="_blank">API Adresse</a></p>
+</footer>
+
+</body>
+</html>

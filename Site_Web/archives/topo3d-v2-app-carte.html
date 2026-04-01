@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topo3D Guadeloupe — Topographie 3D interactive</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root{--g:#00d4aa;--gd:#00a88a;--b:#0066ff;--dk:#0a0a14;--dk2:#12121e;--dk3:#1a1a2a;--tx:#e8e8ee;--dim:rgba(255,255,255,.5);--gl:rgba(10,10,20,.9);--bd:rgba(255,255,255,.07);--r:12px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--dk);color:var(--tx);height:100vh;overflow:hidden}
+        #map{width:100%;height:100vh}
+
+        /* ─── SIDEBAR ─── */
+        .sidebar{position:absolute;top:0;right:0;width:380px;height:100vh;background:var(--dk2);border-left:1px solid var(--bd);display:flex;flex-direction:column;z-index:20;transition:transform .4s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+        .sidebar.collapsed{transform:translateX(100%)}
+        .sb-toggle{position:absolute;top:50%;right:380px;transform:translateY(-50%);z-index:21;width:28px;height:56px;background:var(--dk2);border:1px solid var(--bd);border-right:none;border-radius:8px 0 0 8px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px;transition:.4s}
+        .sidebar.collapsed+.sb-toggle,.sidebar.collapsed~.sb-toggle{right:0}
+        .sb-toggle:hover{background:var(--dk3);color:var(--g)}
+
+        .sb-header{padding:16px 20px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+        .logo{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--g),var(--b));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .logo span{font-weight:400;opacity:.6;-webkit-text-fill-color:currentColor;color:var(--dim)}
+        .kci-link{font-size:10px;color:var(--dim);text-decoration:none;padding:4px 10px;border:1px solid var(--bd);border-radius:6px;transition:.2s;white-space:nowrap}
+        .kci-link:hover{border-color:var(--g);color:var(--g)}
+
+        /* ─── TABS ─── */
+        .tabs{display:flex;border-bottom:1px solid var(--bd)}
+        .tab{flex:1;padding:10px 4px;text-align:center;font-size:11px;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+        .tab:hover{color:var(--tx)}.tab.active{color:var(--g);border-bottom-color:var(--g)}
+
+        .tab-content{display:none;padding:16px 20px}.tab-content.active{display:block}
+
+        /* ─── FORM ─── */
+        .fg{margin-bottom:12px}
+        .fl{display:block;font-size:10px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+        .fi{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--dk);color:var(--tx);font-size:13px;font-family:inherit;outline:none;transition:.2s}
+        .fi:focus{border-color:var(--g);box-shadow:0 0 0 2px rgba(0,212,170,.1)}.fi::placeholder{color:rgba(255,255,255,.2)}
+        .fr{display:flex;gap:8px}.fr .fg{flex:1}
+        select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2300d4aa'%3E%3Cpath d='M5 7L0 2h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+        select.fi option{background:var(--dk2)}
+
+        .btn{width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--g),var(--gd));color:#000;font-size:14px;font-weight:700;cursor:pointer;transition:.3s;margin-top:6px}
+        .btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,212,170,.3)}
+        .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+        .btn-s{width:100%;padding:9px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--dim);font-size:12px;cursor:pointer;transition:.2s;margin-top:6px}
+        .btn-s:hover{border-color:var(--g);color:var(--g)}
+
+        /* ─── LAYERS PANEL ─── */
+        .layers-section{padding:16px 20px;border-top:1px solid var(--bd)}
+        .layers-title{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+        .layer-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer;transition:.15s}
+        .layer-row:hover{background:rgba(255,255,255,.02);margin:0 -20px;padding:7px 20px}
+        .layer-row:last-child{border:none}
+        .layer-check{width:16px;height:16px;border-radius:4px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+        .layer-row.on .layer-check{background:var(--g);border-color:var(--g)}
+        .layer-row.on .layer-check::after{content:"✓";font-size:10px;color:#000;font-weight:800}
+        .layer-icon{font-size:16px;flex-shrink:0}
+        .layer-info{flex:1;min-width:0}
+        .layer-name{font-size:12px;font-weight:600}
+        .layer-desc{font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+        /* ─── STYLE SELECTOR ─── */
+        .style-section{padding:16px 20px;border-top:1px solid var(--bd)}
+        .style-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+        .style-btn{padding:8px 4px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--dim);font-size:10px;font-weight:600;cursor:pointer;text-align:center;transition:.2s}
+        .style-btn:hover{border-color:rgba(0,212,170,.3);color:var(--g)}
+        .style-btn.active{border-color:var(--g);background:rgba(0,212,170,.08);color:var(--g)}
+
+        /* ─── CAMERA CONTROLS ─── */
+        .cam-section{padding:16px 20px;border-top:1px solid var(--bd)}
+        .cam-row{margin-bottom:10px}
+        .cam-row label{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:3px}
+        .cam-row label .v{color:var(--g);font-weight:600;font-variant-numeric:tabular-nums}
+        input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:rgba(255,255,255,.08);border-radius:3px;outline:none}
+        input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--g);cursor:pointer}
+        .cam-btns{display:flex;gap:4px;margin-top:8px}
+        .cam-btn{flex:1;padding:7px;border-radius:6px;border:1px solid var(--bd);background:transparent;color:var(--dim);font-size:10px;cursor:pointer;transition:.2s;text-align:center}
+        .cam-btn:hover{border-color:var(--g);color:var(--g)}
+
+        /* ─── RESULT ─── */
+        .result{display:none;padding:16px 20px;border-top:1px solid var(--bd);background:rgba(0,212,170,.03)}
+        .result.active{display:block}
+        .result-h{font-size:13px;font-weight:700;color:var(--g);margin-bottom:10px}
+        .rr{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,.03)}
+        .rr .l{color:var(--dim)}.rr .v{font-weight:600;font-variant-numeric:tabular-nums}
+
+        /* ─── PRICING MINI ─── */
+        .pricing{display:none;padding:16px 20px;border-top:1px solid var(--bd)}
+        .pricing.active{display:block}
+        .pricing h3{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+        .po{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;margin-bottom:6px;border:1px solid var(--bd);cursor:pointer;transition:.2s}
+        .po:hover{border-color:rgba(0,212,170,.3)}.po.sel{border-color:var(--g);background:rgba(0,212,170,.06)}
+        .po input[type=radio]{accent-color:var(--g)}
+        .po-p{font-size:18px;font-weight:800;min-width:50px}.po-n{font-size:12px;font-weight:600}.po-d{font-size:10px;color:var(--dim)}
+
+        /* ─── PRECISION INFO ─── */
+        .precision-info{padding:12px 20px;border-top:1px solid var(--bd);font-size:10px;color:var(--dim);line-height:1.6}
+        .precision-info strong{color:var(--g)}
+
+        /* ─── MAP OVERLAYS ─── */
+        .map-info{position:absolute;bottom:20px;left:14px;z-index:10;background:var(--gl);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;font-size:12px}
+        .map-info .c{color:var(--dim);font-variant-numeric:tabular-nums}.map-info .e{color:var(--g);font-weight:600;font-size:13px}
+        .map-hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:10;background:var(--gl);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:8px;padding:8px 16px;font-size:12px;color:var(--dim);pointer-events:none;transition:opacity .5s}
+        .map-hint.hidden{opacity:0}
+        .map-hint strong{color:var(--g)}
+
+        /* ─── LOADING ─── */
+        .ld{display:none;padding:0 20px 12px}.ld.on{display:block}
+        .ld-track{height:3px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden}
+        .ld-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--g),var(--b));animation:lp 1.5s ease-in-out infinite;width:50%}
+        .ld-txt{font-size:10px;color:var(--dim);margin-top:4px}
+        @keyframes lp{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}
+
+        .maplibregl-popup-content{background:var(--dk2)!important;color:var(--tx)!important;border-radius:10px!important;padding:10px 14px!important;border:1px solid var(--bd)!important;font-family:'Inter',sans-serif!important;font-size:12px!important;box-shadow:0 8px 24px rgba(0,0,0,.5)!important}
+        .maplibregl-popup-tip{border-top-color:var(--dk2)!important}
+
+        /* ─── ROTATE BTN ─── */
+        .auto-rotate{position:absolute;bottom:20px;right:400px;z-index:10;background:var(--gl);backdrop-filter:blur(16px);border:1px solid var(--bd);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--dim);cursor:pointer;transition:.2s;display:flex;align-items:center;gap:6px}
+        .auto-rotate:hover{border-color:var(--g);color:var(--g)}
+        .auto-rotate.active{border-color:var(--g);color:var(--g);background:rgba(0,212,170,.08)}
+        .sidebar.collapsed~.auto-rotate{right:20px}
+
+        /* ─── TOPO PLAN MODAL ─── */
+        .topo-modal{display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);align-items:center;justify-content:center}
+        .topo-modal.open{display:flex}
+        .topo-inner{background:var(--dk2);border:1px solid var(--bd);border-radius:16px;width:90vw;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+        .topo-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--bd)}
+        .topo-head h2{font-size:16px;font-weight:700;color:var(--g)}
+        .topo-close{background:none;border:none;color:var(--dim);font-size:22px;cursor:pointer;padding:4px 8px;border-radius:6px}
+        .topo-close:hover{color:var(--g);background:rgba(255,255,255,.05)}
+        .topo-controls{display:flex;gap:8px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--bd);flex-wrap:wrap}
+        .topo-controls label{font-size:11px;color:var(--dim);display:flex;align-items:center;gap:4px}
+        .topo-controls select,.topo-controls input[type=number]{background:var(--dk);border:1px solid var(--bd);color:var(--tx);border-radius:6px;padding:5px 8px;font-size:12px;font-family:inherit;width:70px}
+        .topo-controls select{width:auto}
+        .topo-dl{padding:6px 14px;border-radius:8px;border:1px solid var(--g);background:transparent;color:var(--g);font-size:11px;font-weight:600;cursor:pointer;transition:.2s}
+        .topo-dl:hover{background:var(--g);color:#000}
+        .topo-canvas-wrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--dk);min-height:400px;position:relative}
+        .topo-canvas-wrap canvas{border:1px solid var(--bd);border-radius:4px}
+        .topo-legend{position:absolute;bottom:24px;right:24px;background:var(--gl);border:1px solid var(--bd);border-radius:8px;padding:10px 14px;font-size:10px}
+        .topo-legend .tl-row{display:flex;align-items:center;gap:6px;margin:2px 0}
+        .topo-legend .tl-swatch{width:24px;height:3px;border-radius:2px}
+        .topo-status{padding:10px 20px;border-top:1px solid var(--bd);font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
+        .gen-topo-btn{display:none;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#0066ff,#0044cc);color:#fff;font-size:13px;font-weight:700;cursor:pointer;transition:.3s;margin-top:8px}
+        .gen-topo-btn.visible{display:block}
+        .gen-topo-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,102,255,.3)}
+
+        /* ─── CHATBOT ─── */
+        .chat-bubble{position:fixed;bottom:20px;left:20px;z-index:50;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gd));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 4px 20px rgba(0,212,170,.4);transition:.3s}
+        .chat-bubble:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(0,212,170,.5)}
+        .chat-bubble.has-dot::after{content:'';position:absolute;top:2px;right:2px;width:12px;height:12px;border-radius:50%;background:#ff4444;border:2px solid var(--dk)}
+        .chat-panel{position:fixed;bottom:80px;left:20px;z-index:50;width:340px;max-height:480px;background:var(--dk2);border:1px solid var(--bd);border-radius:16px;display:none;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+        .chat-panel.open{display:flex}
+        .chat-head{padding:14px 16px;background:linear-gradient(135deg,rgba(0,212,170,.1),rgba(0,102,255,.05));border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px}
+        .chat-head-avatar{width:32px;height:32px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:16px}
+        .chat-head-info{flex:1}
+        .chat-head-name{font-size:13px;font-weight:700;color:var(--tx)}
+        .chat-head-status{font-size:10px;color:var(--g)}
+        .chat-close{background:none;border:none;color:var(--dim);font-size:18px;cursor:pointer;padding:4px}
+        .chat-body{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;max-height:300px}
+        .chat-msg{max-width:85%;padding:10px 14px;border-radius:12px;font-size:12px;line-height:1.5}
+        .chat-msg.bot{background:var(--dk3);color:var(--tx);border-bottom-left-radius:4px;align-self:flex-start}
+        .chat-msg.user{background:var(--g);color:#000;border-bottom-right-radius:4px;align-self:flex-end;font-weight:500}
+        .chat-msg a{color:var(--g);font-weight:600}
+        .chat-msg.bot a{color:var(--g)}
+        .chat-msg.user a{color:#000}
+        .chat-quick{display:flex;flex-wrap:wrap;gap:4px;padding:0 12px 8px}
+        .chat-qbtn{padding:6px 10px;border-radius:8px;border:1px solid var(--bd);background:transparent;color:var(--dim);font-size:10px;cursor:pointer;transition:.2s}
+        .chat-qbtn:hover{border-color:var(--g);color:var(--g);background:rgba(0,212,170,.05)}
+        .chat-input-row{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--bd)}
+        .chat-input{flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--bd);background:var(--dk);color:var(--tx);font-size:12px;font-family:inherit;outline:none}
+        .chat-input:focus{border-color:var(--g)}
+        .chat-send{padding:8px 12px;border-radius:8px;border:none;background:var(--g);color:#000;font-size:12px;font-weight:700;cursor:pointer}
+
+        @media(max-width:900px){
+            .sidebar{width:100%;height:55vh;top:auto;bottom:0;right:0;transform:translateY(0);border-left:none;border-top:1px solid var(--bd)}
+            .sidebar.collapsed{transform:translateY(100%)}
+            .sb-toggle{top:auto;bottom:55vh;right:50%;transform:translateX(50%);width:56px;height:28px;border-radius:8px 8px 0 0;border:1px solid var(--bd);border-bottom:none}
+            .sidebar.collapsed~.sb-toggle{bottom:0}
+            .auto-rotate{right:14px;bottom:60vh}
+            .sidebar.collapsed~.auto-rotate{bottom:20px}
+        }
+    </style>
+</head>
+<body>
+
+<!-- TOP NAV BAR -->
+<div style="position:absolute;top:0;left:0;right:0;z-index:30;height:42px;background:rgba(10,10,20,.92);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;padding:0 20px;gap:24px">
+    <a href="index.html" style="font-size:15px;font-weight:800;background:linear-gradient(135deg,#00d4aa,#0066ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none">Topo3D Antilles</a>
+    <a href="index.html" style="font-size:12px;color:rgba(255,255,255,.45);text-decoration:none">Accueil</a>
+    <a href="references.html" style="font-size:12px;color:rgba(255,255,255,.45);text-decoration:none">Références</a>
+    <div style="display:flex;gap:2px;margin-left:12px;background:rgba(255,255,255,.05);border-radius:6px;padding:2px">
+        <button id="tabGua" onclick="flyIsland('guadeloupe')" style="padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;background:#00d4aa;color:#000">🦋 Guadeloupe</button>
+        <button id="tabMart" onclick="flyIsland('martinique')" style="padding:4px 12px;border-radius:5px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;background:transparent;color:rgba(255,255,255,.5)">🏝️ Martinique</button>
+    </div>
+    <a href="https://karukera-conseil.com" target="_blank" style="font-size:10px;color:rgba(255,255,255,.3);text-decoration:none;margin-left:auto;padding:3px 10px;border:1px solid rgba(255,255,255,.07);border-radius:5px">🏠 KCI Conseil</a>
+</div>
+
+<div id="map" style="padding-top:42px"></div>
+
+<!-- SIDEBAR TOGGLE -->
+<button class="sb-toggle" id="sbToggle" onclick="toggleSidebar()">◀</button>
+
+<!-- AUTO ROTATE -->
+<button class="auto-rotate" id="rotateBtn" onclick="toggleRotate()">🔄 Rotation auto</button>
+
+<!-- MAP HINT -->
+<div class="map-hint" id="mapHint"><strong>Cliquez</strong> sur la carte pour sélectionner une parcelle</div>
+
+<!-- MAP INFO -->
+<div class="map-info">
+    <div>📍 <span class="c" id="mc">—</span></div>
+    <div>⛰️ <span class="e" id="me">—</span></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <div class="sb-header">
+        <div class="logo">Topo3D <span>Guadeloupe</span></div>
+        <a href="https://karukera-conseil.com" target="_blank" class="kci-link">🏠 KCI Conseil</a>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+        <div class="tab active" data-tab="carte" onclick="stab('carte')">📍 Carte</div>
+        <div class="tab" data-tab="cadastre" onclick="stab('cadastre')">📐 Cadastre</div>
+        <div class="tab" data-tab="adresse" onclick="stab('adresse')">🏠 Adresse</div>
+        <div class="tab" data-tab="gps" onclick="stab('gps')">🛰️ GPS</div>
+    </div>
+
+    <!-- TAB CARTE -->
+    <div class="tab-content active" id="tab-carte">
+        <p style="font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:12px">Cliquez sur la carte pour sélectionner une parcelle cadastrale.</p>
+        <div id="carte-sel" style="display:none">
+            <div class="fg"><div class="fl">Parcelle sélectionnée</div><div id="c-ref" style="font-size:14px;font-weight:700;color:var(--g)"></div></div>
+            <div class="fr"><div class="fg"><div class="fl">Commune</div><div id="c-com" style="font-size:12px"></div></div><div class="fg"><div class="fl">Surface</div><div id="c-surf" style="font-size:12px"></div></div></div>
+        </div>
+        <button class="btn-s" onclick="clearSel()">Effacer la sélection</button>
+    </div>
+
+    <!-- TAB CADASTRE -->
+    <div class="tab-content" id="tab-cadastre">
+        <div class="fg"><label class="fl">Commune</label><select class="fi" id="cad-com"><option value="">— Choisir —</option><option value="97101">Les Abymes</option><option value="97102">Anse-Bertrand</option><option value="97103">Baie-Mahault</option><option value="97104">Baillif</option><option value="97105">Basse-Terre</option><option value="97106">Bouillante</option><option value="97107">Capesterre-Belle-Eau</option><option value="97108">Capesterre-de-Marie-Galante</option><option value="97109">Deshaies</option><option value="97110">Gourbeyre</option><option value="97111">Goyave</option><option value="97112">Grand-Bourg</option><option value="97113">Lamentin</option><option value="97114">Le Gosier</option><option value="97115">Le Moule</option><option value="97116">Morne-à-l'Eau</option><option value="97117">Petit-Bourg</option><option value="97118">Petit-Canal</option><option value="97120">Pointe-à-Pitre</option><option value="97121">Pointe-Noire</option><option value="97122">Port-Louis</option><option value="97123">Saint-Claude</option><option value="97124">Saint-François</option><option value="97125">Saint-Louis</option><option value="97126">Sainte-Anne</option><option value="97127">Sainte-Rose</option><option value="97128">Terre-de-Bas</option><option value="97129">Terre-de-Haut</option><option value="97130">Trois-Rivières</option><option value="97131">Vieux-Fort</option><option value="97132">Vieux-Habitants</option></select></div>
+        <div class="fr"><div class="fg"><label class="fl">Section</label><input class="fi" id="cad-sec" placeholder="AB" maxlength="2" style="text-transform:uppercase"></div><div class="fg"><label class="fl">Numéro</label><input class="fi" id="cad-num" placeholder="0045" maxlength="5"></div></div>
+        <button class="btn" onclick="searchCad()">Rechercher la parcelle</button>
+    </div>
+
+    <!-- TAB ADRESSE -->
+    <div class="tab-content" id="tab-adresse">
+        <div class="fg"><label class="fl">Adresse complète</label><input class="fi" id="addr" placeholder="12 rue de la Liberté, 97122 Baie-Mahault"></div>
+        <button class="btn" onclick="searchAddr()">Localiser la parcelle</button>
+    </div>
+
+    <!-- TAB GPS -->
+    <div class="tab-content" id="tab-gps">
+        <div class="fr"><div class="fg"><label class="fl">Latitude</label><input class="fi" id="gLat" placeholder="16.0445" type="number" step="0.0001"></div><div class="fg"><label class="fl">Longitude</label><input class="fi" id="gLng" placeholder="-61.6642" type="number" step="0.0001"></div></div>
+        <button class="btn" onclick="searchGPS()">Rechercher</button>
+    </div>
+
+    <!-- LOADING -->
+    <div class="ld" id="ld"><div class="ld-track"><div class="ld-fill"></div></div><div class="ld-txt" id="ldTxt">Recherche...</div></div>
+
+    <!-- RESULT -->
+    <div class="result" id="res">
+        <div class="result-h">✅ Parcelle identifiée</div>
+        <div class="rr"><span class="l">Référence</span><span class="v" id="r-ref">—</span></div>
+        <div class="rr"><span class="l">Commune</span><span class="v" id="r-com">—</span></div>
+        <div class="rr"><span class="l">Surface</span><span class="v" id="r-surf">—</span></div>
+        <div class="rr"><span class="l">Section / N°</span><span class="v" id="r-sec">—</span></div>
+    </div>
+
+    <!-- LAYERS -->
+    <div class="layers-section">
+        <div class="layers-title">🗂️ Couches</div>
+        <div class="layer-row on" onclick="toggleLayer(this,'cadastre-wms')">
+            <div class="layer-check"></div><div class="layer-icon">📐</div>
+            <div class="layer-info"><div class="layer-name">Cadastre (parcelles)</div><div class="layer-desc">Parcellaire Express IGN — limites cadastrales</div></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer(this,'buildings-3d')">
+            <div class="layer-check"></div><div class="layer-icon">🏢</div>
+            <div class="layer-info"><div class="layer-name">Bâtiments 3D</div><div class="layer-desc">Emprise bâti extrudée — OpenStreetMap</div></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer(this,'ortho-ign')">
+            <div class="layer-check"></div><div class="layer-icon">🛰️</div>
+            <div class="layer-info"><div class="layer-name">Orthophotographie IGN</div><div class="layer-desc">Photo aérienne haute résolution — IGN</div></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer(this,'hillshade')">
+            <div class="layer-check"></div><div class="layer-icon">🏔️</div>
+            <div class="layer-info"><div class="layer-name">Ombrage relief (hillshade)</div><div class="layer-desc">Rendu ombré du MNT — visualisation des pentes</div></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer(this,'contours')">
+            <div class="layer-check"></div><div class="layer-icon">〰️</div>
+            <div class="layer-info"><div class="layer-name">Courbes de niveau</div><div class="layer-desc">Isohypses IGN — altimétrie</div></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer(this,'hydro')">
+            <div class="layer-check"></div><div class="layer-icon">💧</div>
+            <div class="layer-info"><div class="layer-name">Hydrographie</div><div class="layer-desc">Cours d'eau, rivières — IGN BD TOPO</div></div>
+        </div>
+        <div class="layer-row" onclick="toggleLayer(this,'zones-risk')">
+            <div class="layer-check"></div><div class="layer-icon">⚠️</div>
+            <div class="layer-info"><div class="layer-name">Plan de Prévention des Risques</div><div class="layer-desc">Zones inondables, sismiques — DDRM</div></div>
+        </div>
+    </div>
+
+    <!-- MAP STYLE -->
+    <div class="style-section">
+        <div class="layers-title">🎨 Style de fond</div>
+        <div class="style-grid">
+            <button class="style-btn active" data-style="topo" onclick="setStyle('topo',this)">🗻 Topo</button>
+            <button class="style-btn" data-style="satellite" onclick="setStyle('satellite',this)">🛰️ Satellite</button>
+            <button class="style-btn" data-style="dark" onclick="setStyle('dark',this)">🌙 Sombre</button>
+            <button class="style-btn" data-style="light" onclick="setStyle('light',this)">☀️ Clair</button>
+            <button class="style-btn" data-style="terrain" onclick="setStyle('terrain',this)">🏜️ Terrain</button>
+            <button class="style-btn" data-style="minimal" onclick="setStyle('minimal',this)">⬜ Neutre</button>
+        </div>
+    </div>
+
+    <!-- CAMERA -->
+    <div class="cam-section">
+        <div class="layers-title">📷 Caméra & Relief</div>
+        <div class="cam-row"><label>Exagération relief <span class="v" id="exV">1.5×</span></label><input type="range" id="exR" min="0" max="5" step="0.1" value="1.5"></div>
+        <div class="cam-row"><label>Inclinaison <span class="v" id="piV">50°</span></label><input type="range" id="piR" min="0" max="85" step="1" value="50"></div>
+        <div class="cam-row"><label>Direction lumière <span class="v" id="liV">210°</span></label><input type="range" id="liR" min="0" max="360" step="5" value="210"></div>
+        <div class="cam-btns">
+            <button class="cam-btn" onclick="go('s')">🌋 Soufrière</button>
+            <button class="cam-btn" onclick="go('p')">🏙️ PàP</button>
+            <button class="cam-btn" onclick="go('sa')">⛵ Saintes</button>
+            <button class="cam-btn" onclick="go('o')">🗺️ Global</button>
+        </div>
+    </div>
+
+    <!-- GENERATE TOPO PLAN BUTTON -->
+    <div style="padding:0 20px 0">
+        <button class="gen-topo-btn" id="genTopoBtn" onclick="openTopoPlan()">〰️ Générer le plan topographique (courbes de niveau)</button>
+    </div>
+
+    <!-- FREE TRIAL BANNER -->
+    <div id="freeTrial" style="display:none;padding:12px 20px;border-top:1px solid var(--bd);background:linear-gradient(135deg,rgba(0,212,170,.08),rgba(0,102,255,.05))">
+        <div style="font-size:12px;font-weight:700;color:var(--g);margin-bottom:6px">🎁 Essai gratuit — 1ère parcelle offerte</div>
+        <div style="font-size:11px;color:var(--dim);line-height:1.5;margin-bottom:8px">Téléchargez gratuitement le fichier GeoJSON + aperçu du terrain pour cette parcelle. Les formats pro (OBJ, DXF, IFC...) sont disponibles dans les offres payantes.</div>
+        <button class="btn" onclick="freeDownload()" style="background:linear-gradient(135deg,var(--g),#00a88a);font-size:12px;padding:10px">Télécharger l'aperçu gratuit (GeoJSON)</button>
+    </div>
+
+    <!-- PRICING -->
+    <div class="pricing" id="pricing">
+        <h3>Exporter les fichiers 3D</h3>
+
+        <label class="po" onclick="selOffer(this,'essentiel')"><input type="radio" name="of" value="essentiel"><div><div class="po-p">29€</div></div><div><div class="po-n">Essentiel</div><div class="po-d">OBJ (5m) + GeoJSON + rapport technique</div></div></label>
+
+        <label class="po sel" onclick="selOffer(this,'complet')"><input type="radio" name="of" value="complet" checked><div><div class="po-p">69€</div></div><div><div class="po-n">Complet ⭐</div><div class="po-d">OBJ LiDAR (2m) + DXF courbes + analyse pentes + PDF</div></div></label>
+
+        <label class="po" onclick="selOffer(this,'premium')"><input type="radio" name="of" value="premium"><div><div class="po-p">149€</div></div><div><div class="po-n">Premium</div><div class="po-d">+ IFC BIM + DWG bâtiments + SHP + KML + STL</div></div></label>
+
+        <label class="po" onclick="selOffer(this,'pro')"><input type="radio" name="of" value="pro"><div><div class="po-p">199€</div></div><div><div class="po-n">Pro /mois</div><div class="po-d">Illimité, tous formats, API REST, support dédié</div></div></label>
+
+        <button class="btn" id="orderBtn" onclick="order()">Commander — 69€</button>
+
+        <!-- FORMATS INCLUDED PER OFFER -->
+        <div id="formatDetail" style="margin-top:10px;padding:10px;border-radius:8px;background:var(--dk);border:1px solid var(--bd);font-size:10px;color:var(--dim);line-height:1.6">
+            <div id="fmtEssentiel" style="display:none">
+                <strong style="color:var(--tx)">Essentiel (19€) :</strong><br>
+                ✓ .OBJ mesh 3D (résolution 5m)<br>
+                ✓ .GeoJSON contour parcelle<br>
+                ✓ Rapport technique (MD)
+            </div>
+            <div id="fmtComplet">
+                <strong style="color:var(--tx)">Complet (49€) :</strong><br>
+                ✓ .OBJ mesh 3D (résolution 2-3m)<br>
+                ✓ .DXF courbes de niveau multi-layers (AutoCAD R12)<br>
+                ✓ .GeoJSON contour parcelle<br>
+                ✓ Rapport technique PDF avec recalage GPS
+            </div>
+            <div id="fmtPremium" style="display:none">
+                <strong style="color:var(--tx)">Premium (99€) — Formats techniques :</strong><br>
+                ✓ Tout le Complet +<br>
+                ✓ .IFC terrain BIM (Revit, ArchiCAD, Allplan, Vectorworks)<br>
+                ✓ .DWG terrain + bâtiments 3D (AutoCAD natif)<br>
+                ✓ .SHP Shapefile (ArcGIS, QGIS, MapInfo)<br>
+                ✓ .STL impression 3D / maquette<br>
+                ✓ .KML Google Earth<br>
+                ✓ Analyse pentes (carte colorimétrique)
+            </div>
+            <div id="fmtPro" style="display:none">
+                <strong style="color:var(--tx)">Pro Illimité (149€/mois) :</strong><br>
+                ✓ Tous les formats (OBJ, DXF, IFC, DWG, SHP, STL, KML, GeoJSON)<br>
+                ✓ Parcelles illimitées, résolution max (2m)<br>
+                ✓ Accès API REST pour intégration<br>
+                ✓ Livraison prioritaire (&lt;1h)<br>
+                ✓ Support téléphonique dédié
+            </div>
+        </div>
+    </div>
+
+    <!-- PRECISION -->
+    <div class="precision-info">
+        <strong style="color:var(--g)">Pourquoi Topo3D Antilles est plus précis :</strong><br>
+        <span style="font-size:9px;color:rgba(255,255,255,.5)">Les plateformes mondiales (CADMapper, DownloadContourLines) utilisent des données SRTM NASA à ±5-10m de précision. Topo3D utilise les données IGN françaises, 10 à 50 fois plus précises :</span><br><br>
+        • <strong>IGN RGE ALTI LiDAR HD</strong> : ±0.2m vertical, maille 1m — <span style="color:#00d4aa">Guadeloupe relevée mai 2024</span><br>
+        • <strong>IGN RGE ALTI photogrammétrie</strong> : ±1m vertical, maille 5m — reste du territoire<br>
+        • <strong>Cadastre PCI Express</strong> : ±0.5-2m planimétrique — mise à jour semestrielle<br>
+        • <strong>Bâtiments IGN BD TOPO + OSM</strong> : emprise + hauteurs<br><br>
+        <span style="font-size:9px;color:rgba(255,255,255,.35)">Dernier relevé LiDAR Guadeloupe : mai 2024 (mission SINTEGRA/IGN, 2.5 mois de survol)<br>
+        Programme LiDAR HD : couverture Antilles complète prévue fin 2026<br>
+        Licence : Etalab 2.0 (open data, réutilisation commerciale autorisée)</span><br>
+        <span style="color:rgba(255,255,255,.25)">Sources : <a href="https://geoservices.ign.fr/lidarhd" target="_blank" style="color:rgba(255,255,255,.3)">IGN LiDAR HD</a> · <a href="https://www.sintegra.fr/programme-lidar-hd-en-guadeloupe/" target="_blank" style="color:rgba(255,255,255,.3)">SINTEGRA</a> · <a href="https://apicarto.ign.fr" target="_blank" style="color:rgba(255,255,255,.3)">API Carto</a></span>
+    </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chat-bubble has-dot" id="chatBubble" onclick="toggleChat()" aria-label="Aide">💬</button>
+<div class="chat-panel" id="chatPanel">
+    <div class="chat-head">
+        <div class="chat-head-avatar">🏝️</div>
+        <div class="chat-head-info">
+            <div class="chat-head-name">Ti Konsey — Assistant Topo3D</div>
+            <div class="chat-head-status">● En ligne</div>
+        </div>
+        <button class="chat-close" onclick="toggleChat()">✕</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+        <div class="chat-msg bot">Bonjour ! 👋 Je suis Ti Konsey, l'assistant Topo3D Antilles. Comment puis-je vous aider ?</div>
+    </div>
+    <div class="chat-quick" id="chatQuick">
+        <button class="chat-qbtn" onclick="chatAsk('comment')">Comment ça marche ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('prix')">Combien ça coûte ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('precision')">Quelle précision ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('formats')">Quels formats ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('couverture')">Zones couvertes ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('geometre')">Vs géomètre ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('delai')">Délai livraison ?</button>
+        <button class="chat-qbtn" onclick="chatAsk('contact')">Contacter un humain</button>
+    </div>
+    <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" placeholder="Tapez votre question..." onkeydown="if(event.key==='Enter')chatSend()">
+        <button class="chat-send" onclick="chatSend()">→</button>
+    </div>
+</div>
+
+<!-- TOPO PLAN MODAL -->
+<div class="topo-modal" id="topoModal">
+    <div class="topo-inner">
+        <div class="topo-head">
+            <h2>〰️ Plan topographique — Courbes de niveau</h2>
+            <button class="topo-close" onclick="closeTopoPlan()">✕</button>
+        </div>
+        <div class="topo-controls">
+            <label>Intervalle :
+                <select id="topo-interval">
+                    <option value="0.5">0.5 m</option>
+                    <option value="1" selected>1 m</option>
+                    <option value="2">2 m</option>
+                    <option value="5">5 m</option>
+                    <option value="10">10 m</option>
+                </select>
+            </label>
+            <label>Résolution :
+                <select id="topo-res">
+                    <option value="2">2 m (haute)</option>
+                    <option value="3" selected>3 m</option>
+                    <option value="5">5 m</option>
+                    <option value="10">10 m (rapide)</option>
+                </select>
+            </label>
+            <label>Majeures tous les :
+                <select id="topo-major">
+                    <option value="5" selected>5 m</option>
+                    <option value="10">10 m</option>
+                    <option value="20">20 m</option>
+                </select>
+            </label>
+            <label>Style :
+                <select id="topo-style" onchange="redrawTopoPlan()">
+                    <option value="classic">Classique</option>
+                    <option value="dark">Sombre</option>
+                    <option value="topo">Topographique</option>
+                    <option value="print">Impression</option>
+                </select>
+            </label>
+            <label style="margin-left:auto">
+                <input type="checkbox" id="topo-show-parcelle" checked onchange="redrawTopoPlan()"> Contour parcelle
+            </label>
+            <label>
+                <input type="checkbox" id="topo-show-points" onchange="redrawTopoPlan()"> Points cotés
+            </label>
+            <label>
+                <input type="checkbox" id="topo-show-gradient" onchange="redrawTopoPlan()"> Fond coloré
+            </label>
+            <button class="btn" onclick="generateTopoPlan()" style="width:auto;padding:8px 18px;font-size:12px;margin:0">Générer</button>
+            <button class="topo-dl" onclick="downloadTopoPNG()">📥 PNG</button>
+            <button class="topo-dl" onclick="downloadTopoSVG()">📥 SVG</button>
+        </div>
+        <div class="topo-canvas-wrap" id="topoCanvasWrap">
+            <canvas id="topoCanvas" width="800" height="600"></canvas>
+            <div class="topo-legend" id="topoLegend" style="display:none">
+                <div style="font-weight:600;margin-bottom:4px;color:#00d4aa">Altitude</div>
+                <div class="tl-row"><div class="tl-swatch" style="background:#333;height:2px"></div><span>Courbe majeure</span></div>
+                <div class="tl-row"><div class="tl-swatch" style="background:#999;height:1px"></div><span>Courbe mineure</span></div>
+                <div class="tl-row" id="topoLegendRange"></div>
+            </div>
+        </div>
+        <div class="topo-status" id="topoStatus">
+            <span id="topoStatusText">Sélectionnez une parcelle puis cliquez "Générer"</span>
+            <span id="topoStatusMeta"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+// ─── STATE ───
+let selParc=null,popup=null,offer='complet',rotating=false,rotAnim=null;
+
+// ─── POINTS OF INTEREST ───
+const POI={s:{center:[-61.6642,16.0445],zoom:13.5,pitch:70,bearing:-30},p:{center:[-61.5353,16.2411],zoom:13,pitch:55,bearing:20},sa:{center:[-61.6175,15.8595],zoom:12.5,pitch:60,bearing:-45},o:{center:[-61.55,16.18],zoom:10.5,pitch:50,bearing:-10}};
+
+// ─── ISLANDS ───
+const ISLANDS={
+    guadeloupe:{center:[-61.55,16.18],zoom:10.5,pitch:50,bearing:-10},
+    martinique:{center:[-61.02,14.64],zoom:10.8,pitch:50,bearing:-10}
+};
+let currentIsland='guadeloupe';
+
+function flyIsland(island){
+    currentIsland=island;
+    const dest=ISLANDS[island];
+    map.flyTo({...dest,duration:2500,essential:true});
+    // Update tab buttons
+    document.getElementById('tabGua').style.background=island==='guadeloupe'?'#00d4aa':'transparent';
+    document.getElementById('tabGua').style.color=island==='guadeloupe'?'#000':'rgba(255,255,255,.5)';
+    document.getElementById('tabMart').style.background=island==='martinique'?'#00d4aa':'transparent';
+    document.getElementById('tabMart').style.color=island==='martinique'?'#000':'rgba(255,255,255,.5)';
+    clearSel();
+}
+
+// ─── STYLES ───
+const STYLES={
+    topo:{version:8,sources:{'osm':{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OSM'},'terrarium':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:15}},layers:[{id:'base',type:'raster',source:'osm'}],terrain:{source:'terrarium',exaggeration:1.5}},
+    satellite:{version:8,sources:{'sat':{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'© Esri'},'terrarium':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:15}},layers:[{id:'base',type:'raster',source:'sat'}],terrain:{source:'terrarium',exaggeration:1.5}},
+    dark:{version:8,sources:{'dark':{type:'raster',tiles:['https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png'],tileSize:256},'terrarium':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:15}},layers:[{id:'base',type:'raster',source:'dark'}],terrain:{source:'terrarium',exaggeration:1.5}},
+    light:{version:8,sources:{'light':{type:'raster',tiles:['https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png'],tileSize:256},'terrarium':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:15}},layers:[{id:'base',type:'raster',source:'light'}],terrain:{source:'terrarium',exaggeration:1.5}},
+    terrain:{version:8,sources:{'topo':{type:'raster',tiles:['https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}.png'],tileSize:256},'terrarium':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:15}},layers:[{id:'base',type:'raster',source:'topo'}],terrain:{source:'terrarium',exaggeration:1.5}},
+    minimal:{version:8,sources:{'min':{type:'raster',tiles:['https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.png'],tileSize:256},'terrarium':{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:15}},layers:[{id:'base',type:'raster',source:'min',paint:{'raster-saturation':-1,'raster-brightness-max':.7}}],terrain:{source:'terrarium',exaggeration:1.5}}
+};
+
+let currentStyle='topo';
+
+// ─── MAP ───
+const map=new maplibregl.Map({container:'map',style:STYLES.topo,center:[-61.55,16.18],zoom:10.5,pitch:50,bearing:-10,maxPitch:85,antialias:true});
+map.addControl(new maplibregl.NavigationControl({visualizePitch:true}));
+map.addControl(new maplibregl.ScaleControl({maxWidth:150}),'bottom-right');
+map.addControl(new maplibregl.FullscreenControl());
+
+// ─── LAYER STATE ───
+const layerState={'cadastre-wms':true,'buildings-3d':false,'ortho-ign':false,'hillshade':false,'contours':false,'hydro':false,'zones-risk':false};
+
+map.on('load',()=>{
+    addSky();
+    addParcelleSource();
+    addCustomLayers();
+});
+
+function addSky(){
+    if(!map.getLayer('sky'))map.addLayer({id:'sky',type:'sky',paint:{'sky-type':'atmosphere','sky-atmosphere-sun':[210,40],'sky-atmosphere-sun-intensity':5}});
+}
+
+function addParcelleSource(){
+    if(!map.getSource('parcelle')){
+        map.addSource('parcelle',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+        map.addLayer({id:'parc-fill',type:'fill',source:'parcelle',paint:{'fill-color':'#00d4aa','fill-opacity':0.2}});
+        map.addLayer({id:'parc-line',type:'line',source:'parcelle',paint:{'line-color':'#00d4aa','line-width':3}});
+        map.addLayer({id:'parc-dash',type:'line',source:'parcelle',paint:{'line-color':'#ffffff','line-width':1,'line-dasharray':[4,3],'line-opacity':0.4}});
+    }
+    if(!map.getSource('pin')){
+        map.addSource('pin',{type:'geojson',data:{type:'FeatureCollection',features:[]}});
+        map.addLayer({id:'pin-c',type:'circle',source:'pin',paint:{'circle-radius':7,'circle-color':'#ff4444','circle-stroke-width':2,'circle-stroke-color':'#fff'}});
+    }
+}
+
+function addCustomLayers(){
+    // Cadastre WMS IGN
+    if(!map.getSource('cadastre-src')){
+        map.addSource('cadastre-src',{type:'raster',tiles:['https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=CADASTRALPARCELS.PARCELLAIRE_EXPRESS&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES='],tileSize:256});
+        map.addLayer({id:'cadastre-wms',type:'raster',source:'cadastre-src',paint:{'raster-opacity':0.6}});
+    }
+
+    // Orthophoto IGN
+    if(!map.getSource('ortho-src')){
+        map.addSource('ortho-src',{type:'raster',tiles:['https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg&STYLE=normal'],tileSize:256,maxzoom:19});
+        map.addLayer({id:'ortho-ign',type:'raster',source:'ortho-src',paint:{'raster-opacity':0.85},layout:{visibility:'none'}});
+    }
+
+    // Hillshade
+    if(!map.getSource('hs-src')){
+        map.addSource('hs-src',{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256});
+        map.addLayer({id:'hillshade',type:'hillshade',source:'hs-src',paint:{'hillshade-shadow-color':'#000','hillshade-illumination-direction':210,'hillshade-exaggeration':0.5},layout:{visibility:'none'}});
+    }
+
+    // Courbes de niveau IGN
+    if(!map.getSource('contours-src')){
+        map.addSource('contours-src',{type:'raster',tiles:['https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=ELEVATION.CONTOUR.LINE&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES='],tileSize:256});
+        map.addLayer({id:'contours',type:'raster',source:'contours-src',paint:{'raster-opacity':0.7},layout:{visibility:'none'}});
+    }
+
+    // Hydrographie IGN
+    if(!map.getSource('hydro-src')){
+        map.addSource('hydro-src',{type:'raster',tiles:['https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=HYDROGRAPHY.HYDROGRAPHY&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES='],tileSize:256});
+        map.addLayer({id:'hydro',type:'raster',source:'hydro-src',paint:{'raster-opacity':0.6},layout:{visibility:'none'}});
+    }
+
+    // Zones de risques
+    if(!map.getSource('risk-src')){
+        map.addSource('risk-src',{type:'raster',tiles:['https://data.geopf.fr/wms-r/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=GEOGRAPHICALGRIDSYSTEMS.1702_PPR&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES='],tileSize:256});
+        map.addLayer({id:'zones-risk',type:'raster',source:'risk-src',paint:{'raster-opacity':0.5},layout:{visibility:'none'}});
+    }
+
+    // Bâtiments 3D — via OpenMapTiles vector tiles (PMTiles)
+    if(!map.getSource('buildings-src')){
+        map.addSource('buildings-src',{type:'vector',tiles:['https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf'],maxzoom:14});
+        map.addLayer({id:'buildings-3d',type:'fill-extrusion',source:'buildings-src','source-layer':'building',paint:{'fill-extrusion-color':['interpolate',['linear'],['get','render_height'],0,'#1a1a2a',10,'#2a2a3a',30,'#3a3a4a'],'fill-extrusion-height':['interpolate',['linear'],['zoom'],14,0,16,['get','render_height']],'fill-extrusion-base':['case',['has','render_min_height'],['get','render_min_height'],0],'fill-extrusion-opacity':0.7},layout:{visibility:'none'},minzoom:13});
+    }
+}
+
+// ─── LAYER TOGGLE ───
+function toggleLayer(el,layerId){
+    el.classList.toggle('on');
+    const on=el.classList.contains('on');
+    layerState[layerId]=on;
+    if(map.getLayer(layerId)){
+        map.setLayoutProperty(layerId,
+            'visibility',on?'visible':'none');
+    }
+}
+
+// ─── STYLE SWITCH ───
+function setStyle(name,btn){
+    currentStyle=name;
+    const ex=parseFloat(document.getElementById('exR').value);
+    const s=JSON.parse(JSON.stringify(STYLES[name]));
+    s.terrain.exaggeration=ex;
+    const c=map.getCenter(),z=map.getZoom(),p=map.getPitch(),b=map.getBearing();
+
+    document.querySelectorAll('.style-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+
+    map.setStyle(s);
+    map.once('style.load',()=>{
+        addSky();
+        addParcelleSource();
+        addCustomLayers();
+        // Restore layer visibility
+        Object.entries(layerState).forEach(([id,on])=>{
+            if(map.getLayer(id)) map.setLayoutProperty(id,'visibility',on?'visible':'none');
+        });
+        // Restore parcelle data
+        if(selParc) map.getSource('parcelle')?.setData({type:'FeatureCollection',features:[selParc]});
+    });
+}
+
+// ─── CAMERA CONTROLS ───
+document.getElementById('exR').oninput=e=>{const v=parseFloat(e.target.value);document.getElementById('exV').textContent=v.toFixed(1)+'×';map.setTerrain({source:'terrarium',exaggeration:v})};
+document.getElementById('piR').oninput=e=>{const v=parseInt(e.target.value);document.getElementById('piV').textContent=v+'°';map.easeTo({pitch:v,duration:200})};
+document.getElementById('liR').oninput=e=>{const v=parseInt(e.target.value);document.getElementById('liV').textContent=v+'°';if(map.getLayer('sky'))map.setPaintProperty('sky','sky-atmosphere-sun',[v,40]);if(map.getLayer('hillshade'))map.setPaintProperty('hillshade','hillshade-illumination-direction',v)};
+
+function go(k){map.flyTo({...POI[k],duration:2500,essential:true})}
+
+// ─── AUTO ROTATE ───
+function toggleRotate(){
+    rotating=!rotating;
+    document.getElementById('rotateBtn').classList.toggle('active',rotating);
+    if(rotating) rotateStep();
+    else if(rotAnim){cancelAnimationFrame(rotAnim);rotAnim=null}
+}
+function rotateStep(){
+    if(!rotating)return;
+    map.rotateTo(map.getBearing()+0.3,{duration:0});
+    rotAnim=requestAnimationFrame(rotateStep);
+}
+map.on('mousedown',()=>{if(rotating){rotating=false;document.getElementById('rotateBtn').classList.remove('active');if(rotAnim)cancelAnimationFrame(rotAnim)}});
+
+// ─── SIDEBAR ───
+function toggleSidebar(){
+    const sb=document.getElementById('sidebar');
+    sb.classList.toggle('collapsed');
+    document.getElementById('sbToggle').textContent=sb.classList.contains('collapsed')?'▶':'◀';
+    setTimeout(()=>map.resize(),400);
+}
+
+// ─── TABS ───
+function stab(id){
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.querySelector(`.tab[data-tab="${id}"]`).classList.add('active');
+    document.getElementById(`tab-${id}`).classList.add('active');
+}
+
+// ─── MOUSE ───
+map.on('mousemove',e=>{
+    const{lng,lat}=e.lngLat;
+    document.getElementById('mc').textContent=`${lat.toFixed(5)}°N, ${Math.abs(lng).toFixed(5)}°W`;
+    const h=map.queryTerrainElevation(e.lngLat);
+    document.getElementById('me').textContent=h!=null?`${Math.round(h)} m`:'—';
+});
+
+// ─── CLICK MAP ───
+map.on('click',async e=>{
+    const{lng,lat}=e.lngLat;
+    showLd('Recherche de la parcelle...');
+    document.getElementById('mapHint').classList.add('hidden');
+    map.getSource('pin')?.setData({type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]}}]});
+    try{
+        const r=await fetch('https://apicarto.ign.fr/api/cadastre/parcelle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({geom:{type:'Point',coordinates:[lng,lat]}})});
+        const d=await r.json();
+        if(d.features?.length>0) showParc(d.features[0]);
+        else{hideLd();alert('Aucune parcelle trouvée ici.')}
+    }catch(err){hideLd();alert('Erreur API cadastre.');console.error(err)}
+});
+
+// ─── SEARCH FUNCTIONS ───
+async function searchCad(){
+    const ci=document.getElementById('cad-com').value,se=document.getElementById('cad-sec').value.toUpperCase().trim(),nu=document.getElementById('cad-num').value.trim().padStart(4,'0');
+    if(!ci||!se||!nu){alert('Remplissez tous les champs.');return}
+    showLd('Recherche cadastrale...');
+    try{const r=await fetch(`https://apicarto.ign.fr/api/cadastre/parcelle?code_insee=${ci}&section=${se}&numero=${nu}`);const d=await r.json();if(d.features?.length>0)showParc(d.features[0]);else{hideLd();alert(`Parcelle ${se} ${nu} non trouvée.`)}}catch(e){hideLd();alert('Erreur réseau.')}
+}
+
+async function searchAddr(){
+    const a=document.getElementById('addr').value.trim();if(!a){alert('Saisissez une adresse.');return}
+    showLd('Géocodage...');
+    try{
+        const gr=await fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(a)}&limit=1`);const gd=await gr.json();
+        if(!gd.features?.length){hideLd();alert('Adresse introuvable.');return}
+        const[lng,lat]=gd.features[0].geometry.coordinates;
+        map.getSource('pin')?.setData({type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]}}]});
+        map.flyTo({center:[lng,lat],zoom:16,pitch:55,duration:2000});
+        showLd('Recherche parcelle...');
+        const r=await fetch('https://apicarto.ign.fr/api/cadastre/parcelle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({geom:{type:'Point',coordinates:[lng,lat]}})});
+        const d=await r.json();
+        if(d.features?.length>0)showParc(d.features[0]);else{hideLd();alert('Parcelle non trouvée.')}
+    }catch(e){hideLd();alert('Erreur réseau.')}
+}
+
+async function searchGPS(){
+    const lat=parseFloat(document.getElementById('gLat').value),lng=parseFloat(document.getElementById('gLng').value);
+    if(isNaN(lat)||isNaN(lng)){alert('Coordonnées invalides.');return}
+    showLd('Recherche...');
+    map.getSource('pin')?.setData({type:'FeatureCollection',features:[{type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]}}]});
+    map.flyTo({center:[lng,lat],zoom:16,pitch:55,duration:2000});
+    try{const r=await fetch('https://apicarto.ign.fr/api/cadastre/parcelle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({geom:{type:'Point',coordinates:[lng,lat]}})});const d=await r.json();if(d.features?.length>0)showParc(d.features[0]);else{hideLd();alert('Aucune parcelle trouvée.')}}catch(e){hideLd();alert('Erreur réseau.')}
+}
+
+// ─── DISPLAY ───
+function showParc(f){
+    selParc=f;const p=f.properties||{};
+    const sec=p.section||'?',num=p.numero||'?',com=p.nom_com||p.commune||'?',surf=p.contenance||p.surfaceParcelle||'?',ref=`${sec} ${num}`;
+    map.getSource('parcelle')?.setData({type:'FeatureCollection',features:[f]});
+
+    let ac=[];
+    if(f.geometry.type==='Polygon')ac=f.geometry.coordinates[0];
+    else if(f.geometry.type==='MultiPolygon')f.geometry.coordinates.forEach(p=>ac.push(...p[0]));
+    if(ac.length){const b=ac.reduce((b,c)=>b.extend(c),new maplibregl.LngLatBounds(ac[0],ac[0]));map.fitBounds(b,{padding:100,pitch:55,duration:2000})}
+
+    if(popup)popup.remove();
+    const ct=ac.length?[ac.reduce((s,c)=>s+c[0],0)/ac.length,ac.reduce((s,c)=>s+c[1],0)/ac.length]:[0,0];
+    popup=new maplibregl.Popup({closeOnClick:false,offset:10}).setLngLat(ct).setHTML(`<strong style="color:#00d4aa">${ref}</strong><br>${com}<br>${surf} m²`).addTo(map);
+
+    document.getElementById('carte-sel').style.display='block';
+    document.getElementById('c-ref').textContent=ref;
+    document.getElementById('c-com').textContent=com;
+    document.getElementById('c-surf').textContent=`${surf} m²`;
+
+    document.getElementById('r-ref').textContent=`971 ${ref}`;
+    document.getElementById('r-com').textContent=com;
+    document.getElementById('r-surf').textContent=`${surf} m²`;
+    document.getElementById('r-sec').textContent=`${sec} / ${num}`;
+    document.getElementById('res').classList.add('active');
+    document.getElementById('pricing').classList.add('active');
+    document.getElementById('genTopoBtn').classList.add('visible');
+    document.getElementById('freeTrial').style.display='block';
+    topoData = null;
+    hideLd();
+}
+
+function clearSel(){
+    selParc=null;
+    map.getSource('parcelle')?.setData({type:'FeatureCollection',features:[]});
+    map.getSource('pin')?.setData({type:'FeatureCollection',features:[]});
+    if(popup){popup.remove();popup=null}
+    document.getElementById('carte-sel').style.display='none';
+    document.getElementById('res').classList.remove('active');
+    document.getElementById('pricing').classList.remove('active');
+    document.getElementById('genTopoBtn').classList.remove('visible');
+    document.getElementById('freeTrial').style.display='none';
+    document.getElementById('mapHint').classList.remove('hidden');
+    topoData = null;
+}
+
+// ─── PRICING ───
+function selOffer(el,o){
+    offer=o;document.querySelectorAll('.po').forEach(p=>p.classList.remove('sel'));el.classList.add('sel');
+    const pr={essentiel:'29€',complet:'69€',premium:'149€',pro:'199€/mois'};
+    const labels={essentiel:'Commander — 29€',complet:'Commander — 69€',premium:'Commander — 149€',pro:'S\'inscrire — 199€/mois'};
+    document.getElementById('orderBtn').textContent=labels[o];
+    // Show format detail
+    ['fmtEssentiel','fmtComplet','fmtPremium','fmtPro'].forEach(id=>document.getElementById(id).style.display='none');
+    const fmtMap={essentiel:'fmtEssentiel',complet:'fmtComplet',premium:'fmtPremium',pro:'fmtPro'};
+    document.getElementById(fmtMap[o]).style.display='block';
+}
+function order(){
+    if(!selParc){alert('Sélectionnez une parcelle.');return}
+    const p=selParc.properties||{},ref=`${p.section||'?'} ${p.numero||'?'}`,com=p.nom_com||p.commune||'?';
+    const pr={essentiel:'29€',complet:'69€',premium:'149€',pro:'199€/mois'};
+    const nm={essentiel:'Essentiel',complet:'Complet',premium:'Premium (IFC+DWG+SHP)',pro:'Pro Illimité'};
+    const fmts={
+        essentiel:'OBJ (5m) + GeoJSON + rapport MD',
+        complet:'OBJ (2m) + DXF courbes + GeoJSON + rapport PDF',
+        premium:'OBJ + DXF + IFC (Revit) + DWG (bâtiments) + SHP + STL + KML + rapport PDF + analyse pentes',
+        pro:'ABONNEMENT MENSUEL — Tous formats illimités + API REST'
+    };
+    const s=encodeURIComponent(`${offer==='pro'?'Inscription':'Commande'} Topo3D ${nm[offer]} — ${ref} ${com}`);
+    const b=encodeURIComponent(
+        `Bonjour,\n\n${offer==='pro'?'Je souhaite m\'inscrire à l\'abonnement':'Commande Topo3D'} :\n\n` +
+        `Offre : ${nm[offer]} (${pr[offer]})\n` +
+        `Parcelle : ${ref}\n` +
+        `Commune : ${com}\n` +
+        `Surface : ${p.contenance||'?'} m²\n` +
+        `Formats demandés : ${fmts[offer]}\n\n` +
+        (offer==='pro'?'Je souhaite recevoir mes accès API et commencer l\'abonnement.\n\n':'') +
+        `Merci`
+    );
+    window.open(`mailto:contact@immoservices971.com?subject=${s}&body=${b}`,'_self');
+}
+// ─── FREE TRIAL ───
+function freeDownload(){
+    if(!selParc){alert('Sélectionnez une parcelle.');return}
+    const blob=new Blob([JSON.stringify(selParc,null,2)],{type:'application/geo+json'});
+    const a=document.createElement('a');
+    a.download=`parcelle_${selParc.properties?.section||'X'}_${selParc.properties?.numero||'0'}.geojson`;
+    a.href=URL.createObjectURL(blob);a.click();URL.revokeObjectURL(a.href);
+}
+
+function showLd(t){document.getElementById('ld').classList.add('on');document.getElementById('ldTxt').textContent=t||'Recherche...'}
+function hideLd(){document.getElementById('ld').classList.remove('on')}
+
+// ─── KEYBOARD ───
+document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){if(document.getElementById('topoModal').classList.contains('open')){closeTopoPlan()}else{clearSel()}}
+    if(e.key==='Enter'){const t=document.querySelector('.tab.active')?.dataset.tab;if(t==='cadastre')searchCad();else if(t==='adresse')searchAddr();else if(t==='gps')searchGPS()}
+});
+
+// ═══════════════════════════════════════════════
+// TOPO PLAN GENERATOR — Courbes de niveau
+// ═══════════════════════════════════════════════
+let topoData = null; // {grid, xi, yi, zMin, zMax, bbox, parcCoords}
+
+function openTopoPlan() {
+    document.getElementById('topoModal').classList.add('open');
+    if (selParc && !topoData) {
+        document.getElementById('topoStatusText').textContent = 'Prêt à générer. Cliquez "Générer" pour collecter les données d\'altitude.';
+    }
+}
+function closeTopoPlan() { document.getElementById('topoModal').classList.remove('open'); }
+
+async function generateTopoPlan() {
+    if (!selParc) { alert('Sélectionnez d\'abord une parcelle.'); return; }
+
+    const res = parseFloat(document.getElementById('topo-res').value);
+    const geom = selParc.geometry;
+    let allCoords = [];
+    if (geom.type === 'Polygon') allCoords = geom.coordinates[0];
+    else if (geom.type === 'MultiPolygon') geom.coordinates.forEach(p => allCoords.push(...p[0]));
+
+    const lngs = allCoords.map(c => c[0]), lats = allCoords.map(c => c[1]);
+    const bufDeg = 20 / 111000;
+    const bbox = {
+        minLng: Math.min(...lngs) - bufDeg,
+        maxLng: Math.max(...lngs) + bufDeg,
+        minLat: Math.min(...lats) - bufDeg,
+        maxLat: Math.max(...lats) + bufDeg
+    };
+
+    const mPerDegLat = 111000;
+    const mPerDegLng = 111000 * Math.cos((bbox.minLat + bbox.maxLat) / 2 * Math.PI / 180);
+    const latStep = res / mPerDegLat;
+    const lngStep = res / mPerDegLng;
+
+    const gridLats = [], gridLngs = [];
+    for (let lat = bbox.minLat; lat <= bbox.maxLat; lat += latStep)
+        for (let lng = bbox.minLng; lng <= bbox.maxLng; lng += lngStep) {
+            gridLats.push(lat); gridLngs.push(lng);
+        }
+
+    const nCols = Math.ceil((bbox.maxLng - bbox.minLng) / lngStep);
+    const nRows = Math.ceil((bbox.maxLat - bbox.minLat) / latStep);
+    const total = gridLats.length;
+
+    document.getElementById('topoStatusText').textContent = `Collecte de ${total} points d'altitude...`;
+    document.getElementById('topoStatusMeta').textContent = `Grille ${nCols}×${nRows} — pas ${res}m`;
+
+    // Fetch elevation by batches of 150
+    const elevations = new Array(total).fill(null);
+    const batchSize = 150;
+    for (let i = 0; i < total; i += batchSize) {
+        const bLats = gridLats.slice(i, i + batchSize);
+        const bLngs = gridLngs.slice(i, i + batchSize);
+        const lonStr = bLngs.map(x => x.toFixed(6)).join('|');
+        const latStr = bLats.map(x => x.toFixed(6)).join('|');
+
+        try {
+            const r = await fetch(`https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?lon=${lonStr}&lat=${latStr}&resource=ign_rge_alti_wld&zonly=false`);
+            const d = await r.json();
+            if (d.elevations) d.elevations.forEach((pt, j) => { elevations[i + j] = (pt.z === -99999 || pt.z === -9999) ? null : pt.z; });
+        } catch (e) { console.error('Elevation batch error', e); }
+
+        const progress = Math.min(i + batchSize, total);
+        document.getElementById('topoStatusText').textContent = `Collecte altitude : ${progress}/${total} (${Math.round(100 * progress / total)}%)`;
+        await new Promise(r => setTimeout(r, 100));
+    }
+
+    // Build 2D grid for contouring
+    const grid = [];
+    let zMin = Infinity, zMax = -Infinity;
+    for (let r = 0; r < nRows; r++) {
+        grid[r] = [];
+        for (let c = 0; c < nCols; c++) {
+            const idx = r * nCols + c;
+            const z = idx < elevations.length ? elevations[idx] : null;
+            grid[r][c] = z;
+            if (z !== null) { if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
+        }
+    }
+
+    // Interpolate nulls with neighbor average
+    for (let r = 0; r < nRows; r++)
+        for (let c = 0; c < nCols; c++)
+            if (grid[r][c] === null) {
+                let sum = 0, cnt = 0;
+                for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < nRows && nc >= 0 && nc < nCols && grid[nr][nc] !== null) { sum += grid[nr][nc]; cnt++; }
+                }
+                grid[r][c] = cnt > 0 ? sum / cnt : zMin;
+            }
+
+    // Convert parcelle coords to local
+    const parcLocal = allCoords.map(c => [
+        (c[0] - bbox.minLng) * mPerDegLng,
+        (c[1] - bbox.minLat) * mPerDegLat
+    ]);
+
+    topoData = { grid, nCols, nRows, zMin, zMax, bbox, mPerDegLat, mPerDegLng, parcLocal, res };
+    document.getElementById('topoStatusText').textContent = `Terminé — Alt. ${zMin.toFixed(1)}m à ${zMax.toFixed(1)}m — Δ${(zMax - zMin).toFixed(1)}m`;
+    redrawTopoPlan();
+}
+
+function redrawTopoPlan() {
+    if (!topoData) return;
+    const { grid, nCols, nRows, zMin, zMax, bbox, mPerDegLng, mPerDegLat, parcLocal, res } = topoData;
+    const interval = parseFloat(document.getElementById('topo-interval').value);
+    const majorEvery = parseFloat(document.getElementById('topo-major').value);
+    const style = document.getElementById('topo-style').value;
+    const showParc = document.getElementById('topo-show-parcelle').checked;
+    const showPts = document.getElementById('topo-show-points').checked;
+    const showGrad = document.getElementById('topo-show-gradient').checked;
+
+    const widthM = (bbox.maxLng - bbox.minLng) * mPerDegLng;
+    const heightM = (bbox.maxLat - bbox.minLat) * mPerDegLat;
+    const scale = Math.min(800 / widthM, 600 / heightM) * 0.9;
+    const cw = Math.round(widthM * scale) + 40;
+    const ch = Math.round(heightM * scale) + 40;
+
+    const canvas = document.getElementById('topoCanvas');
+    canvas.width = cw; canvas.height = ch;
+    const ctx = canvas.getContext('2d');
+
+    // Theme
+    const themes = {
+        classic: { bg: '#FFFFFF', minor: '#8B7355', major: '#4A3728', label: '#3A2A1A', parcel: '#0066FF', pts: '#333', gridCol: '#E8E0D8' },
+        dark: { bg: '#0A0A14', minor: '#4A6A5A', major: '#00D4AA', label: '#00D4AA', parcel: '#0066FF', pts: '#888', gridCol: '#1A1A2A' },
+        topo: { bg: '#F5F0E8', minor: '#C4956A', major: '#8B5E3C', label: '#5C3A1E', parcel: '#FF0000', pts: '#555', gridCol: '#E8DDD0' },
+        print: { bg: '#FFFFFF', minor: '#AAAAAA', major: '#333333', label: '#000000', parcel: '#000000', pts: '#555', gridCol: '#F0F0F0' },
+    };
+    const th = themes[style] || themes.classic;
+
+    ctx.fillStyle = th.bg; ctx.fillRect(0, 0, cw, ch);
+
+    const ox = 20, oy = 20;
+    const toX = c => ox + c * (res * scale);
+    const toY = r => ch - oy - r * (res * scale);
+
+    // Gradient background
+    if (showGrad) {
+        for (let r = 0; r < nRows - 1; r++)
+            for (let c = 0; c < nCols - 1; c++) {
+                const z = grid[r][c];
+                if (z === null) continue;
+                const t = (z - zMin) / (zMax - zMin || 1);
+                const hue = 120 - t * 120; // green to red
+                ctx.fillStyle = `hsla(${hue},50%,50%,0.15)`;
+                ctx.fillRect(toX(c), toY(r + 1), res * scale + 1, res * scale + 1);
+            }
+    }
+
+    // Marching squares contour extraction
+    function getContourPaths(level) {
+        const paths = [];
+        for (let r = 0; r < nRows - 1; r++) {
+            for (let c = 0; c < nCols - 1; c++) {
+                const z00 = grid[r][c], z10 = grid[r][c + 1], z01 = grid[r + 1][c], z11 = grid[r + 1][c + 1];
+                if (z00 === null || z10 === null || z01 === null || z11 === null) continue;
+
+                const idx = ((z00 >= level) ? 8 : 0) | ((z10 >= level) ? 4 : 0) | ((z11 >= level) ? 2 : 0) | ((z01 >= level) ? 1 : 0);
+                if (idx === 0 || idx === 15) continue;
+
+                const interp = (za, zb) => (za === zb) ? 0.5 : (level - za) / (zb - za);
+
+                const top = { x: toX(c + interp(z00, z10)), y: toY(r) };
+                const right = { x: toX(c + 1), y: toY(r + interp(z10, z11)) };
+                const bottom = { x: toX(c + interp(z01, z11)), y: toY(r + 1) };
+                const left = { x: toX(c), y: toY(r + interp(z00, z01)) };
+
+                const segments = [];
+                switch (idx) {
+                    case 1: case 14: segments.push([left, bottom]); break;
+                    case 2: case 13: segments.push([bottom, right]); break;
+                    case 3: case 12: segments.push([left, right]); break;
+                    case 4: case 11: segments.push([top, right]); break;
+                    case 5: segments.push([left, top], [bottom, right]); break;
+                    case 6: case 9: segments.push([top, bottom]); break;
+                    case 7: case 8: segments.push([left, top]); break;
+                    case 10: segments.push([left, bottom], [top, right]); break;
+                }
+                segments.forEach(s => paths.push(s));
+            }
+        }
+        return paths;
+    }
+
+    // Draw contour lines
+    const levels = [];
+    for (let z = Math.ceil(zMin / interval) * interval; z <= zMax; z += interval) levels.push(z);
+
+    levels.forEach(level => {
+        const isMajor = Math.abs(level % majorEvery) < 0.01 || Math.abs(level % majorEvery - majorEvery) < 0.01;
+        const segs = getContourPaths(level);
+
+        ctx.strokeStyle = isMajor ? th.major : th.minor;
+        ctx.lineWidth = isMajor ? 1.5 : 0.6;
+        ctx.beginPath();
+        segs.forEach(([a, b]) => { ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); });
+        ctx.stroke();
+
+        // Labels on major contours
+        if (isMajor && segs.length > 0) {
+            const mid = segs[Math.floor(segs.length / 3)];
+            if (mid) {
+                const mx = (mid[0].x + mid[1].x) / 2, my = (mid[0].y + mid[1].y) / 2;
+                ctx.fillStyle = th.bg;
+                ctx.fillRect(mx - 14, my - 6, 28, 12);
+                ctx.fillStyle = th.label;
+                ctx.font = `bold 9px Arial`;
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(`${level.toFixed(0)}`, mx, my);
+            }
+        }
+    });
+
+    // Parcelle outline
+    if (showParc && parcLocal.length > 1) {
+        ctx.strokeStyle = th.parcel;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 3]);
+        ctx.beginPath();
+        parcLocal.forEach((p, i) => {
+            const px = ox + p[0] * scale, py = ch - oy - p[1] * scale;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+        });
+        ctx.closePath(); ctx.stroke();
+        ctx.setLineDash([]);
+    }
+
+    // Points cotés
+    if (showPts) {
+        ctx.fillStyle = th.pts;
+        ctx.font = '8px Arial';
+        const step = Math.max(1, Math.floor(nRows / 12));
+        for (let r = 0; r < nRows; r += step)
+            for (let c = 0; c < nCols; c += step) {
+                if (grid[r][c] === null) continue;
+                const px = toX(c), py = toY(r);
+                ctx.beginPath(); ctx.arc(px, py, 2, 0, Math.PI * 2); ctx.fill();
+                ctx.fillText(grid[r][c].toFixed(1), px + 4, py - 3);
+            }
+    }
+
+    // Title block
+    const p = selParc?.properties || {};
+    ctx.fillStyle = th.label; ctx.font = 'bold 11px Arial'; ctx.textAlign = 'left';
+    ctx.fillText(`Plan topographique — ${p.section||''} ${p.numero||''} — ${p.nom_com||p.commune||''}`, ox, 14);
+    ctx.font = '9px Arial'; ctx.fillStyle = th.minor;
+    ctx.fillText(`Alt. ${zMin.toFixed(1)}m → ${zMax.toFixed(1)}m | Intervalle ${interval}m | Résolution ${res}m | Source: IGN RGE ALTI`, ox, ch - 6);
+
+    // Scale bar
+    const barLenM = widthM > 200 ? 100 : widthM > 50 ? 20 : 10;
+    const barLenPx = barLenM * scale;
+    const bx = cw - ox - barLenPx, by = ch - 16;
+    ctx.strokeStyle = th.major; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + barLenPx, by); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx, by - 4); ctx.lineTo(bx, by + 4); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx + barLenPx, by - 4); ctx.lineTo(bx + barLenPx, by + 4); ctx.stroke();
+    ctx.fillStyle = th.label; ctx.font = 'bold 9px Arial'; ctx.textAlign = 'center';
+    ctx.fillText(`${barLenM} m`, bx + barLenPx / 2, by - 6);
+
+    // North arrow
+    ctx.fillStyle = th.label; ctx.font = 'bold 12px Arial'; ctx.textAlign = 'center';
+    ctx.fillText('N', cw - 20, 18);
+    ctx.beginPath(); ctx.moveTo(cw - 20, 22); ctx.lineTo(cw - 23, 32); ctx.lineTo(cw - 17, 32); ctx.closePath(); ctx.fill();
+
+    // Show legend
+    document.getElementById('topoLegend').style.display = 'block';
+    document.getElementById('topoLegendRange').innerHTML = `<span style="color:var(--dim)">${zMin.toFixed(1)}m — ${zMax.toFixed(1)}m</span>`;
+}
+
+function downloadTopoPNG() {
+    if (!topoData) { alert('Générez d\'abord le plan.'); return; }
+    const canvas = document.getElementById('topoCanvas');
+    const a = document.createElement('a');
+    a.download = `topo_plan_${selParc?.properties?.section||'X'}_${selParc?.properties?.numero||'0'}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+}
+
+function downloadTopoSVG() {
+    if (!topoData) { alert('Générez d\'abord le plan.'); return; }
+    // Convert canvas to SVG-like image (embedded in SVG for compatibility)
+    const canvas = document.getElementById('topoCanvas');
+    const dataUrl = canvas.toDataURL('image/png');
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}">
+  <title>Plan topographique — ${selParc?.properties?.section||''} ${selParc?.properties?.numero||''}</title>
+  <image width="${canvas.width}" height="${canvas.height}" xlink:href="${dataUrl}"/>
+</svg>`;
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.download = `topo_plan_${selParc?.properties?.section||'X'}_${selParc?.properties?.numero||'0'}.svg`;
+    a.href = URL.createObjectURL(blob);
+    a.click();
+}
+
+// ═══════════════════════════════════════════════
+// CHATBOT — Ti Konsey
+// ═══════════════════════════════════════════════
+const CHAT_KB = {
+    comment: {
+        q: "Comment ça marche ?",
+        a: "C'est simple ! <b>3 étapes :</b><br>1️⃣ Sélectionnez votre parcelle (clic sur la carte, adresse, ou référence cadastrale)<br>2️⃣ Choisissez votre offre (Essentiel 29€, Complet 69€, ou Premium 149€)<br>3️⃣ Recevez vos fichiers 3D par email (OBJ + DXF + rapport)<br><br>Le tout en moins de 24h !"
+    },
+    prix: {
+        q: "Combien ça coûte ?",
+        a: "Nos 4 offres :<br><br>🟢 <b>Essentiel — 29€</b><br>Mesh OBJ (5m) + GeoJSON + rapport<br><br>⭐ <b>Complet — 69€</b> (le + populaire)<br>OBJ LiDAR (2m) + DXF courbes de niveau + analyse pentes + rapport PDF<br><br>🔷 <b>Premium — 149€</b><br>Tous les formats : IFC (Revit), DWG (bâtiments), SHP, STL, KML<br><br>💎 <b>Pro — 199€/mois</b><br>Illimité + API REST + support dédié<br><br>À comparer : un géomètre = 800-3000€ + 3-6 semaines d'attente."
+    },
+    precision: {
+        q: "Quelle est la précision ?",
+        a: "Nous utilisons les données <b>IGN RGE ALTI</b>, la référence nationale :<br><br>📐 <b>LiDAR HD : ±0.2m</b> (maille 1m) — zones couvertes<br>📐 <b>Photogrammétrie : ±1m</b> (maille 5m) — reste du territoire<br><br>C'est <b>10 à 50x plus précis</b> que les plateformes mondiales (CADMapper, etc.) qui utilisent SRTM NASA à ±5-10m.<br><br>Dernier relevé LiDAR Guadeloupe : <b>mai 2024</b> (mission SINTEGRA/IGN)."
+    },
+    formats: {
+        q: "Quels formats de fichiers ?",
+        a: "Selon votre offre :<br><br><b>Essentiel :</b> .OBJ + .GeoJSON<br><b>Complet :</b> + .DXF (courbes de niveau AutoCAD)<br><b>Premium :</b> + .IFC (Revit/ArchiCAD) + .DWG (bâtiments) + .SHP (SIG) + .STL (impression 3D) + .KML (Google Earth)<br><br>Compatible : <b>SketchUp, AutoCAD, Revit, ArchiCAD, Blender, Rhino, QGIS, Allplan</b>"
+    },
+    couverture: {
+        q: "Quelles zones sont couvertes ?",
+        a: "Toutes les Antilles françaises :<br><br>🦋 <b>Guadeloupe</b> — 32 communes (971)<br>🏝️ <b>Martinique</b> — 34 communes (972)<br><br>Y compris les îles du Sud (Les Saintes, Marie-Galante, La Désirade).<br><br>Le service fonctionne aussi sur toute la <b>France métropolitaine et les DOM-TOM</b> couverts par l'IGN."
+    },
+    geometre: {
+        q: "Est-ce que ça remplace un géomètre ?",
+        a: "Pour les phases <b>esquisse et avant-projet</b> : <b>oui</b>, c'est suffisant et vous économisez 700-2500€ + 3-6 semaines.<br><br>Pour le <b>permis de construire définitif</b> : un relevé géomètre certifié reste recommandé pour les détails fins (réseaux, limites exactes).<br><br>Les deux sont <b>complémentaires</b> — Topo3D vous fait gagner du temps en amont, le géomètre intervient ensuite si nécessaire."
+    },
+    delai: {
+        q: "Quel est le délai de livraison ?",
+        a: "La génération est <b>quasi-instantanée</b> (moins d'1 minute).<br><br>⚡ <b>Abonnés Pro :</b> Livraison immédiate (API)<br>⭐ <b>Complet / Premium :</b> Sous 12h (vérification qualité)<br>🟢 <b>Essentiel :</b> Sous 24h<br><br>En pratique, la plupart des commandes sont livrées en <b>quelques heures</b>."
+    },
+    contact: {
+        q: "Contacter un humain",
+        a: "Bien sûr ! Vous pouvez nous joindre :<br><br>📧 <b>Email :</b> <a href='mailto:contact@immoservices971.com'>contact@immoservices971.com</a><br><br>Réponse sous 24h ouvrées.<br><br>Topo3D est un service de <b>KCI — Karukera Conseil Immobilier</b>, spécialiste de l'analyse immobilière aux Antilles. <a href='https://karukera-conseil.com' target='_blank'>En savoir plus →</a>"
+    },
+    kci: {
+        q: "KCI",
+        a: "<b>KCI (Karukera Conseil Immobilier)</b> est le cabinet derrière Topo3D Antilles. Nous proposons aussi des <b>analyses de faisabilité immobilière</b> en Guadeloupe et Martinique :<br><br>📊 Rapports de pré-étude (score d'intérêt, rentabilité, risques)<br>🏗️ Analyse PLU / zonage / constructibilité<br><br><a href='https://karukera-conseil.com' target='_blank'>Découvrir KCI →</a>"
+    },
+    bonjour: {
+        q: "Bonjour",
+        a: "Bonjour ! 😊 Bienvenue sur Topo3D Antilles. Comment puis-je vous aider ? Vous pouvez me poser une question ou utiliser les boutons ci-dessous."
+    },
+};
+
+// Keyword matching for free-text input
+const CHAT_KEYWORDS = {
+    'prix|tarif|combien|coût|cout|cher|offre|abonnement|payer': 'prix',
+    'comment|marche|fonctionne|utiliser|étape|etape': 'comment',
+    'précis|precision|qualité|qualite|lidar|fiable|erreur': 'precision',
+    'format|obj|dxf|ifc|dwg|shp|stl|sketchup|autocad|revit|blender': 'formats',
+    'zone|couvert|guadeloupe|martinique|commune|île|ile|antilles': 'couverture',
+    'géomètre|geometre|remplace|topograph|levé|leve|relevé|releve': 'geometre',
+    'délai|delai|livr|rapide|temps|combien de temps|quand': 'delai',
+    'contact|humain|appeler|téléphone|telephone|email|mail|aide': 'contact',
+    'kci|karukera|conseil|immobilier|faisabilité|faisabilite': 'kci',
+    'bonjour|salut|hello|hey|coucou|bonsoir': 'bonjour',
+};
+
+function toggleChat() {
+    const panel = document.getElementById('chatPanel');
+    const bubble = document.getElementById('chatBubble');
+    panel.classList.toggle('open');
+    bubble.classList.remove('has-dot');
+}
+
+function addChatMsg(text, isBot) {
+    const body = document.getElementById('chatBody');
+    const msg = document.createElement('div');
+    msg.className = 'chat-msg ' + (isBot ? 'bot' : 'user');
+    msg.innerHTML = text;
+    body.appendChild(msg);
+    body.scrollTop = body.scrollHeight;
+}
+
+function chatAsk(key) {
+    const entry = CHAT_KB[key];
+    if (!entry) return;
+    addChatMsg(entry.q, false);
+    setTimeout(() => addChatMsg(entry.a, true), 400);
+}
+
+function chatSend() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    addChatMsg(text, false);
+
+    // Match keywords
+    const lower = text.toLowerCase();
+    let matched = null;
+    for (const [pattern, key] of Object.entries(CHAT_KEYWORDS)) {
+        if (new RegExp(pattern, 'i').test(lower)) {
+            matched = key;
+            break;
+        }
+    }
+
+    setTimeout(() => {
+        if (matched && CHAT_KB[matched]) {
+            addChatMsg(CHAT_KB[matched].a, true);
+        } else {
+            addChatMsg("Je n'ai pas de réponse précise à cette question. 🤔<br><br>Vous pouvez :<br>• Utiliser les boutons ci-dessous pour les questions fréquentes<br>• Nous contacter directement : <a href='mailto:contact@immoservices971.com'>contact@immoservices971.com</a>", true);
+        }
+    }, 500);
+}
+
+// Auto-open chat after 15 seconds
+setTimeout(() => {
+    const bubble = document.getElementById('chatBubble');
+    if (bubble && !document.getElementById('chatPanel').classList.contains('open')) {
+        bubble.classList.add('has-dot');
+    }
+}, 15000);
+</script>
+</body>
+</html>

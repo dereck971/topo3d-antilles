@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import crypto from 'crypto';
 
 const ALLOWED_ORIGINS = ['https://topo3d-antilles.com', 'https://www.topo3d-antilles.com'];
@@ -87,172 +87,111 @@ function applySecureCORS(res, req) {
   }
 }
 
+// Sanitize text for WinAnsi encoding (pdf-lib standard fonts)
+function pdfSafe(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/\u2026/g, '...')
+    .replace(/\u2013/g, '-')
+    .replace(/\u2014/g, '--')
+    .replace(/[^\x00-\xFF]/g, ''); // strip anything outside Latin-1
+}
+
 async function generateFicheParcellePDF(data) {
   const pdfDoc = await PDFDocument.create();
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const primaryColor = rgb(0 / 255, 200 / 255, 150 / 255); // #00c896
   const textColor = rgb(50 / 255, 50 / 255, 50 / 255);
-  const lightGray = rgb(240 / 255, 240 / 255, 240 / 255);
 
   let page = pdfDoc.addPage([595, 842]); // A4
   const { width, height } = page.getSize();
   let yPosition = height - 50;
 
   // Title
-  page.drawText('FICHE PARCELLE RÉGLEMENTAIRE', {
-    x: 50,
-    y: yPosition,
-    size: 24,
-    color: primaryColor,
-    maxWidth: width - 100
+  page.drawText('FICHE PARCELLE REGLEMENTAIRE', {
+    x: 50, y: yPosition, size: 22, font: boldFont, color: primaryColor
   });
-  yPosition -= 40;
+  yPosition -= 35;
 
   // Separator
   page.drawLine({
     start: { x: 50, y: yPosition },
     end: { x: width - 50, y: yPosition },
-    color: primaryColor,
-    thickness: 2
+    color: primaryColor, thickness: 2
   });
   yPosition -= 20;
 
   // Logo and brand
-  page.drawText('Topo3D-Antilles 🏔️', {
-    x: 50,
-    y: yPosition,
-    size: 12,
-    color: textColor
-  });
+  page.drawText('Topo3D-Antilles', { x: 50, y: yPosition, size: 12, font: boldFont, color: textColor });
   yPosition -= 30;
+
+  // Helper to draw a line of text
+  const drawLine = (text, opts = {}) => {
+    const { x = 70, size = 10, f = font, color = textColor } = opts;
+    page.drawText(pdfSafe(text), { x, y: yPosition, size, font: f, color });
+    yPosition -= (opts.spacing || 18);
+  };
 
   // Section 1: Localisation
   const result1 = checkPageBreak(pdfDoc, page, yPosition, 200);
-  page = result1.page;
-  yPosition = result1.yPosition;
-  page.drawText('1. LOCALISATION DE LA PARCELLE', {
-    x: 50,
-    y: yPosition,
-    size: 14,
-    color: primaryColor
-  });
+  page = result1.page; yPosition = result1.yPosition;
+  page.drawText('1. LOCALISATION DE LA PARCELLE', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
   yPosition -= 25;
 
-  const locationText = [
-    `Commune: ${data.commune}`,
-    `Section: ${data.section}`,
-    `Numéro: ${data.numero}`,
-    `Coordonnées GPS: ${data.lat.toFixed(6)}, ${data.lon.toFixed(6)}`,
-    `Date de génération: ${new Date().toLocaleDateString('fr-FR')}`
-  ];
+  drawLine(`Commune: ${data.commune}`);
+  drawLine(`Section: ${data.section}`);
+  drawLine(`Numero: ${data.numero}`);
+  drawLine(`Coordonnees GPS: ${data.lat.toFixed(6)}, ${data.lon.toFixed(6)}`);
+  drawLine(`Date de generation: ${new Date().toLocaleDateString('fr-FR')}`);
 
-  locationText.forEach(text => {
-    page.drawText(text, {
-      x: 70,
-      y: yPosition,
-      size: 10,
-      color: textColor
-    });
-    yPosition -= 18;
-  });
-
-  // Section 2: Données d'élévation
+  // Section 2: Elevation
   const result2 = checkPageBreak(pdfDoc, page, yPosition, 200);
-  page = result2.page;
-  yPosition = result2.yPosition;
-  page.drawText('2. DONNÉES D\'ÉLÉVATION (IGN LiDAR)', {
-    x: 50,
-    y: yPosition,
-    size: 14,
-    color: primaryColor
-  });
+  page = result2.page; yPosition = result2.yPosition;
+  page.drawText("2. DONNEES D'ELEVATION (IGN LiDAR)", { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
   yPosition -= 25;
 
-  const elevationText = [
-    `Source: IGN MNT (Modèle Numérique de Terrain)`,
-    `Précision: ±0.2m (XY et Z)`,
-    `Résolution: Maille 2m`,
-    `Système de projection: EPSG:4326 (WGS84)`,
-    data.mnt ? `Altitude estimée: ${data.mnt}m` : 'Altitude: Données en cours de chargement'
-  ];
-
-  elevationText.forEach(text => {
-    page.drawText(text, {
-      x: 70,
-      y: yPosition,
-      size: 10,
-      color: textColor
-    });
-    yPosition -= 18;
-  });
+  drawLine('Source: IGN MNT (Modele Numerique de Terrain)');
+  drawLine('Precision: +/- 0.2m (XY et Z)');
+  drawLine('Resolution: Maille 2m');
+  drawLine('Systeme de projection: EPSG:4326 (WGS84)');
+  drawLine(data.mnt ? `Altitude estimee: ${data.mnt}m` : 'Altitude: Donnees en cours de chargement');
 
   // Section 3: Risques naturels
-  const result3 = checkPageBreak(pdfDoc, page, yPosition, 250);
-  page = result3.page;
-  yPosition = result3.yPosition;
-  page.drawText('3. RISQUES NATURELS', {
-    x: 50,
-    y: yPosition,
-    size: 14,
-    color: primaryColor
-  });
+  const result3 = checkPageBreak(pdfDoc, page, yPosition, 220);
+  page = result3.page; yPosition = result3.yPosition;
+  page.drawText('3. RISQUES NATURELS', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
   yPosition -= 25;
 
-  const risksText = [
-    data.risks ? `Zones à risques identifiées: ${data.risks.length || 'Aucun'}` : 'Données en cours de chargement',
-    'Source: Géorisques (georisques.gouv.fr)',
-    '• Inondation',
-    '• Glissement de terrain',
-    '• Séisme',
-    '• Tsunami (zones côtières)'
-  ];
+  const riskCount = data.risks && Array.isArray(data.risks) ? data.risks.length : 0;
+  drawLine(data.risks ? `Zones a risques identifiees: ${riskCount || 'Aucun'}` : 'Donnees en cours de chargement', { spacing: 16 });
+  drawLine('Source: Georisques (georisques.gouv.fr)', { spacing: 16 });
+  drawLine('- Inondation', { spacing: 16 });
+  drawLine('- Glissement de terrain', { spacing: 16 });
+  drawLine('- Seisme', { spacing: 16 });
+  drawLine('- Tsunami (zones cotieres)', { spacing: 16 });
 
-  risksText.forEach(text => {
-    page.drawText(text, {
-      x: 70,
-      y: yPosition,
-      size: 10,
-      color: textColor
-    });
-    yPosition -= 16;
-  });
-
-  // Section 4: Zones protégées
-  const result4 = checkPageBreak(pdfDoc, page, yPosition, 250);
-  page = result4.page;
-  yPosition = result4.yPosition;
-  page.drawText('4. ZONES PROTÉGÉES', {
-    x: 50,
-    y: yPosition,
-    size: 14,
-    color: primaryColor
-  });
+  // Section 4: Zones protegees
+  const result4 = checkPageBreak(pdfDoc, page, yPosition, 220);
+  page = result4.page; yPosition = result4.yPosition;
+  page.drawText('4. ZONES PROTEGEES', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
   yPosition -= 25;
 
-  const protectedText = [
-    data.natura ? `Natura 2000: ${data.natura ? 'Oui' : 'Non'}` : 'Natura 2000: Vérification en cours',
-    data.znieff ? `ZNIEFF: ${data.znieff ? 'Oui' : 'Non'}` : 'ZNIEFF: Vérification en cours',
-    data.mh ? `Monuments historiques: ${data.mh ? 'Oui' : 'Non'}` : 'Monuments: Vérification en cours',
-    '',
-    'Source: INPN (inpn.mnhn.fr) et Ministère de la Culture'
-  ];
+  const hasNatura = data.natura && Array.isArray(data.natura) && data.natura.length > 0;
+  const hasZnieff = data.znieff && Array.isArray(data.znieff) && data.znieff.length > 0;
+  const hasMh = data.mh && Array.isArray(data.mh) && data.mh.length > 0;
 
-  protectedText.forEach(text => {
-    page.drawText(text, {
-      x: 70,
-      y: yPosition,
-      size: 10,
-      color: textColor
-    });
-    yPosition -= 16;
-  });
+  drawLine(`Natura 2000: ${data.natura ? (hasNatura ? 'Oui' : 'Non') : 'Verification en cours'}`, { spacing: 16 });
+  drawLine(`ZNIEFF: ${data.znieff ? (hasZnieff ? 'Oui' : 'Non') : 'Verification en cours'}`, { spacing: 16 });
+  drawLine(`Monuments historiques: ${data.mh ? (hasMh ? 'Oui' : 'Non') : 'Verification en cours'}`, { spacing: 16 });
+  yPosition -= 8;
+  drawLine('Source: INPN (inpn.mnhn.fr) et Ministere de la Culture', { spacing: 16 });
 
   // Footer
-  yPosition = 30;
-  page.drawText('Fiche générée par Topo3D-Antilles | Données IGN | Licence Etalab 2.0', {
-    x: 50,
-    y: yPosition,
-    size: 8,
-    color: rgb(150 / 255, 150 / 255, 150 / 255)
+  page.drawText('Fiche generee par Topo3D-Antilles | Donnees IGN | Licence Etalab 2.0', {
+    x: 50, y: 30, size: 8, font, color: rgb(150 / 255, 150 / 255, 150 / 255)
   });
 
   return await pdfDoc.save();

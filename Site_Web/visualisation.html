@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisation 3D sur mesure — Topo3D-Antilles</title>
+    <meta name="description" content="Rendus photoréalistes et maquettes blanches 3D pour vos projets immobiliers aux Antilles. Sur devis, livraison 48-72h.">
+    <meta property="og:title" content="Visualisation 3D sur mesure — Topo3D-Antilles">
+    <meta property="og:description" content="Maquettes blanches, rendus photoréalistes et visualisations 3D pour architectes et promoteurs aux Antilles.">
+    <meta property="og:url" content="https://topo3d-antilles.com/visualisation">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#00c896">
+    <link rel="canonical" href="https://topo3d-antilles.com/visualisation">
+
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7BENJZG09N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7BENJZG09N');
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fafafa; color: #111; line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade.visible { opacity: 1; transform: translateY(0); }
+        .fade-d1 { transition-delay: 0.1s; }
+        .fade-d2 { transition-delay: 0.2s; }
+        .fade-d3 { transition-delay: 0.3s; }
+
+        /* Header */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(250,250,250,0.95); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+        .header-content {
+            max-width: 1200px; margin: 0 auto; padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 18px; font-weight: 700; color: #111; text-decoration: none; }
+        .logo-accent { color: #00c896; }
+        nav a { color: #555; text-decoration: none; font-size: 14px; font-weight: 500; margin-left: 28px; transition: color 0.2s; }
+        nav a:hover { color: #00c896; }
+        nav .nav-cta {
+            background: #00c896; color: white; padding: 8px 20px;
+            border-radius: 8px; font-weight: 600;
+        }
+        nav .nav-cta:hover { background: #00b386; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #0F1923 0%, #1a2a3a 100%);
+            padding: 120px 20px 100px; text-align: center; color: white;
+        }
+        .hero-content { max-width: 800px; margin: 0 auto; }
+        .badge {
+            display: inline-block; background: #00c896; color: white;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+            padding: 8px 16px; border-radius: 20px; margin-bottom: 32px;
+            text-transform: uppercase;
+        }
+        .hero h1 { font-size: 52px; font-weight: 700; line-height: 1.1; margin-bottom: 20px; letter-spacing: -1px; }
+        .hero p { font-size: 20px; color: rgba(255,255,255,0.7); max-width: 600px; margin: 0 auto 40px; }
+        .btn-primary {
+            display: inline-block; background: #00c896; color: white;
+            padding: 16px 40px; border-radius: 12px; font-size: 16px;
+            font-weight: 700; text-decoration: none; transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(0,200,150,0.3);
+        }
+        .btn-primary:hover { background: #00b386; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,200,150,0.4); }
+
+        /* Sections */
+        .section { padding: 100px 20px; }
+        .section-container { max-width: 1200px; margin: 0 auto; }
+        .section-title { font-size: 42px; font-weight: 700; margin-bottom: 20px; text-align: center; letter-spacing: -0.5px; }
+        .section-subtitle { font-size: 18px; color: #666; text-align: center; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+        /* Gallery */
+        .gallery { background: white; }
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px;
+        }
+        .gallery-card {
+            border-radius: 16px; overflow: hidden; background: #f5f5f5;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08); transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .gallery-card:hover { transform: translateY(-8px); box-shadow: 0 20px 60px rgba(0,0,0,0.12); }
+        .gallery-card img { width: 100%; height: 320px; object-fit: cover; display: block; }
+        .gallery-card-info { padding: 24px; }
+        .gallery-card-info h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .gallery-card-info p { font-size: 14px; color: #666; line-height: 1.5; }
+        .gallery-card-badge {
+            display: inline-block; background: rgba(0,200,150,0.1); color: #00c896;
+            font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+            text-transform: uppercase; margin-bottom: 12px;
+        }
+
+        /* Steps */
+        .steps { background: #fafafa; }
+        .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+        .step {
+            text-align: center; padding: 40px 30px;
+            background: white; border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+        .step-number {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: #00c896; color: white; font-size: 24px; font-weight: 700;
+            margin-bottom: 20px;
+        }
+        .step h3 { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+        .step p { font-size: 15px; color: #666; }
+
+        /* Pricing hint */
+        .pricing-hint {
+            background: linear-gradient(135deg, #0F1923, #1a2a3a); color: white;
+        }
+        .pricing-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; }
+        .pricing-card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 40px 30px; text-align: center;
+            transition: border-color 0.3s;
+        }
+        .pricing-card:hover { border-color: #00c896; }
+        .pricing-card.featured { border-color: #00c896; background: rgba(0,200,150,0.08); }
+        .pricing-card h3 { font-size: 20px; margin-bottom: 8px; }
+        .pricing-card .price { font-size: 14px; color: rgba(255,255,255,0.5); margin-bottom: 20px; }
+        .pricing-card ul { list-style: none; text-align: left; }
+        .pricing-card li { padding: 8px 0; font-size: 14px; color: rgba(255,255,255,0.8); }
+        .pricing-card li::before { content: '\2713'; color: #00c896; margin-right: 10px; font-weight: 700; }
+
+        /* Form */
+        .form-section { background: white; }
+        .form-container {
+            max-width: 640px; margin: 0 auto;
+            background: #fafafa; border-radius: 20px; padding: 48px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 14px 16px; border: 1px solid #ddd;
+            border-radius: 10px; font-size: 15px; font-family: inherit;
+            background: white; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none; border-color: #00c896;
+        }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .btn-submit {
+            width: 100%; padding: 16px; background: #00c896; color: white;
+            border: none; border-radius: 12px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; font-family: inherit;
+        }
+        .btn-submit:hover { background: #00b386; }
+
+        /* Footer */
+        footer {
+            background: #0F1923; color: rgba(255,255,255,0.6); padding: 60px 20px 30px;
+        }
+        .footer-container {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px;
+        }
+        footer h3 { color: white; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.5px; }
+        footer a { color: rgba(255,255,255,0.6); text-decoration: none; display: block; font-size: 14px; margin-bottom: 8px; transition: color 0.2s; }
+        footer a:hover { color: #00c896; }
+        .footer-bottom { max-width: 1200px; margin: 40px auto 0; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; font-size: 13px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .hero { padding: 80px 20px 60px; }
+            .gallery-grid, .steps-grid, .pricing-cards { grid-template-columns: 1fr; }
+            .section-title { font-size: 28px; }
+            .footer-container { grid-template-columns: 1fr 1fr; }
+            .form-container { padding: 30px 20px; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">Topo3D<span class="logo-accent">.</span></a>
+            <nav>
+                <a href="/produit">Produit</a>
+                <a href="/visualisation">Visualisation</a>
+                <a href="/comment-ca-marche">Comment ca marche</a>
+                <a href="/references">Ressources</a>
+                <a href="/carte" class="nav-cta">Carte interactive</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content fade">
+            <div class="badge">Service premium</div>
+            <h1>Visualisation 3D<br>sur mesure</h1>
+            <p>Maquettes blanches, rendus photoréalistes et modélisations 3D pour donner vie à vos projets immobiliers aux Antilles.</p>
+            <a href="#devis" class="btn-primary">Demander un devis gratuit</a>
+        </div>
+    </section>
+
+    <!-- Gallery -->
+    <section class="section gallery">
+        <div class="section-container">
+            <h2 class="section-title">Nos rendus</h2>
+            <p class="section-subtitle">Trois styles de visualisation pour répondre à tous vos besoins, du concept à la commercialisation.</p>
+
+            <div class="gallery-grid">
+                <div class="gallery-card fade fade-d1">
+                    <img src="/assets/rendu-maquette-blanche.webp" alt="Maquette blanche 3D d'un terrain en Guadeloupe" loading="lazy">
+                    <div class="gallery-card-info">
+                        <span class="gallery-card-badge">Conception</span>
+                        <h3>Maquette blanche</h3>
+                        <p>Vue épurée du relief et des volumes. Idéale pour les phases de conception architecturale et les études de faisabilité.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card fade fade-d2">
+                    <img src="/assets/rendu-photorealiste.webp" alt="Rendu photoréaliste d'un terrain aux Antilles" loading="lazy">
+                    <div class="gallery-card-info">
+                        <span class="gallery-card-badge">Commercialisation</span>
+                        <h3>Rendu photoréaliste</h3>
+                        <p>Visualisation réaliste avec textures, végétation et éclairage naturel. Parfait pour la vente et les présentations investisseurs.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card fade fade-d3">
+                    <img src="/assets/topo-trois-rivieres-couleur.webp" alt="Topographie colorimétrique 3D Trois-Rivières" loading="lazy">
+                    <div class="gallery-card-info">
+                        <span class="gallery-card-badge">Analyse technique</span>
+                        <h3>Topo colorimétrique</h3>
+                        <p>Carte d'altitude colorée avec courbes de niveau. Outil technique pour l'analyse de pentes et le dimensionnement.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card fade fade-d1">
+                    <img src="/assets/Gemini_Generated_Image_ihhvg0ihhvg0ihhv.png" alt="Villa créole avec piscine vue mer — rendu photoréaliste" loading="lazy">
+                    <div class="gallery-card-info">
+                        <span class="gallery-card-badge">Rendu premium</span>
+                        <h3>Villa créole vue mer</h3>
+                        <p>Rendu photoréaliste d'une villa traditionnelle avec piscine à débordement et vue panoramique sur les îles.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card fade fade-d2">
+                    <img src="/assets/Gemini_Generated_Image_s5z1kcs5z1kcs5z1.png" alt="Villa moderne panneaux solaires — rendu photoréaliste" loading="lazy">
+                    <div class="gallery-card-info">
+                        <span class="gallery-card-badge">Eco-construction</span>
+                        <h3>Villa bioclimatique</h3>
+                        <p>Maison bois avec panneaux solaires, carbet et piscine. Intégration paysagère tropicale et développement durable.</p>
+                    </div>
+                </div>
+
+                <div class="gallery-card fade fade-d3">
+                    <img src="/assets/Gemini_Generated_Image_16rdpr16rdpr16rd.png" alt="Vue drone éco-lodges littoral Guadeloupe" loading="lazy">
+                    <div class="gallery-card-info">
+                        <span class="gallery-card-badge">Vue aérienne</span>
+                        <h3>Eco-resort littoral</h3>
+                        <p>Vue drone d'un projet d'éco-lodges intégrés dans la végétation. Relevé topographique + insertion architecturale.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Steps -->
+    <section class="section steps">
+        <div class="section-container">
+            <h2 class="section-title">Comment ca marche</h2>
+            <p class="section-subtitle">De la parcelle au rendu final en 3 étapes simples.</p>
+            <div class="steps-grid">
+                <div class="step fade fade-d1">
+                    <div class="step-number">1</div>
+                    <h3>Envoyez votre projet</h3>
+                    <p>Partagez la référence cadastrale de votre parcelle et décrivez votre projet (type de construction, style souhaité).</p>
+                </div>
+                <div class="step fade fade-d2">
+                    <div class="step-number">2</div>
+                    <h3>Modélisation 3D</h3>
+                    <p>Notre équipe génère le terrain LiDAR HD et intègre votre projet architectural dans la maquette 3D.</p>
+                </div>
+                <div class="step fade fade-d3">
+                    <div class="step-number">3</div>
+                    <h3>Livraison du rendu</h3>
+                    <p>Recevez vos visuels en haute résolution (PNG, PDF) + fichiers 3D exploitables sous 48-72h.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing hint -->
+    <section class="section pricing-hint">
+        <div class="section-container">
+            <h2 class="section-title" style="color:white;">Formules sur devis</h2>
+            <p class="section-subtitle" style="color:rgba(255,255,255,0.6);">Chaque projet est unique. Tarif adapté à la complexité et au niveau de détail souhaité.</p>
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <h3>Maquette blanche</h3>
+                    <div class="price">A partir de 199 EUR</div>
+                    <ul>
+                        <li>Terrain LiDAR HD</li>
+                        <li>Volumes bâtis simplifiés</li>
+                        <li>2 angles de vue</li>
+                        <li>Fichier OBJ inclus</li>
+                    </ul>
+                </div>
+                <div class="pricing-card featured">
+                    <h3>Rendu photoréaliste</h3>
+                    <div class="price">A partir de 499 EUR</div>
+                    <ul>
+                        <li>Terrain + végétation réaliste</li>
+                        <li>Textures HD + éclairage</li>
+                        <li>4 angles de vue</li>
+                        <li>Retouches incluses</li>
+                    </ul>
+                </div>
+                <div class="pricing-card">
+                    <h3>Pack complet</h3>
+                    <div class="price">A partir de 899 EUR</div>
+                    <ul>
+                        <li>Maquette + rendu photo</li>
+                        <li>Animation 360° vidéo</li>
+                        <li>Fichiers SketchUp/Revit</li>
+                        <li>Modifications illimitées</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Form -->
+    <section class="section form-section" id="devis">
+        <div class="section-container">
+            <h2 class="section-title">Demander un devis gratuit</h2>
+            <p class="section-subtitle">Décrivez votre projet et recevez une proposition sous 24h.</p>
+            <div class="form-container">
+                <form id="devisForm" onsubmit="return submitDevis(event)">
+                    <input type="hidden" name="_subject" value="[Topo3D] Demande de devis Visualisation 3D">
+                    <div class="form-group">
+                        <label for="name">Nom complet</label>
+                        <input type="text" id="name" name="name" required placeholder="Jean Dupont">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required placeholder="jean@exemple.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Téléphone (optionnel)</label>
+                        <input type="tel" id="phone" name="phone" placeholder="0690 XX XX XX">
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Type de rendu souhaité</label>
+                        <select id="type" name="type_rendu" required>
+                            <option value="">Sélectionnez...</option>
+                            <option value="maquette-blanche">Maquette blanche</option>
+                            <option value="photorealiste">Rendu photoréaliste</option>
+                            <option value="pack-complet">Pack complet</option>
+                            <option value="autre">Autre / Je ne sais pas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="parcelle">Référence parcelle (optionnel)</label>
+                        <input type="text" id="parcelle" name="parcelle" placeholder="Ex: 97103 AY 0491">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description du projet</label>
+                        <textarea id="description" name="description" required placeholder="Décrivez votre projet : type de construction, nombre de niveaux, surface, style souhaité..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Envoyer ma demande de devis</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div>
+                <h3>Topo3D-Antilles</h3>
+                <a href="/">Accueil</a>
+                <a href="/produit">Produit</a>
+                <a href="/visualisation">Visualisation</a>
+                <a href="/comment-ca-marche">Comment ca marche</a>
+            </div>
+            <div>
+                <h3>Ressources</h3>
+                <a href="/references">Mentions légales</a>
+                <a href="/cgv">CGV</a>
+                <a href="/confidentialite">Confidentialité</a>
+            </div>
+            <div>
+                <h3>Support</h3>
+                <a href="mailto:contact@topo3d-antilles.com">contact@topo3d-antilles.com</a>
+            </div>
+            <div>
+                <h3>Plateforme</h3>
+                <p>Topographie 3D LiDAR pour les Antilles, Guyane et La Réunion</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Topo3D-Antilles. Tous droits réservés | <a href="/references">Mentions légales</a></p>
+        </div>
+    </footer>
+
+    <!-- Scroll animation + form submit -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade').forEach(el => observer.observe(el));
+
+        async function submitDevis(e) {
+            e.preventDefault();
+            const form = e.target;
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Envoi en cours...';
+            try {
+                const d = Object.fromEntries(new FormData(form));
+                const htmlContent = `
+                    <h2>Nouvelle demande de devis Visualisation 3D</h2>
+                    <table style="border-collapse:collapse;width:100%">
+                      <tr><td style="padding:8px;font-weight:bold">Nom</td><td style="padding:8px">${d.name||''}</td></tr>
+                      <tr><td style="padding:8px;font-weight:bold">Email</td><td style="padding:8px">${d.email||''}</td></tr>
+                      <tr><td style="padding:8px;font-weight:bold">Telephone</td><td style="padding:8px">${d.phone||'Non renseigne'}</td></tr>
+                      <tr><td style="padding:8px;font-weight:bold">Type de rendu</td><td style="padding:8px">${d.type_rendu||'Non precise'}</td></tr>
+                      <tr><td style="padding:8px;font-weight:bold">Parcelle</td><td style="padding:8px">${d.parcelle||'Non renseignee'}</td></tr>
+                      <tr><td style="padding:8px;font-weight:bold">Description</td><td style="padding:8px">${d.description||''}</td></tr>
+                    </table>`;
+                const res = await fetch('/api/email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        to: 'contact@topo3d-antilles.com',
+                        subject: '[Topo3D] Demande de devis - ' + (d.name || 'Client'),
+                        htmlContent
+                    })
+                });
+                if (res.ok) {
+                    window.location.href = '/success';
+                } else {
+                    const err = await res.json();
+                    alert(err.error || 'Erreur lors de l\'envoi');
+                    btn.disabled = false;
+                    btn.textContent = 'Envoyer ma demande de devis';
+                }
+            } catch (err) {
+                alert('Erreur reseau. Veuillez reessayer.');
+                btn.disabled = false;
+                btn.textContent = 'Envoyer ma demande de devis';
+            }
+            return false;
+        }
+    </script>
+</body>
+</html>
