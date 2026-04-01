@@ -40,10 +40,9 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Coordinates out of range' });
     }
 
-    // Fetch regulatory data + cadastre + multi-point elevation in parallel
-    const [mnt, risks, natura, znieff, mh, cadastre, denivele] = await Promise.allSettled([
+    // Phase 1: Fetch cadastre + spatial data in parallel
+    const [mnt, natura, znieff, mh, cadastre, denivele] = await Promise.allSettled([
       fetchMNTData(latitude, longitude),
-      fetchRisksData(latitude, longitude),
       fetchNatura2000Data(latitude, longitude),
       fetchZNIEFFData(latitude, longitude),
       fetchMonumentsData(latitude, longitude),
@@ -51,32 +50,68 @@ export default async function handler(req, res) {
       fetchDenivele(latitude, longitude)
     ]);
 
-    // Extract surface from cadastre
+    // Extract cadastre info
     const cadastreData = cadastre.status === 'fulfilled' ? cadastre.value : null;
     const surface = cadastreData?.contenance || cadastreData?.surface || null;
     const idu = cadastreData?.idu || null;
     const codeInsee = cadastreData?.code_insee || '';
 
+    // Phase 2: Fetch risks by code INSEE (requires cadastre result)
+    const risks = await fetchRisksData(codeInsee).catch(() => null);
+
     // Extract denivele
     const deniveleData = denivele.status === 'fulfilled' ? denivele.value : null;
 
-    // Generate PDF
-    const pdfBytes = await generateFicheParcellePDF({
-      commune,
-      section,
-      numero,
-      lat: latitude,
-      lon: longitude,
-      surface,
-      idu,
-      codeInsee,
+    // Quality validator — check mandatory data before generating PDF
+    const pdfData = {
+      commune, section, numero,
+      lat: latitude, lon: longitude,
+      surface, idu, codeInsee,
       denivele: deniveleData,
       mnt: mnt.status === 'fulfilled' ? mnt.value : null,
-      risks: risks.status === 'fulfilled' ? risks.value : null,
+      risks: risks || null,
       natura: natura.status === 'fulfilled' ? natura.value : null,
       znieff: znieff.status === 'fulfilled' ? znieff.value : null,
       mh: mh.status === 'fulfilled' ? mh.value : null
-    });
+    };
+
+    const qa = validateFicheData(pdfData);
+    if (!qa.valid) {
+      console.error('[QA] Fiche rejected:', qa.errors);
+      // Retry failed sources once
+      if (qa.retryable.length > 0) {
+        const retries = {};
+        if (qa.retryable.includes('cadastre')) {
+          const r = await fetchCadastreData(latitude, longitude).catch(() => null);
+          if (r) { pdfData.surface = r.contenance || r.surface; pdfData.idu = r.idu; pdfData.codeInsee = r.code_insee || ''; retries.cadastre = true; }
+        }
+        if (qa.retryable.includes('mnt')) {
+          const r = await fetchMNTData(latitude, longitude).catch(() => null);
+          if (r !== null) { pdfData.mnt = r; retries.mnt = true; }
+        }
+        if (qa.retryable.includes('risks') && pdfData.codeInsee) {
+          const r = await fetchRisksData(pdfData.codeInsee).catch(() => null);
+          if (r) { pdfData.risks = r; retries.risks = true; }
+        }
+        // Re-validate after retries
+        const qa2 = validateFicheData(pdfData);
+        if (!qa2.valid) {
+          return res.status(422).json({
+            error: 'Qualite insuffisante — donnees manquantes',
+            missing: qa2.errors,
+            retried: Object.keys(retries)
+          });
+        }
+      } else {
+        return res.status(422).json({
+          error: 'Qualite insuffisante — donnees manquantes',
+          missing: qa.errors
+        });
+      }
+    }
+
+    // Generate PDF
+    const pdfBytes = await generateFicheParcellePDF(pdfData);
 
     // Set download headers
     res.setHeader('Content-Disposition', `attachment; filename="fiche_${section}_${numero}_${Date.now()}.pdf"`);
@@ -89,6 +124,28 @@ export default async function handler(req, res) {
     console.error('Fiche parcelle error:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+}
+
+// Quality validator — ensures all critical data is present before PDF generation
+function validateFicheData(data) {
+  const errors = [];
+  const retryable = [];
+
+  // Mandatory: cadastre data (surface, IDU)
+  if (!data.surface) { errors.push('Surface parcelle manquante'); retryable.push('cadastre'); }
+  if (!data.idu) { errors.push('IDU cadastral manquant'); retryable.push('cadastre'); }
+  if (!data.codeInsee) { errors.push('Code INSEE manquant'); retryable.push('cadastre'); }
+
+  // Mandatory: elevation
+  if (data.mnt === null || data.mnt === undefined) { errors.push('Altitude manquante'); retryable.push('mnt'); }
+
+  // Mandatory: risks (must have fetched, even if 0 results)
+  if (!data.risks) { errors.push('Donnees risques manquantes'); retryable.push('risks'); }
+
+  // Warning-only (don't block): denivele, natura, znieff
+  // These are nice-to-have but not blocking
+
+  return { valid: errors.length === 0, errors, retryable: [...new Set(retryable)] };
 }
 
 function applySecureCORS(res, req) {
@@ -190,13 +247,15 @@ async function generateFicheParcellePDF(data) {
   page.drawText('3. RISQUES NATURELS', { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
   yPosition -= 25;
 
-  const riskCount = data.risks && Array.isArray(data.risks) ? data.risks.length : 0;
-  drawLine(data.risks ? `Zones a risques identifiees: ${riskCount || 'Aucun'}` : 'Donnees en cours de chargement', { spacing: 16 });
-  drawLine('Source: Georisques (georisques.gouv.fr)', { spacing: 16 });
-  drawLine('- Inondation', { spacing: 16 });
-  drawLine('- Glissement de terrain', { spacing: 16 });
-  drawLine('- Seisme', { spacing: 16 });
-  drawLine('- Tsunami (zones cotieres)', { spacing: 16 });
+  if (data.risks && data.risks.risques && data.risks.risques.length > 0) {
+    drawLine(`${data.risks.risques.length} risque(s) identifie(s) sur ${data.risks.commune || data.commune}:`, { spacing: 16 });
+    data.risks.risques.forEach(r => {
+      drawLine(`- ${pdfSafe(r)}`, { spacing: 15 });
+    });
+  } else {
+    drawLine('Aucun risque recense (donnees Georisques)', { spacing: 16 });
+  }
+  drawLine('Source: Georisques GASPAR (georisques.gouv.fr)', { spacing: 16 });
 
   // Section 4: Zones protegees
   const result4 = checkPageBreak(pdfDoc, page, yPosition, 220);
@@ -257,12 +316,20 @@ async function fetchMNTData(lat, lon) {
   ).then(data => data?.elevations?.[0]?.z ?? data?.elevation ?? 0).catch(() => null);
 }
 
-async function fetchRisksData(lat, lon) {
-  // Georisques API v1 - gaspar/risques
-  const params = new URLSearchParams({ latlon: `${lat},${lon}`, rayon: 500 });
+async function fetchRisksData(codeInsee) {
+  // Georisques API v1 - gaspar/risques par code INSEE (latlon ne fonctionne pas pour les DOM)
+  if (!codeInsee) return null;
+  const params = new URLSearchParams({ code_insee: codeInsee });
   return fetchWithRetry(
     `https://www.georisques.gouv.fr/api/v1/gaspar/risques?${params}`
-  ).then(data => data?.data || []).catch(() => null);
+  ).then(data => {
+    const commune = data?.data?.[0];
+    if (!commune) return null;
+    return {
+      commune: commune.libelle_commune || '',
+      risques: (commune.risques_detail || []).map(r => r.libelle_risque_long)
+    };
+  }).catch(() => null);
 }
 
 async function fetchNatura2000Data(lat, lon) {
