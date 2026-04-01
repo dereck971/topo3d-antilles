@@ -40,14 +40,25 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Coordinates out of range' });
     }
 
-    // Fetch regulatory data from APIs in parallel with retry logic
-    const [mnt, risks, natura, znieff, mh] = await Promise.allSettled([
+    // Fetch regulatory data + cadastre + multi-point elevation in parallel
+    const [mnt, risks, natura, znieff, mh, cadastre, denivele] = await Promise.allSettled([
       fetchMNTData(latitude, longitude),
       fetchRisksData(latitude, longitude),
       fetchNatura2000Data(latitude, longitude),
       fetchZNIEFFData(latitude, longitude),
-      fetchMonumentsData(latitude, longitude)
+      fetchMonumentsData(latitude, longitude),
+      fetchCadastreData(latitude, longitude),
+      fetchDenivele(latitude, longitude)
     ]);
+
+    // Extract surface from cadastre
+    const cadastreData = cadastre.status === 'fulfilled' ? cadastre.value : null;
+    const surface = cadastreData?.contenance || cadastreData?.surface || null;
+    const idu = cadastreData?.idu || null;
+    const codeInsee = cadastreData?.code_insee || '';
+
+    // Extract denivele
+    const deniveleData = denivele.status === 'fulfilled' ? denivele.value : null;
 
     // Generate PDF
     const pdfBytes = await generateFicheParcellePDF({
@@ -56,6 +67,10 @@ export default async function handler(req, res) {
       numero,
       lat: latitude,
       lon: longitude,
+      surface,
+      idu,
+      codeInsee,
+      denivele: deniveleData,
       mnt: mnt.status === 'fulfilled' ? mnt.value : null,
       risks: risks.status === 'fulfilled' ? risks.value : null,
       natura: natura.status === 'fulfilled' ? natura.value : null,
@@ -144,20 +159,30 @@ async function generateFicheParcellePDF(data) {
   drawLine(`Commune: ${data.commune}`);
   drawLine(`Section: ${data.section}`);
   drawLine(`Numero: ${data.numero}`);
+  if (data.idu) drawLine(`IDU: ${data.idu}`);
+  if (data.codeInsee) drawLine(`Code INSEE: ${data.codeInsee}`);
+  if (data.surface) {
+    const surfM2 = Number(data.surface);
+    const surfDisplay = surfM2 >= 10000 ? `${(surfM2 / 10000).toFixed(2)} ha (${surfM2} m2)` : `${surfM2} m2`;
+    drawLine(`Surface: ${surfDisplay}`);
+  }
   drawLine(`Coordonnees GPS: ${data.lat.toFixed(6)}, ${data.lon.toFixed(6)}`);
   drawLine(`Date de generation: ${new Date().toLocaleDateString('fr-FR')}`);
 
-  // Section 2: Elevation
-  const result2 = checkPageBreak(pdfDoc, page, yPosition, 200);
+  // Section 2: Elevation + Denivele
+  const result2 = checkPageBreak(pdfDoc, page, yPosition, 250);
   page = result2.page; yPosition = result2.yPosition;
   page.drawText("2. DONNEES D'ELEVATION (IGN LiDAR)", { x: 50, y: yPosition, size: 13, font: boldFont, color: primaryColor });
   yPosition -= 25;
 
+  drawLine(data.mnt ? `Altitude au centre: ${data.mnt}m NGG` : 'Altitude: Donnees indisponibles');
+  if (data.denivele) {
+    drawLine(`Altitude min: ${data.denivele.min}m | max: ${data.denivele.max}m`);
+    drawLine(`Denivele estime: ${data.denivele.delta}m (sur ${data.denivele.points} points)`);
+  }
   drawLine('Source: IGN MNT (Modele Numerique de Terrain)');
-  drawLine('Precision: +/- 0.2m (XY et Z)');
-  drawLine('Resolution: Maille 2m');
+  drawLine('Precision: +/- 0.2m (XY et Z) | Resolution: Maille 1m');
   drawLine('Systeme de projection: EPSG:4326 (WGS84)');
-  drawLine(data.mnt ? `Altitude estimee: ${data.mnt}m` : 'Altitude: Donnees en cours de chargement');
 
   // Section 3: Risques naturels
   const result3 = checkPageBreak(pdfDoc, page, yPosition, 220);
@@ -262,4 +287,54 @@ async function fetchMonumentsData(lat, lon) {
   return fetchWithRetry(
     `https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=PROTECTEDSITES.MNHN.RESERVES-NATURELLES:reserves_naturelles&BBOX=${bbox},EPSG:4326&OUTPUTFORMAT=application/json&COUNT=5`
   ).then(data => data?.features || []).catch(() => null);
+}
+
+async function fetchCadastreData(lat, lon) {
+  // API Cadastre — POST with GeoJSON Point
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch('https://apicarto.ign.fr/api/cadastre/parcelle', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', 'User-Agent': 'Topo3D-Antilles/1.0' },
+      body: JSON.stringify({ geom: { type: 'Point', coordinates: [lon, lat] } })
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const data = await response.json();
+    const props = data.features?.[0]?.properties;
+    return props || null;
+  } catch (e) {
+    clearTimeout(timeout);
+    return null;
+  }
+}
+
+async function fetchDenivele(lat, lon) {
+  // Sample 5 points in a small grid around the parcel center to compute min/max elevation
+  const offset = 0.0005; // ~55m
+  const points = [
+    [lon, lat],
+    [lon - offset, lat - offset],
+    [lon + offset, lat - offset],
+    [lon - offset, lat + offset],
+    [lon + offset, lat + offset]
+  ];
+  const lonStr = points.map(p => p[0]).join('|');
+  const latStr = points.map(p => p[1]).join('|');
+  const params = new URLSearchParams({ lon: lonStr, lat: latStr, resource: 'ign_rge_alti_wld', zonly: 'true' });
+  try {
+    const data = await fetchWithRetry(
+      `https://data.geopf.fr/altimetrie/1.0/calcul/alti/rest/elevation.json?${params}`
+    );
+    if (!data?.elevations) return null;
+    const zValues = data.elevations.map(e => e.z ?? e).filter(z => typeof z === 'number' && !isNaN(z));
+    if (zValues.length === 0) return null;
+    const min = Math.min(...zValues);
+    const max = Math.max(...zValues);
+    return { min: Math.round(min * 100) / 100, max: Math.round(max * 100) / 100, delta: Math.round((max - min) * 100) / 100, points: zValues.length };
+  } catch (e) {
+    return null;
+  }
 }
