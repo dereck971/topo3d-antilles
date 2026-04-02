@@ -714,25 +714,27 @@
                             if (state.map.getLayer('building')) {
                                 state.map.removeLayer('building');
                             }
+                            // OSM buildings — hidden by default, BD TOPO preferred
                             state.map.addLayer({
                                 id: 'building',
                                 type: 'fill-extrusion',
                                 source: 'openmaptiles',
                                 'source-layer': 'building',
+                                layout: { visibility: 'none' },
                                 paint: {
                                     'fill-extrusion-color': '#2a3a4a',
                                     'fill-extrusion-height': ['coalesce', ['get', 'render_height'], ['get', 'height'], 6],
-                                    'fill-extrusion-base': ['coalesce', ['get', 'render_min_height'], 0],
+                                    'fill-extrusion-base': 0,
                                     'fill-extrusion-opacity': 0.7
                                 }
                             });
-                            // BD TOPO IGN — bâtiments avec hauteurs réelles (photogrammétrie)
+                            // BD TOPO IGN — bâtiments avec hauteurs réelles, Z strippé
                             state.map.addSource('bdtopo-bat-src', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
                             state.map.addLayer({
                                 id: 'bdtopo-bat',
                                 type: 'fill-extrusion',
                                 source: 'bdtopo-bat-src',
-                                minzoom: 14,
+                                minzoom: 13,
                                 layout: { visibility: 'none' },
                                 paint: {
                                     'fill-extrusion-color': [
@@ -901,7 +903,7 @@
                     const zoom = state.map.getZoom();
                     const src = state.map.getSource('bdtopo-bat-src');
                     if (!src) return;
-                    if (zoom < 14) {
+                    if (zoom < 13) {
                         src.setData({ type: 'FeatureCollection', features: [] });
                         return;
                     }
@@ -951,11 +953,8 @@
                         const layerKey = e.target.dataset.layer;
                         const vis = e.target.checked ? 'visible' : 'none';
                         if (layerKey === 'buildings') {
-                            // OSM building layer (fallback)
-                            if (state.map.getLayer('building')) {
-                                state.map.setLayoutProperty('building', 'visibility', vis);
-                            }
-                            // BD TOPO IGN layer (hauteurs réelles)
+                            // OSM building layer always hidden — floats with terrain
+                            // Only BD TOPO IGN used (stripped Z, real heights)
                             if (state.map.getLayer('bdtopo-bat')) {
                                 state.map.setLayoutProperty('bdtopo-bat', 'visibility', vis);
                             }
