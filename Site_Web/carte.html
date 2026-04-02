@@ -736,14 +736,14 @@
                                 layout: { visibility: 'none' },
                                 paint: {
                                     'fill-extrusion-color': [
-                                        'interpolate', ['linear'], ['coalesce', ['get', 'hauteur'], 6],
+                                        'interpolate', ['linear'], ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5],
                                         0, '#b8d4e3',
                                         5, '#90b4ce',
                                         10, '#6894b9',
                                         20, '#4a7a9e',
                                         40, '#2c5f85'
                                     ],
-                                    'fill-extrusion-height': ['coalesce', ['get', 'hauteur'], 6],
+                                    'fill-extrusion-height': ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5],
                                     'fill-extrusion-base': 0,
                                     'fill-extrusion-opacity': 0.85
                                 }
@@ -873,6 +873,30 @@
                 // BD TOPO WFS loader — bâtiments IGN avec hauteurs réelles
                 let bdtopoLoadCtrl = null;
                 let bdtopoDebounce = null;
+                // Strip Z coordinates from GeoJSON geometry so buildings sit on terrain surface
+                function stripZ(geojson) {
+                    if (!geojson || !geojson.features) return geojson;
+                    for (const f of geojson.features) {
+                        if (!f.geometry) continue;
+                        const p = f.properties || {};
+                        // Compute real height from BD TOPO fields
+                        const h = p.hauteur
+                            || (p.altitude_maximale_toit && p.altitude_minimale_sol
+                                ? p.altitude_maximale_toit - p.altitude_minimale_sol : null)
+                            || (p.nombre_d_etages ? p.nombre_d_etages * 3.2 : null)
+                            || 5;
+                        p.hauteur_calc = Math.max(3, Math.round(h * 10) / 10);
+                        // Remove Z from coordinates so extrusion is terrain-relative
+                        const strip = (coords) => {
+                            if (!Array.isArray(coords)) return coords;
+                            if (typeof coords[0] === 'number') return coords.slice(0, 2);
+                            return coords.map(strip);
+                        };
+                        f.geometry.coordinates = strip(f.geometry.coordinates);
+                    }
+                    return geojson;
+                }
+
                 async function loadBDTopo() {
                     const zoom = state.map.getZoom();
                     const src = state.map.getSource('bdtopo-bat-src');
@@ -888,7 +912,7 @@
                         if (bdtopoLoadCtrl) bdtopoLoadCtrl.abort();
                         bdtopoLoadCtrl = new AbortController();
                         const r = await fetch(url, { signal: bdtopoLoadCtrl.signal });
-                        if (r.ok) { const d = await r.json(); src.setData(d); }
+                        if (r.ok) { const d = await r.json(); src.setData(stripZ(d)); }
                     } catch (e) { if (e.name !== 'AbortError') console.warn('BD TOPO WFS:', e); }
                 }
                 function scheduleBDTopo() {

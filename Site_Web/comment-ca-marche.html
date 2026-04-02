@@ -6,6 +6,17 @@
     <title>Comment ça marche — Topo3D-Antilles</title>
     <meta name="description" content="Guide complet : comment obtenir vos fichiers topographiques 3D en quelques clics. Sélection de parcelle, export OBJ/DXF, ouverture dans SketchUp, AutoCAD, Revit.">
     <link rel="canonical" href="https://topo3d-antilles.com/comment-ca-marche">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='35' r='8' fill='%232ECC71'/><path d='M20 50 Q50 30 80 50' stroke='%232ECC71' fill='none' stroke-width='3'/><path d='M15 60 Q50 45 85 60' stroke='%232ECC71' fill='none' stroke-width='2' opacity='0.6'/><path d='M10 70 Q50 55 90 70' stroke='%232ECC71' fill='none' stroke-width='2' opacity='0.3'/></svg>">
+
+    <!-- Google Analytics GA4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7BENJZG09N"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7BENJZG09N');
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -149,6 +160,8 @@
         .tier-badge.complet { background: #e3f2fd; color: #1565c0; }
         .tier-badge.premium { background: #f3e5f5; color: #7b1fa2; }
         .tier-badge.pro { background: #fff3e0; color: #e65100; }
+        .tier-badge.parcelle { background: #fce4ec; color: #c62828; }
+        .tier-badge.light { background: #e0f2f1; color: #00796b; }
 
         /* === FAQ === */
         .faq-list { max-width: 800px; margin: 0 auto; }
@@ -249,7 +262,7 @@
         <div class="steps">
             <div class="step fade-in">
                 <div class="step-number">1</div>
-                <div class="step-icon"><div class="step-icon">🗺️</div>#9671;</div>
+                <div class="step-icon">&#9671;</div>
                 <h3>Sélectionnez votre parcelle</h3>
                 <p>Ouvrez la carte interactive, naviguez vers votre terrain en Guadeloupe ou Martinique et cliquez sur la parcelle cadastrale. Les infos s'affichent instantanément : surface, commune, section, altitude.</p>
                 <span class="step-tag">Gratuit</span>
@@ -265,7 +278,7 @@
                 <div class="step-number">3</div>
                 <div class="step-icon">💳</div>
                 <h3>Choisissez votre export</h3>
-                <p>Sélectionnez le format et le niveau de détail adaptés à votre besoin : fiche parcelle 19€, fichier OBJ 59€, pack complet OBJ+DXF+courbes 129€, ou tous formats à 249€.</p>
+                <p>Sélectionnez le niveau adapté à votre besoin : Fiche Parcelle 19€, Fiche Light 29€ (+ PLU, profil altimétrique), Essentiel 59€ (+ maquette 3D), Complet 129€ (+ DXF HD), ou Premium 249€ (tous formats pro).</p>
                 <span class="step-tag">À partir de 19€</span>
             </div>
             <div class="step fade-in">
@@ -286,23 +299,44 @@
         <p class="section-subtitle">Chaque format a son usage. Voici ce que vous recevez et comment l'utiliser dans votre logiciel.</p>
         <div class="export-grid">
 
-            <!-- Fiche Parcelle PDF -->
+            <!-- Fiche Parcelle PDF 19€ -->
             <div class="export-card fade-in">
                 <div class="export-card-header">
                     <div class="export-icon pdf">PDF</div>
                     <div>
-                        <h3>Fiche Parcelle Réglementaire</h3>
-                        <span class="tier">19€ — Tous niveaux</span>
+                        <h3>Fiche Parcelle</h3>
+                        <span class="tier">19€</span>
                     </div>
                 </div>
-                <p>Fiche A4 synthétique avec toutes les données réglementaires de la parcelle : zonage PLU, risques naturels, Natura 2000, altitude, pente, bâtiments existants.</p>
+                <p>Fiche A4 synthétique : surface cadastrale, identifiant IDU, code INSEE, altitude moyenne et dénivelé, risques naturels (Géorisques), contour GeoJSON.</p>
                 <p class="logiciels"><strong>Ouvrir avec :</strong> tout lecteur PDF (Adobe, Preview, Chrome)</p>
                 <div class="export-steps">
                     <h4>Comment l'utiliser</h4>
                     <ol>
                         <li>Ouvrez le PDF reçu par email</li>
-                        <li>Vérifiez les contraintes réglementaires avant tout projet</li>
-                        <li>Joignez la fiche à votre dossier de faisabilité ou permis de construire</li>
+                        <li>Vérifiez les données de base de la parcelle</li>
+                        <li>Joignez la fiche à votre dossier de faisabilité</li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Fiche Light PDF 29€ -->
+            <div class="export-card fade-in">
+                <div class="export-card-header">
+                    <div class="export-icon pdf" style="background: linear-gradient(135deg, #00c896, #00a67a);">PDF+</div>
+                    <div>
+                        <h3>Fiche Light</h3>
+                        <span class="tier">29€</span>
+                    </div>
+                </div>
+                <p>Tout Parcelle + zonage PLU (U, AU, A, N), profil altimétrique 42 points (transects N-S et E-W avec analyse de pente), carte de ruissellement, servitudes et informations complémentaires.</p>
+                <p class="logiciels"><strong>Ouvrir avec :</strong> tout lecteur PDF (Adobe, Preview, Chrome)</p>
+                <div class="export-steps">
+                    <h4>Idéal pour</h4>
+                    <ol>
+                        <li>Étude de faisabilité : le PLU vous dit si le terrain est constructible</li>
+                        <li>Le profil altimétrique révèle les pentes et contraintes de terrassement</li>
+                        <li>La carte de ruissellement identifie les zones d'écoulement des eaux</li>
                     </ol>
                 </div>
             </div>
@@ -444,102 +478,123 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Format</th>
-                        <th>Usage principal</th>
+                        <th>Livrable</th>
+                        <th>Usage</th>
+                        <th><span class="tier-badge" style="background:#fce4ec;color:#c62828;">19€</span></th>
+                        <th><span class="tier-badge" style="background:#e0f2f1;color:#00796b;">29€</span></th>
                         <th><span class="tier-badge essentiel">59€</span></th>
                         <th><span class="tier-badge complet">129€</span></th>
                         <th><span class="tier-badge premium">249€</span></th>
-                        <th><span class="tier-badge pro">349€/m</span></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>Fiche PDF</strong></td>
-                        <td>Synthèse réglementaire</td>
-                        <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
+                        <td><strong>Surface / IDU / INSEE</strong></td>
+                        <td>Identification parcelle</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Altitude + dénivelé</strong></td>
+                        <td>Relief du terrain</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Risques naturels</strong></td>
+                        <td>Géorisques officiel</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contour .GeoJSON</strong></td>
+                        <td>Parcelle géoréférencée</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
                     </tr>
                     <tr class="highlight-row">
-                        <td><strong>.OBJ</strong></td>
+                        <td><strong>Zonage PLU</strong></td>
+                        <td>Constructibilité</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Profil altimétrique</strong></td>
+                        <td>Pentes N-S / E-W</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ruissellement</strong></td>
+                        <td>Ecoulement des eaux</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr class="highlight-row">
+                        <td><strong>Maquette 3D .OBJ</strong></td>
                         <td>Modélisation 3D</td>
-                        <td class="check">✓ (5m)</td>
-                        <td class="check">✓ (2m)</td>
-                        <td class="check">✓ (2m)</td>
-                        <td class="check">✓ (2m)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>.GeoJSON</strong></td>
-                        <td>Contour parcelle SIG</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                    </tr>
-                    <tr>
-                        <td><strong>.DXF</strong></td>
-                        <td>Courbes de niveau CAO</td>
                         <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003; (5m)</td>
+                        <td class="check">&#10003; (2m)</td>
+                        <td class="check">&#10003; (2m)</td>
                     </tr>
                     <tr>
-                        <td><strong>Analyse pentes</strong></td>
-                        <td>Étude de faisabilité</td>
+                        <td><strong>7 couches réglementaires</strong></td>
+                        <td>PLU, Natura, ZNIEFF...</td>
                         <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
+                    </tr>
+                    <tr>
+                        <td><strong>.DXF courbes de niveau</strong></td>
+                        <td>AutoCAD / Revit</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
+                        <td class="check">&#10003;</td>
                     </tr>
                     <tr class="highlight-row">
-                        <td><strong>.IFC</strong></td>
-                        <td>Workflow BIM (Revit)</td>
+                        <td><strong>.IFC / .DWG / .SHP / .KML</strong></td>
+                        <td>Formats pro BIM + SIG</td>
                         <td class="lock">—</td>
                         <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
+                        <td class="lock">—</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
                     </tr>
                     <tr>
-                        <td><strong>.DWG</strong></td>
-                        <td>AutoCAD natif + bâtiments</td>
-                        <td class="lock">—</td>
-                        <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                    </tr>
-                    <tr>
-                        <td><strong>.SHP</strong></td>
-                        <td>Shapefile SIG complet</td>
-                        <td class="lock">—</td>
-                        <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                    </tr>
-                    <tr>
-                        <td><strong>.STL</strong></td>
-                        <td>Impression 3D / maquette</td>
-                        <td class="lock">—</td>
-                        <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                    </tr>
-                    <tr>
-                        <td><strong>.KML</strong></td>
-                        <td>Google Earth</td>
-                        <td class="lock">—</td>
-                        <td class="lock">—</td>
-                        <td class="check">✓</td>
-                        <td class="check">✓</td>
-                    </tr>
-                    <tr class="highlight-row">
-                        <td><strong>API REST</strong></td>
-                        <td>Intégration automatisée</td>
+                        <td><strong>.STL impression 3D</strong></td>
+                        <td>Maquette physique</td>
                         <td class="lock">—</td>
                         <td class="lock">—</td>
                         <td class="lock">—</td>
-                        <td class="check">✓</td>
+                        <td class="lock">—</td>
+                        <td class="check">&#10003;</td>
                     </tr>
                 </tbody>
             </table>

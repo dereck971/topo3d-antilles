@@ -16,7 +16,6 @@ const PUBLIC_PATHS = new Set([
   '/api/login',
   '/api/logout',
   '/api/webhook',
-  '/api/contours'
 ]);
 
 const STATIC_EXT = /\.(woff2?|ttf|eot|css|js|png|jpe?g|gif|svg|webp|ico|json|xml|txt|pdf|map)$/i;
@@ -26,7 +25,9 @@ const PROTECTED_PATTERNS = [
   /^\/api\/elevation$/,
   /^\/api\/generate-(obj|dxf|geojson)$/,
   /^\/api\/fiche-parcelle$/,
-  /^\/api\/email$/
+  /^\/api\/email$/,
+  /^\/api\/contours$/,
+  /^\/api\/compute-runoff$/
 ];
 
 function getCookie(request, name) {
