@@ -745,8 +745,8 @@
                                         20, '#4a7a9e',
                                         40, '#2c5f85'
                                     ],
-                                    'fill-extrusion-height': ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5],
-                                    'fill-extrusion-base': 0,
+                                    'fill-extrusion-height': ['+', ['coalesce', ['get', 'base_alt'], 0], ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5]],
+                                    'fill-extrusion-base': ['coalesce', ['get', 'base_alt'], 0],
                                     'fill-extrusion-opacity': 0.85
                                 }
                             });
@@ -875,8 +875,8 @@
                 // BD TOPO WFS loader — bâtiments IGN avec hauteurs réelles
                 let bdtopoLoadCtrl = null;
                 let bdtopoDebounce = null;
-                // Strip Z coordinates from GeoJSON geometry so buildings sit on terrain surface
-                function stripZ(geojson) {
+                // Process BD TOPO GeoJSON: strip Z, compute height, store base elevation
+                function processBDTopo(geojson) {
                     if (!geojson || !geojson.features) return geojson;
                     for (const f of geojson.features) {
                         if (!f.geometry) continue;
@@ -888,7 +888,9 @@
                             || (p.nombre_d_etages ? p.nombre_d_etages * 3.2 : null)
                             || 5;
                         p.hauteur_calc = Math.max(3, Math.round(h * 10) / 10);
-                        // Remove Z from coordinates so extrusion is terrain-relative
+                        // Store ground elevation for fill-extrusion-base
+                        p.base_alt = p.altitude_minimale_sol || 0;
+                        // Remove Z from coordinates (Z = roof altitude, causes doubling with terrain)
                         const strip = (coords) => {
                             if (!Array.isArray(coords)) return coords;
                             if (typeof coords[0] === 'number') return coords.slice(0, 2);
@@ -899,6 +901,7 @@
                     return geojson;
                 }
 
+                let bdtopoLoading = false;
                 async function loadBDTopo() {
                     const zoom = state.map.getZoom();
                     const src = state.map.getSource('bdtopo-bat-src');
@@ -907,19 +910,22 @@
                         src.setData({ type: 'FeatureCollection', features: [] });
                         return;
                     }
+                    if (bdtopoLoading) return; // prevent overlapping requests
+                    bdtopoLoading = true;
                     const b = state.map.getBounds();
                     const bbox = `${b.getWest()},${b.getSouth()},${b.getEast()},${b.getNorth()}`;
-                    const url = `https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=BDTOPO_V3:batiment&BBOX=${bbox},EPSG:4326&OUTPUTFORMAT=application/json&COUNT=2000`;
+                    const url = `https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=BDTOPO_V3:batiment&BBOX=${bbox},EPSG:4326&OUTPUTFORMAT=application/json&COUNT=4000`;
                     try {
                         if (bdtopoLoadCtrl) bdtopoLoadCtrl.abort();
                         bdtopoLoadCtrl = new AbortController();
                         const r = await fetch(url, { signal: bdtopoLoadCtrl.signal });
-                        if (r.ok) { const d = await r.json(); src.setData(stripZ(d)); }
+                        if (r.ok) { const d = await r.json(); src.setData(processBDTopo(d)); }
                     } catch (e) { if (e.name !== 'AbortError') console.warn('BD TOPO WFS:', e); }
+                    bdtopoLoading = false;
                 }
                 function scheduleBDTopo() {
                     clearTimeout(bdtopoDebounce);
-                    bdtopoDebounce = setTimeout(loadBDTopo, 400);
+                    bdtopoDebounce = setTimeout(loadBDTopo, 600);
                 }
 
                 // PLU WFS loader (GPU — zone_urba, zoom ≥ 13 only)
