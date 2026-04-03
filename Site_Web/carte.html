@@ -739,15 +739,12 @@
                                 paint: {
                                     'fill-extrusion-color': [
                                         'interpolate', ['linear'], ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5],
-                                        0, '#b8d4e3',
-                                        5, '#90b4ce',
-                                        10, '#6894b9',
-                                        20, '#4a7a9e',
-                                        40, '#2c5f85'
+                                        0, '#1a3a6e', 5, '#1e4f90', 10, '#2668b8', 20, '#3280cc', 35, '#3d9de0', 55, '#4facfe'
                                     ],
-                                    'fill-extrusion-height': ['+', ['coalesce', ['get', 'base_alt'], 0], ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5]],
-                                    'fill-extrusion-base': ['coalesce', ['get', 'base_alt'], 0],
-                                    'fill-extrusion-opacity': 0.85
+                                    'fill-extrusion-height': ['coalesce', ['get', 'hauteur_calc'], ['get', 'hauteur'], 5],
+                                    'fill-extrusion-base': 0,
+                                    'fill-extrusion-opacity': 1.0,
+                                    'fill-extrusion-vertical-gradient': true
                                 }
                             });
                             state.map.addLayer({
@@ -764,6 +761,7 @@
                         }
                         // terrain-dem + hillshade already in initial style
                         state.map.setTerrain({ source: 'terrain-dem', exaggeration: 1.0 });
+                        try { state.map.setLight({ anchor: 'map', color: '#ffe8cc', intensity: 0.6, position: [1.5, 260, 18] }); } catch(e) {}
                         state.map.easeTo({ pitch: 50, bearing: -15, duration: 1000 });
                     } catch (e) {
                         console.error('3D activation failed:', e);
