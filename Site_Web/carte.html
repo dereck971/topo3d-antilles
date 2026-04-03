@@ -886,8 +886,6 @@
                             || (p.nombre_d_etages ? p.nombre_d_etages * 3.2 : null)
                             || 5;
                         p.hauteur_calc = Math.max(3, Math.round(h * 10) / 10);
-                        // Store ground elevation for fill-extrusion-base
-                        p.base_alt = p.altitude_minimale_sol || 0;
                         // Remove Z from coordinates (Z = roof altitude, causes doubling with terrain)
                         const strip = (coords) => {
                             if (!Array.isArray(coords)) return coords;
